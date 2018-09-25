@@ -5,9 +5,9 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistProject", "DentistProject\DentistProject.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistDataCommand", "DentistDataCommand\DentistDataCommand.vcxproj", "{61BBFFA6-7B85-4C94-B58D-D1AF0FFAC700}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistDLLTest", "DentistDLLTest\DentistDLLTest.vcxproj", "{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistTrainningDataMaker", "DentistTrainningDataMaker\DentistTrainningDataMaker.vcxproj", "{09498BEF-51E7-4D96-A5FF-8DA911988AD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,14 @@ Global
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|x64.Build.0 = Debug|x64
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.ActiveCfg = Release|x64
 		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.Build.0 = Release|x64
-		{61BBFFA6-7B85-4C94-B58D-D1AF0FFAC700}.Debug|x64.ActiveCfg = Debug|x64
-		{61BBFFA6-7B85-4C94-B58D-D1AF0FFAC700}.Debug|x64.Build.0 = Debug|x64
-		{61BBFFA6-7B85-4C94-B58D-D1AF0FFAC700}.Release|x64.ActiveCfg = Release|x64
-		{61BBFFA6-7B85-4C94-B58D-D1AF0FFAC700}.Release|x64.Build.0 = Release|x64
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Debug|x64.ActiveCfg = Debug|x64
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Debug|x64.Build.0 = Debug|x64
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Release|x64.ActiveCfg = Release|x64
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Release|x64.Build.0 = Release|x64
+		{09498BEF-51E7-4D96-A5FF-8DA911988AD2}.Debug|x64.ActiveCfg = Debug|x64
+		{09498BEF-51E7-4D96-A5FF-8DA911988AD2}.Debug|x64.Build.0 = Debug|x64
+		{09498BEF-51E7-4D96-A5FF-8DA911988AD2}.Release|x64.ActiveCfg = Release|x64
+		{09498BEF-51E7-4D96-A5FF-8DA911988AD2}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

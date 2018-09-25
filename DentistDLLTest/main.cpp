@@ -1,8 +1,11 @@
-﻿#include <QtCore/QCoreApplication>
+﻿/*
+這個主要是用來測試
+DLL 能不能 Work
+*/
+#include <QtCore/QCoreApplication>
 #include <iostream>
 #include <windows.h>
 #include <msclr\marshal_cppstd.h>
-//#include <QDir>
 
 using namespace std;
 
