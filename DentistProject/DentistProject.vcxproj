@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B12702AD-ABFB-343A-A199-8E24837244A3}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -31,7 +32,7 @@
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IncludePath>..\OtherPackages\Include;..\OtherPackages\Super4PCS\Eigen\Eigen\src;..\OtherPackages\OpenCV\Include;..\OtherPackages\OpenCV\Include\opencv;..\OtherPackages\Super4PCS\include\super4pcs\algorithms;..\OtherPackages\Super4PCS\include\super4pcs\io;..\OtherPackages\Super4PCS\include;..\OtherPackages;..\OtherPackages\Caffe_vc14_py3.5\include;..\OtherPackages\Caffe_vc14_py3.5\include\boost-1_61;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
     <LibraryPath>..\OtherPackages\Lib\x64;..\OtherPackages\Super4PCS\lib;..\OtherPackages\Super4PCS\lib\algorithms\Release;..\OtherPackages\Super4PCS\lib\io\Release;..\OtherPackages\Caffe_vc14_py3.5\lib;..\OtherPackages\OpenCV\Lib;C:\Users\Dark\Desktop\SourceTree\DentistProject\OtherPackages\Caffe_vc14_py3.5\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
