@@ -34,8 +34,6 @@ void MoveUselessFile(QDir JobPath)
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication a(argc, argv);
-
 	if (argc != 2)
 	{
 		cout << "使用方式：<exe> <資料夾目錄>" << endl;
