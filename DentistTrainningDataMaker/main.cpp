@@ -12,6 +12,10 @@ ConvertList.txt
 */
 #include <iostream>
 
+#include <QFile>
+
+#include "RawDataManager.h"
+
 using namespace std;
 
 int main(int argc, char *argv[])

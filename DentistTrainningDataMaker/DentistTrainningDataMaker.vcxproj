@@ -100,10 +100,12 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RawDataManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataManager.h" />
     <ClInclude Include="RawDataManager.h" />
     <ClInclude Include="TRcuda.cuh" />
   </ItemGroup>

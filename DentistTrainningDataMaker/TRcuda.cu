@@ -1,4 +1,4 @@
-#include "TRcuda.cuh"
+﻿#include "TRcuda.cuh"
 #include "device_launch_parameters.h"
 #include "Math.h"
 
@@ -685,7 +685,6 @@ TRcuda::TRcuda(void)
 	split = 1;//5
 	radiusRange = 125;
 
-	CalibrationMap = NULL;
 	VolumeData = NULL;
 	SingleData = NULL;
 	VolumeDataAvg = NULL;
@@ -953,9 +952,7 @@ void TRcuda::RawToSingle(char* rawData, int data_Size, int size_Y, int size_Z, i
 	//if (SingleData != NULL)
 	//	free(SingleData);
 	//SingleData = (float*)malloc(sizeof(float) * floatDataSize);
-	//gpuError = cudaMemcpy(SingleData, gpuFloatData, sizeof(float) * floatDataSize, cudaMemcpyDeviceToHost);
-
-	
+	//gpuError = cudaMemcpy(SingleData, gpuFloatData, sizeof(float) * floatDataSize, cudaMemcpyDeviceToHost)	
 }
 
 void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_Z, int ch)

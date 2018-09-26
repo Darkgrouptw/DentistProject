@@ -1,4 +1,4 @@
-#ifndef TRCUDA_H
+﻿#ifndef TRCUDA_H
 #define TRCUDA_H
 
 #include <vector>
@@ -37,7 +37,6 @@ public:
 	int sample_X;
 	int sample_Y;
 	int split;
-	float* CalibrationMap;
 	float radiusRange;
 
 	float* VolumeData;

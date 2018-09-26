@@ -24,7 +24,10 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="TRCuda">
+    <Filter Include="RawDataManager">
+      <UniqueIdentifier>{f33fbbe0-6fb6-4800-9553-ab4bd39e2c0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RawDataManager\TRCuda">
       <UniqueIdentifier>{999b748c-6d31-49e1-827f-71140c376e0f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -32,21 +35,27 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>RawDataManager</Filter>
+    </ClCompile>
     <ClCompile Include="RawDataManager.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>RawDataManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RawDataManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TRcuda.cuh">
-      <Filter>TRCuda</Filter>
+      <Filter>RawDataManager\TRCuda</Filter>
+    </ClInclude>
+    <ClInclude Include="DataManager.h">
+      <Filter>RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="RawDataManager.h">
+      <Filter>RawDataManager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="TRcuda.cu">
-      <Filter>TRCuda</Filter>
+      <Filter>RawDataManager\TRCuda</Filter>
     </CudaCompile>
   </ItemGroup>
 </Project>
