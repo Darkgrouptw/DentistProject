@@ -52,6 +52,9 @@
     <ClInclude Include="RawDataManager.h">
       <Filter>RawDataManager</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalDefine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="TRcuda.cu">
