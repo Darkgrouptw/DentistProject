@@ -5,13 +5,22 @@
 #include "DataManager.h"
 #include "TRCuda.cuh"
 
+#include <QVector>
 #include <QDataStream>
 #include <QByteArray>
 
+#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-//#include <opencv2/core/eigen.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+using namespace cv;
+
+// 這邊是為了要讓邊界 Smooth 一點
+struct IndexMapInfo
+{
+	int index;			// 位置資訊
+	int ZValue;			// Z 的深度值是多少
+};
 
 class RawDataManager
 {
@@ -33,6 +42,7 @@ private:
 	DataManager		DManager;
 	TRcuda			theTRcuda;
 
+	int				LerpFunction(int, int, int, int, int);
 
 	QByteArray buffer;
 };

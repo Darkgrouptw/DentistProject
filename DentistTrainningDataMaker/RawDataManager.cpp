@@ -51,41 +51,135 @@ void RawDataManager::RawToPointCloud()
 
 void RawDataManager::TranformToIMG()
 {
-	int tmpIdx;
-	int midIdx;
-	float idt, idtmax = 0, idtmin = 9999;
-	float ori_idt, total_idt = 0, avg_idt = 0;
-	fstream fp;
-	fp.open("vol_data.txt", ios::out);
+	//////////////////////////////////////////////////////////////////////////
+	// 這邊底下是舊的 Code
+	// 不是我寫的 QAQ
+	//////////////////////////////////////////////////////////////////////////
+	// 取 60 ~ 200
+	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
+	for (int x = 60; x <= 200; x++)
+	{
+		// Mat
+		Mat ImageResult = Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, Scalar(0, 0, 0));
+		Mat FastLabel = Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, Scalar(0, 0, 0));
+		Mat ContourTest; // = Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, Scalar(0, 0, 0));
 
+		// 原本的變數
+		int tmpIdx;
+		int midIdx;
+		float idt, idtmax = 0, idtmin = 9999;
+		int posZ;
 
-	for (int x = 0; x < theTRcuda.VolumeSize_X; x++) {
-		cv::Mat tmp_floating = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		cv::Mat tmp_test = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++) {
-			for (int col = 0; col < theTRcuda.VolumeSize_Z; col++) {
+		// Map 參數
+		QVector<IndexMapInfo> IndexMap;
+		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		{
+			// 這個 For 迴圈是算每一個結果
+			// 也就是去算深度底下，1024 個結果
+			for (int col = 0; col < theTRcuda.VolumeSize_Z; col++)
+			{
 				tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
 				midIdx = ((125 * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
+				idt = ((float)theTRcuda.VolumeData[tmpIdx] / (float)3.509173f) - (float)(3.39f / 3.509173f);// 調整後能量區間
 
-				ori_idt = (float)theTRcuda.VolumeData[tmpIdx];
-				idt = ((float)theTRcuda.VolumeDataAvg[tmpIdx] / (float)3.509173f) - (float)(3.39f / 3.509173f);// 調整後能量區間
+				// 調整過飽和度的 顏色
+				ImageResult.at<float>(row, col) = saturate_cast<float>(1.5 * (idt - 0.5) + 0.5);
+				//ImageResult.at<float>(row, col) = idt;
+			}
 
-				tmp_floating.at<float>(row, col) = idt;
-				tmp_test.at<float>(row, col) = (float)(ori_idt - 1) / 8;
-				if (ori_idt > idtmax)
-					idtmax = ori_idt;
-				if (ori_idt < idtmin)
-					idtmin = ori_idt;
+			// 這個迴圈是去算
+			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
+			if (theTRcuda.PointType[tmpIdx + 3] == 1 && theTRcuda.PointType[tmpIdx + 1] != 0) 
+			{
+				posZ = theTRcuda.PointType[tmpIdx + 1];
+				
+				// 通常不會太靠近
+				if(posZ  <  100)
+					continue;
 
-				total_idt += ori_idt;
+				IndexMapInfo tempInfo;
+				tempInfo.index = row;
+				tempInfo.ZValue = posZ;
+				IndexMap.push_back(tempInfo);
+
+				//cout << row << " " << posZ << endl;
+				for (int i = posZ; i < 1024; i++)
+					FastLabel.at<uchar>(row, i) = uchar(255);
 			}
 		}
 
-		cv::resize(tmp_floating, tmp_floating, cv::Size(480, 360), 0, 0, CV_INTER_LINEAR);
-		tmp_floating.convertTo(tmp_floating, CV_8UC3, 255);
+		//////////////////////////////////////////////////////////////////////////
+		// 找出邊界
+		//////////////////////////////////////////////////////////////////////////
+		int arryIndex = 0;
+		int FromIndex = 0;
+		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		{
+			// 這邊是正常情況下，剛剛好有找到的 Z 值
+			if (IndexMap.size() <= arryIndex && arryIndex - 2 >= 0)
+				FromIndex = LerpFunction(
+					IndexMap[arryIndex - 2].index, IndexMap[arryIndex - 2].ZValue,
+					IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
+					row
+				);
+			else if (row == IndexMap[arryIndex].index)
+				FromIndex = IndexMap[arryIndex++].ZValue;
+			else if (row < IndexMap[arryIndex].index && arryIndex > 0)
+				// 因為第一個沒有 -1 ，所以需要額外分開來做
+				FromIndex = LerpFunction(
+					IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
+					IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
+					row
+				);
+			else  if (row < IndexMap[arryIndex].index && arryIndex == 0)
+				FromIndex = LerpFunction(
+					IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
+					IndexMap[arryIndex + 1].index, IndexMap[arryIndex + 1].ZValue,
+					row
+				);
+			else
+				cout << "Error!!" << endl;
+			FromIndex = qBound(0, FromIndex, theTRcuda.VolumeSize_Z - 1);
+			//cout << row << " " << FromIndex << endl;
+			
 
-		cv::imwrite("origin_v2\\" + std::to_string(x) + ".png", tmp_floating);
+			// 填白色
+			for (int i = FromIndex; i < theTRcuda.VolumeSize_Z; i++)
+				FastLabel.at<uchar>(row, i) = uchar(255);
+		}
 
+		// 這邊是將 Contour & 結果，合再一起
+		// 先複製一份
+		ContourTest = ImageResult.clone();
+		ContourTest.convertTo(ContourTest, CV_8U, 255);
+		cvtColor(ContourTest.clone(), ContourTest, COLOR_GRAY2BGR);
+		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		{
+			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
+			if (theTRcuda.PointType[tmpIdx + 3] == 1 && theTRcuda.PointType[tmpIdx + 1] != 0)
+			{
+				posZ = theTRcuda.PointType[tmpIdx + 1];
+				Point contourPoint(posZ, row);
+				circle(ContourTest, contourPoint, 1, Scalar(0, 255, 255), CV_FILLED);
+			}
+		}
+
+		cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, INTER_NEAREST);
+		ImageResult.convertTo(ImageResult, CV_8U, 255);
+		cv::imwrite("origin_v2/" + to_string(x) + ".png", ImageResult);
+
+		cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, INTER_NEAREST);
+		cv::imwrite("label_v2/" + to_string(x) + ".png", FastLabel);
+
+		cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, INTER_NEAREST);
+		cv::imwrite("combine_v2/" + to_string(x) + ".png", ContourTest);
 	}
-	fp.close();
+}
+
+int RawDataManager::LerpFunction(int lastIndex, int lastValue, int nextIndex, int nextValue, int index)
+{
+	/*if (nextValue >= 1024 || lastValue >= 1024 || nextValue < 0 || lastValue < 0)
+		cout << "Error: " << nextValue << " " << lastValue << endl;
+	cout << "Index: " << lastIndex << " " << nextIndex << " " << index << endl;*/
+	return (index - lastIndex) * (nextValue - lastValue) / (nextIndex - lastIndex) + lastValue;
 }
