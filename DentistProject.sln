@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistProject", "DentistPr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistDLLTest", "DentistDLLTest\DentistDLLTest.vcxproj", "{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistTrainningDataMaker", "DentistTrainningDataMaker\DentistTrainningDataMaker.vcxproj", "{979968A5-5F65-4E2B-9E85-225172268D85}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistTrainningDataMaker", "DentistTrainningDataMaker\DentistTrainningDataMaker.vcxproj", "{4C4F14B2-EE17-4A1D-8261-6C009BE4FEC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Debug|x64.Build.0 = Debug|x64
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Release|x64.ActiveCfg = Release|x64
 		{1C502AA8-7F3A-4FF7-A5C3-515C855B1DF8}.Release|x64.Build.0 = Release|x64
-		{979968A5-5F65-4E2B-9E85-225172268D85}.Debug|x64.ActiveCfg = Debug|x64
-		{979968A5-5F65-4E2B-9E85-225172268D85}.Debug|x64.Build.0 = Debug|x64
-		{979968A5-5F65-4E2B-9E85-225172268D85}.Release|x64.ActiveCfg = Release|x64
-		{979968A5-5F65-4E2B-9E85-225172268D85}.Release|x64.Build.0 = Release|x64
+		{4C4F14B2-EE17-4A1D-8261-6C009BE4FEC7}.Debug|x64.ActiveCfg = Debug|x64
+		{4C4F14B2-EE17-4A1D-8261-6C009BE4FEC7}.Debug|x64.Build.0 = Debug|x64
+		{4C4F14B2-EE17-4A1D-8261-6C009BE4FEC7}.Release|x64.ActiveCfg = Release|x64
+		{4C4F14B2-EE17-4A1D-8261-6C009BE4FEC7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

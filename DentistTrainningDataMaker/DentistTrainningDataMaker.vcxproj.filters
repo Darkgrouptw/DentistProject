@@ -14,6 +14,10 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
       <Extensions>qrc;*</Extensions>
@@ -24,41 +28,28 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="RawDataManager">
-      <UniqueIdentifier>{f33fbbe0-6fb6-4800-9553-ab4bd39e2c0e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="RawDataManager\TRCuda">
-      <UniqueIdentifier>{999b748c-6d31-49e1-827f-71140c376e0f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DataManager.cpp">
-      <Filter>RawDataManager</Filter>
-    </ClCompile>
-    <ClCompile Include="RawDataManager.cpp">
-      <Filter>RawDataManager</Filter>
+    <ClCompile Include="DentistTrainningDataMaker.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TRcuda.cuh">
-      <Filter>RawDataManager\TRCuda</Filter>
-    </ClInclude>
-    <ClInclude Include="DataManager.h">
-      <Filter>RawDataManager</Filter>
-    </ClInclude>
-    <ClInclude Include="RawDataManager.h">
-      <Filter>RawDataManager</Filter>
-    </ClInclude>
-    <ClInclude Include="GlobalDefine.h">
+    <QtMoc Include="DentistTrainningDataMaker.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="TRcuda.cu">
-      <Filter>RawDataManager\TRCuda</Filter>
-    </CudaCompile>
+    <QtUic Include="DentistTrainningDataMaker.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+  </ItemGroup>
+  <ItemGroup>
+    <QtRcc Include="DentistTrainningDataMaker.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
   </ItemGroup>
 </Project>
