@@ -88,7 +88,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;_WINDOWS;CAFFE_VERSION=1.0.0;BOOST_ALL_NO_LIB;USE_LMDB;USE_LEVELDB;USE_CUDNN;USE_OPENCV;CMAKE_WINDOWS_BUILD;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);H5_BUILT_AS_DYNAMIC_LIB=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>UNICODE;_UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;_WINDOWS;_USE_MATH_DEFINES;CAFFE_VERSION=1.0.0;BOOST_ALL_NO_LIB;USE_LMDB;USE_LEVELDB;USE_CUDNN;USE_OPENCV;CMAKE_WINDOWS_BUILD;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);H5_BUILT_AS_DYNAMIC_LIB=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat />
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -100,13 +100,13 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5Widgets.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5Widgets.lib;OpenMeshCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
       <ExecutionDescription>Moc'ing %(Identity)...</ExecutionDescription>
       <IncludePath>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets;%(AdditionalIncludeDirectories)</IncludePath>
-      <Define>UNICODE;_UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;_WINDOWS;CAFFE_VERSION=1.0.0;BOOST_ALL_NO_LIB;USE_LMDB;USE_LEVELDB;USE_CUDNN;USE_OPENCV;CMAKE_WINDOWS_BUILD;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);H5_BUILT_AS_DYNAMIC_LIB=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</Define>
+      <Define>UNICODE;_UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;_WINDOWS;_USE_MATH_DEFINES;CAFFE_VERSION=1.0.0;BOOST_ALL_NO_LIB;USE_LMDB;USE_LEVELDB;USE_CUDNN;USE_OPENCV;CMAKE_WINDOWS_BUILD;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);H5_BUILT_AS_DYNAMIC_LIB=1;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</Define>
     </QtMoc>
     <QtUic>
       <ExecutionDescription>Uic'ing %(Identity)...</ExecutionDescription>
@@ -116,10 +116,15 @@
       <ExecutionDescription>Rcc'ing %(Identity)...</ExecutionDescription>
       <OutputFile>.\GeneratedFiles\qrc_%(Filename).cpp</OutputFile>
     </QtRcc>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CodeGeneration>compute_30,sm_30</CodeGeneration>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DentistTrainningDataMaker.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OpenGLWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DentistTrainningDataMaker.h" />
@@ -129,6 +134,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="DentistTrainningDataMaker.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OpenGLWidget.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

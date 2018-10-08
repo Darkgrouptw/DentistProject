@@ -28,6 +28,12 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Source Files\Display">
+      <UniqueIdentifier>{432bf2b2-ed5e-426d-8f7a-59cc4c47027f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Display">
+      <UniqueIdentifier>{6d0bacbd-37b9-47a5-918b-117197976385}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,6 +41,9 @@
     </ClCompile>
     <ClCompile Include="DentistTrainningDataMaker.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLWidget.cpp">
+      <Filter>Source Files\Display</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -51,5 +60,10 @@
     <QtRcc Include="DentistTrainningDataMaker.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OpenGLWidget.h">
+      <Filter>Header Files\Display</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

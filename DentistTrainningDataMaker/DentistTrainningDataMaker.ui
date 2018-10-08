@@ -1,29 +1,56 @@
-<UI version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>DentistTrainningDataMakerClass</class>
- <widget class="QMainWindow" name="DentistTrainningDataMakerClass" >
-  <property name="objectName" >
-   <string notr="true">DentistTrainningDataMakerClass</string>
-  </property>
-  <property name="geometry" >
+ <widget class="QMainWindow" name="DentistTrainningDataMakerClass">
+  <property name="geometry">
    <rect>
-	<x>0</x>
-	<y>0</y>
-	<width>600</width>
-	<height>400</height>
+    <x>0</x>
+    <y>0</y>
+    <width>1600</width>
+    <height>900</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>DentistTrainningDataMaker</string>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <widget class="QWidget" name="centralWidget">
+   <widget class="OpenGLWidget" name="DisplayPanel">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>900</width>
+      <height>900</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>true</bool>
+   </attribute>
+   <addaction name="actionLoadSTL"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionLoadSTL">
+   <property name="text">
+    <string>1. 讀取 STL(From 3Shape)</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>OpenGLWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>openglwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
-   <include location="DentistTrainningDataMaker.qrc"/>
+  <include location="DentistTrainningDataMaker.qrc"/>
  </resources>
  <connections/>
-</UI>
+</ui>
