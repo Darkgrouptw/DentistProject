@@ -42,9 +42,14 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *e)
 
 	int width = CurrentPoint.x() - PressPoint.x();
 	float rate = (float)width / this->width();
-
 	ArcAngle = TempArcAngle + rate * 180;
-	cout << ArcAngle << endl;
+
+	//邊界判定
+	if (ArcAngle >= 360)
+		ArcAngle -= 360;
+	if (ArcAngle <= 360)
+		ArcAngle += 360;
+	
 	CalcMatrix();
 
 	this->update();
@@ -55,6 +60,7 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *e)
 //////////////////////////////////////////////////////////////////////////
 bool OpenGLWidget::LoadSTLFile(QString FileName)
 {
+	#pragma region 讀取 STL 檔案
 	if (!OpenMesh::IO::read_mesh(STLFile, FileName.toStdString()))
 	{
 		cout << "讀取錯誤!!" << endl;
@@ -63,6 +69,67 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 	}
 	cout << "模型面數：" << STLFile.n_faces() << endl;
 	IsLoaded = true;
+	#pragma endregion
+	#pragma region 找出 Bounding Box
+	float maxX, maxY, maxZ;
+	float minX, minY, minZ;
+	maxX = maxY = maxZ = -99999;
+	minX = minY = minZ = 99999;
+
+	// 跑每一個點
+	for (MeshType::VertexIter v_iter = STLFile.vertices_begin(); v_iter != STLFile.vertices_end(); v_iter++)
+	{
+		MeshType::Point p = STLFile.point(v_iter);
+		#pragma region X 判斷
+		if (p[0] < minX)
+			minX = p[0];
+		if (p[0] > maxX)
+			maxX = p[0];
+		#pragma endregion
+		#pragma region Y 判斷
+		if (p[1] < minY)
+			minY = p[1];
+		if (p[1] > maxY)
+			maxY = p[1];
+		#pragma endregion
+		#pragma region Z 判斷
+		if (p[2] < minZ)
+			minZ = p[2];
+		if (p[2] > maxZ)
+			maxZ = p[2];
+		#pragma endregion
+	}
+	cout << "Bounding Box" << endl;
+	cout << "Max: " << maxX << " " << maxY << " " << maxZ << endl;
+	cout << "Min: " << minX << " " << minY << " " << minZ << endl;
+	BoundingBox[0] = QVector3D(maxX, maxY, maxZ);
+	BoundingBox[1] = QVector3D(minX, minY, minZ);
+	#pragma endregion
+	#pragma region 找出 Transform Matrix
+	// Reset Matrix
+	TransformMatrix.setToIdentity();
+	float deltaX = maxX - minX;
+	float deltaY = maxY - minY;
+	float deltaZ = maxZ - minZ;
+
+	// 這邊代表要旋轉
+	if (deltaY > deltaX || deltaY > deltaZ)
+	{
+		TransformMatrix.rotate(QQuaternion::fromEulerAngles(QVector3D(-90, 0, 0)));
+		cout << "旋轉模型" << endl;
+	}
+
+	float maxDelta;
+	if (deltaX > deltaY && deltaX > deltaZ)
+		maxDelta = deltaX;
+	else if (deltaY > deltaX && deltaY > deltaZ)
+		maxDelta = deltaY;
+	else
+		maxDelta = deltaZ;
+
+	float scale = GridSize / maxDelta;
+	TransformMatrix.scale(QVector3D(scale, scale, scale));
+	#pragma endregion
 	return true;
 }
 
@@ -137,7 +204,13 @@ void OpenGLWidget::DrawSTL()
 		for (MeshType::FaceVertexIter fv_iter = STLFile.fv_iter(f_iter); fv_iter.is_valid(); fv_iter++)
 		{
 			MeshType::Point p = STLFile.point(fv_iter);
-			glVertex3f(p[0], p[1], p[2]);
+
+			// 算出矩陣結果
+			QVector4D matrixP(p[0], p[1], p[2], 1);
+			matrixP = TransformMatrix * matrixP;
+
+			// 畫出來
+			glVertex3f(matrixP[0], matrixP[1], matrixP[2]);
 		}
 	glEnd();
 
@@ -149,8 +222,15 @@ void OpenGLWidget::DrawSTL()
 			
 			MeshType::Point FirstP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 0)));
 			MeshType::Point SecondP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 1)));
-			glVertex3f(FirstP[0], FirstP[1], FirstP[2]);
-			glVertex3f(SecondP[0], SecondP[1], SecondP[2]);
+
+			// 算出矩陣結果
+			QVector4D matrixFirstP(FirstP[0], FirstP[1], FirstP[2], 1);
+			QVector4D matrixSecondP(SecondP[0], SecondP[1], SecondP[2], 1);
+			matrixFirstP = TransformMatrix * matrixFirstP;
+			matrixSecondP = TransformMatrix * matrixSecondP;
+
+			glVertex3f(matrixFirstP[0], matrixFirstP[1], matrixFirstP[2]);
+			glVertex3f(matrixSecondP[0], matrixSecondP[1], matrixSecondP[2]);
 		}
 	glEnd();
 	#pragma endregion

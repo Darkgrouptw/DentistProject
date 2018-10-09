@@ -5,6 +5,7 @@
 #include <QPoint>
 #include <QVector2D>
 #include <QVector3D>
+#include <QVector4D>
 #include <QMatrix4x4>
 #include <QMouseEvent>
 #include <QOpenGLWidget>
@@ -40,8 +41,9 @@ private:
 	void DrawGround();
 	void DrawSTL();
 
-	QVector2D GridMin = QVector2D(-10, -10);
-	QVector2D GridMax = QVector2D(10, 10);
+	const float GridSize = 10;
+	QVector2D GridMin = QVector2D(-GridSize, -GridSize);
+	QVector2D GridMax = QVector2D(GridSize, GridSize);
 
 	// MVP 矩陣
 	QMatrix4x4		ProjectionMatrix;
@@ -53,7 +55,9 @@ private:
 	int				TempArcAngle = 0;		// 暫存角度 (For 滑鼠滑動使用)
 
 	// Mesh
-	MeshType			STLFile;
+	MeshType		STLFile;
+	QVector3D		BoundingBox[2];			// 最大的點 & 最小的點
+	QMatrix4x4		TransformMatrix;		// 這邊是在做當 Load 進來的模型很大的時候，會做一個縮放的動作
 	bool			IsLoaded = false;
 	#pragma endregion
 	#pragma region 拖移
