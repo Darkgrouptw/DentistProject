@@ -51,14 +51,15 @@ private:
 	QMatrix4x4		ProjectionMatrix;
 	QMatrix4x4		ViewMatrix;
 
-	int				ElevationAngle = 30;	// 仰角
-	//const int		MaxElevationAngle = 40;
-	//const int		MinElevationAngle = 20;
+
 	int				Radius = 30;			// 半徑
 	const int		MaxRadius = 51;
 	const int		MinRadius = 21;
 	int				RadiusSpeed_Dev = 3;
 
+
+	int				ElevationAngle = 30;	// 仰角
+	int				TempElevationAngle = 0;
 
 	int				ArcAngle = 0;			// 角度
 	int				TempArcAngle = 0;		// 暫存角度 (For 滑鼠滑動使用)

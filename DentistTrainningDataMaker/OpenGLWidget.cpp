@@ -35,6 +35,7 @@ void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 {
 	PressPoint = event->pos();
 	TempArcAngle = ArcAngle;
+	TempElevationAngle = ElevationAngle;
 }
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
@@ -50,6 +51,10 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 	if (ArcAngle <= 360)
 		ArcAngle += 360;
 	
+	int height = CurrentPoint.y() - PressPoint.y();
+	rate = (float)height / this->height();
+	ElevationAngle = qBound(-89, TempElevationAngle + (int)(rate * 180), 89);
+
 	// 更新 Widget
 	CalcMatrix();
 	this->update();
