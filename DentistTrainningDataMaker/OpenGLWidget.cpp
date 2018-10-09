@@ -117,9 +117,11 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 			maxZ = p[2];
 		#pragma endregion
 	}
+
 	cout << "Bounding Box" << endl;
 	cout << "Max: " << maxX << " " << maxY << " " << maxZ << endl;
 	cout << "Min: " << minX << " " << minY << " " << minZ << endl;
+
 	BoundingBox[0] = QVector3D(maxX, maxY, maxZ);
 	BoundingBox[1] = QVector3D(minX, minY, minZ);
 	#pragma endregion
@@ -145,32 +147,35 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 		maxDelta = deltaY;
 	else
 		maxDelta = deltaZ * 2;
-	cout << "MaxDelta " << maxDelta << endl;
+	cout << "Delta: " << deltaX << " " << deltaY << " " << deltaZ << endl;
 
 	float scale = GridSize / maxDelta * 2;					// 因為是 -10 ~ 10，所以是 20
 	TransformMatrix.scale(QVector3D(scale, scale, scale));
 	cout << "Scale " << scale << endl;
 
-	// 這邊要找 offset 多少
-	QVector4D downPos;
-	bool TakeY = true;
+	// 算平面的結果 (X, Y, Z 平移)
+	QVector4D squareMaxPos(maxX, maxY, maxZ, 1);
+	QVector4D squareMinPos(minX, minY, minZ, 1);
+	squareMaxPos = TransformMatrix * squareMaxPos;
+	squareMinPos = TransformMatrix * squareMinPos;
+
+	cout << "After Transform" << endl;
+	cout << "Max: " << squareMaxPos.x() << " " << squareMaxPos.y() << " " << squareMaxPos.z() << endl;
+	cout << "Min: " << squareMinPos.x() << " " << squareMinPos.y() << " " << squareMinPos.z() << endl;
+
 	if (deltaY > deltaX || deltaY > deltaZ)
 	{
-		downPos = QVector4D(0, minZ, 0, 1);
-		TakeY = false;
+		float offsetX = (squareMaxPos.x() + squareMinPos.x()) / 2;
+		float offsetZ = (squareMaxPos.z() + squareMinPos.z()) / 2;
+		OffsetToCenter = QVector3D(-offsetX, -squareMinPos.y(), -offsetZ);
 	}
 	else
-		downPos = QVector4D(0, minY, 0, 1);
-
-	downPos = TransformMatrix * downPos;
-	cout << downPos[0] << " " << downPos[1] << " " << downPos[2] << " " << downPos[3] << endl;
-
-	if (!TakeY)
-		OffsetY = downPos.z();
-	else
-		OffsetY = -downPos.y();
-
-	cout << "OffsetY " << OffsetY << endl;
+	{
+		float offsetX = (squareMaxPos.x() + squareMinPos.x()) / 2;
+		float offsetZ = (squareMaxPos.z() + squareMinPos.z()) / 2;
+		OffsetToCenter = QVector3D(-offsetX, -squareMinPos.y(), -offsetZ);
+	}
+	 cout << "Offset: " << OffsetToCenter.x() << " " << OffsetToCenter.y() << " " << OffsetToCenter.z() << endl;
 	#pragma endregion
 	return true;
 }
@@ -252,7 +257,11 @@ void OpenGLWidget::DrawSTL()
 			matrixP = TransformMatrix * matrixP;
 
 			// 畫出來
-			glVertex3f(matrixP[0], matrixP[1] + OffsetY, matrixP[2]);
+			glVertex3f(
+				matrixP[0] + OffsetToCenter.x(),
+				matrixP[1] + OffsetToCenter.y(),
+				matrixP[2] + OffsetToCenter.z()
+			);
 		}
 	glEnd();
 
@@ -271,8 +280,16 @@ void OpenGLWidget::DrawSTL()
 			matrixFirstP = TransformMatrix * matrixFirstP;
 			matrixSecondP = TransformMatrix * matrixSecondP;
 
-			glVertex3f(matrixFirstP[0], matrixFirstP[1] + OffsetY, matrixFirstP[2]);
-			glVertex3f(matrixSecondP[0], matrixSecondP[1] + OffsetY, matrixSecondP[2]);
+			glVertex3f(
+				matrixFirstP[0] + OffsetToCenter.x(),
+				matrixFirstP[1] + OffsetToCenter.y(),
+				matrixFirstP[2] + OffsetToCenter.z()
+			);
+			glVertex3f(
+				matrixSecondP[0] + OffsetToCenter.x(),
+				matrixSecondP[1] + OffsetToCenter.y(),
+				matrixSecondP[2] + OffsetToCenter.z()
+			);
 		}
 	glEnd();
 	#pragma endregion

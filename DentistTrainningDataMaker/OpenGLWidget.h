@@ -68,7 +68,7 @@ private:
 	MeshType		STLFile;
 	QVector3D		BoundingBox[2];			// 最大的點 & 最小的點
 	QMatrix4x4		TransformMatrix;		// 這邊是在做當 Load 進來的模型很大的時候，會做一個縮放的動作
-	float			OffsetY;
+	QVector3D		OffsetToCenter;			// 這邊是位移
 
 	bool			IsLoaded = false;
 	#pragma endregion
