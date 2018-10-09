@@ -8,6 +8,7 @@
 #include <QVector4D>
 #include <QMatrix4x4>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
 
@@ -30,6 +31,7 @@ public:
 	// 滑鼠事件
 	void mousePressEvent(QMouseEvent *);
 	void mouseMoveEvent(QMouseEvent *);
+	void wheelEvent(QWheelEvent *);
 
 	// Connection Funciton
 	bool LoadSTLFile(QString);
@@ -49,8 +51,15 @@ private:
 	QMatrix4x4		ProjectionMatrix;
 	QMatrix4x4		ViewMatrix;
 
-	const float		ElevationAngle = 30;	// 仰角
-	const float		Radius = 30;			// 半徑
+	int				ElevationAngle = 30;	// 仰角
+	//const int		MaxElevationAngle = 40;
+	//const int		MinElevationAngle = 20;
+	int				Radius = 30;			// 半徑
+	const int		MaxRadius = 51;
+	const int		MinRadius = 21;
+	int				RadiusSpeed_Dev = 3;
+
+
 	int				ArcAngle = 0;			// 角度
 	int				TempArcAngle = 0;		// 暫存角度 (For 滑鼠滑動使用)
 
@@ -58,6 +67,8 @@ private:
 	MeshType		STLFile;
 	QVector3D		BoundingBox[2];			// 最大的點 & 最小的點
 	QMatrix4x4		TransformMatrix;		// 這邊是在做當 Load 進來的模型很大的時候，會做一個縮放的動作
+	float			OffsetY;
+
 	bool			IsLoaded = false;
 	#pragma endregion
 	#pragma region 拖移

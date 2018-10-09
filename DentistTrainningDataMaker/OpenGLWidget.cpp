@@ -31,14 +31,14 @@ void OpenGLWidget::paintGL()
 }
 
 // 滑鼠事件
-void OpenGLWidget::mousePressEvent(QMouseEvent *e)
+void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 {
-	PressPoint = e->pos();
+	PressPoint = event->pos();
 	TempArcAngle = ArcAngle;
 }
-void OpenGLWidget::mouseMoveEvent(QMouseEvent *e)
+void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	CurrentPoint = e->pos();
+	CurrentPoint = event->pos();
 
 	int width = CurrentPoint.x() - PressPoint.x();
 	float rate = (float)width / this->width();
@@ -50,8 +50,21 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *e)
 	if (ArcAngle <= 360)
 		ArcAngle += 360;
 	
+	// 更新 Widget
 	CalcMatrix();
+	this->update();
+}
+void OpenGLWidget::wheelEvent(QWheelEvent *event)
+{
+	// Most mouse types work in steps of 15 degrees, in which case the delta value is a multiple of 120; i.e., 120 units * 1/8 = 15 degrees
+	// (From: http://doc.qt.io/qt-5/qwheelevent.html#angleDelta)
+	int degree = event->angleDelta().y() / 8;
+	int moveRadius = -degree / RadiusSpeed_Dev;
 
+	Radius = qBound(MinRadius, Radius + moveRadius, MaxRadius);
+
+	// 更新 Widget
+	CalcMatrix();
 	this->update();
 }
 
@@ -119,16 +132,40 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 		cout << "旋轉模型" << endl;
 	}
 
+	// 這邊再算 scale，只有 deltaZ 要乘 2，因為 Z 只有 0 ~ 10 (其他 -10 ~ 10)
 	float maxDelta;
-	if (deltaX > deltaY && deltaX > deltaZ)
+	if (deltaX > deltaY && deltaX > deltaZ * 2)
 		maxDelta = deltaX;
-	else if (deltaY > deltaX && deltaY > deltaZ)
+	else if (deltaY > deltaX && deltaY > deltaZ * 2)
 		maxDelta = deltaY;
 	else
-		maxDelta = deltaZ;
+		maxDelta = deltaZ * 2;
+	cout << "MaxDelta " << maxDelta << endl;
 
-	float scale = GridSize / maxDelta;
+	float scale = GridSize / maxDelta * 2;					// 因為是 -10 ~ 10，所以是 20
 	TransformMatrix.scale(QVector3D(scale, scale, scale));
+	cout << "Scale " << scale << endl;
+
+	// 這邊要找 offset 多少
+	QVector4D downPos;
+	bool TakeY = true;
+	if (deltaY > deltaX || deltaY > deltaZ)
+	{
+		downPos = QVector4D(0, minZ, 0, 1);
+		TakeY = false;
+	}
+	else
+		downPos = QVector4D(0, minY, 0, 1);
+
+	downPos = TransformMatrix * downPos;
+	cout << downPos[0] << " " << downPos[1] << " " << downPos[2] << " " << downPos[3] << endl;
+
+	if (!TakeY)
+		OffsetY = downPos.z();
+	else
+		OffsetY = -downPos.y();
+
+	cout << "OffsetY " << OffsetY << endl;
 	#pragma endregion
 	return true;
 }
@@ -210,7 +247,7 @@ void OpenGLWidget::DrawSTL()
 			matrixP = TransformMatrix * matrixP;
 
 			// 畫出來
-			glVertex3f(matrixP[0], matrixP[1], matrixP[2]);
+			glVertex3f(matrixP[0], matrixP[1] + OffsetY, matrixP[2]);
 		}
 	glEnd();
 
@@ -229,8 +266,8 @@ void OpenGLWidget::DrawSTL()
 			matrixFirstP = TransformMatrix * matrixFirstP;
 			matrixSecondP = TransformMatrix * matrixSecondP;
 
-			glVertex3f(matrixFirstP[0], matrixFirstP[1], matrixFirstP[2]);
-			glVertex3f(matrixSecondP[0], matrixSecondP[1], matrixSecondP[2]);
+			glVertex3f(matrixFirstP[0], matrixFirstP[1] + OffsetY, matrixFirstP[2]);
+			glVertex3f(matrixSecondP[0], matrixSecondP[1] + OffsetY, matrixSecondP[2]);
 		}
 	glEnd();
 	#pragma endregion
