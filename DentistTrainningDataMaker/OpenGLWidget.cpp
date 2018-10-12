@@ -78,7 +78,7 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event)
 //////////////////////////////////////////////////////////////////////////
 bool OpenGLWidget::LoadSTLFile(QString FileName)
 {
-	#pragma region 讀取 STL 檔案
+	#pragma region 讀取 STL 檔案 & 設定
 	if (!OpenMesh::IO::read_mesh(STLFile, FileName.toStdString()))
 	{
 		cout << "讀取錯誤!!" << endl;
@@ -87,6 +87,11 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 	}
 	cout << "模型面數：" << STLFile.n_faces() << endl;
 	IsLoaded = true;
+
+	// Add property
+	srand(time(NULL));
+	PointArray.clear();
+	STLFile.add_property(AreaInfo, "AreaInfo");
 	#pragma endregion
 	#pragma region 找出 Bounding Box
 	float maxX, maxY, maxZ;
@@ -175,7 +180,49 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 		float offsetZ = (squareMaxPos.z() + squareMinPos.z()) / 2;
 		OffsetToCenter = QVector3D(-offsetX, -squareMinPos.y(), -offsetZ);
 	}
-	 cout << "Offset: " << OffsetToCenter.x() << " " << OffsetToCenter.y() << " " << OffsetToCenter.z() << endl;
+	cout << "Offset: " << OffsetToCenter.x() << " " << OffsetToCenter.y() << " " << OffsetToCenter.z() << endl;
+	#pragma endregion
+	#pragma region 跑每一個點，算出面積
+	QVector<float> EdgeLength;
+	float AreaTotal = 0;
+	for (MeshType::FaceIter f_it = STLFile.faces_begin(); f_it != STLFile.faces_end(); f_it++)
+	{
+		EdgeLength.clear();
+		for (MeshType::FaceEdgeIter fe_it = STLFile.fe_iter(f_it); fe_it.is_valid(); fe_it++)
+		{
+			float length = STLFile.calc_edge_length(fe_it.handle());
+			EdgeLength.push_back(length);
+		}
+		float currentArea = CalcArea(EdgeLength);
+		STLFile.property(AreaInfo, f_it) = currentArea;
+		AreaTotal += currentArea;
+	}
+	cout << "面積: " << AreaTotal << endl;
+
+	// 開始撒點
+	QVector<QVector3D> TempPointArray;
+	float remainArea = 0;
+	for (MeshType::FaceIter f_it = STLFile.faces_begin(); f_it != STLFile.faces_end(); f_it++)
+	{
+		float currentArea = STLFile.property(AreaInfo, f_it);
+		TempPointArray.clear();
+		for (MeshType::FaceEdgeIter fe_it = STLFile.fe_iter(f_it); fe_it.is_valid(); fe_it++)
+		{
+			MeshType::Point p = STLFile.point(STLFile.from_vertex_handle(STLFile.halfedge_handle(fe_it, 0)));
+
+			QVector3D vecP(p[0], p[1], p[2]);
+			TempPointArray.push_back(vecP);
+		}
+
+		// 數量
+		float count_float = currentArea * SpreadingPointSize / AreaTotal;
+		remainArea += count_float;
+		int count = int(remainArea);
+		remainArea -= count;
+
+		for (int i = 0; i < count; i++)
+			PointArray.push_back(SamplePoint(TempPointArray));
+	}
 	#pragma endregion
 	return true;
 }
@@ -202,6 +249,25 @@ void OpenGLWidget::CalcMatrix()
 		QVector3D(0, 0, 0),
 		QVector3D(0, 1, 0)
 	);
+}
+float OpenGLWidget::CalcArea(QVector<float> LengthArray)
+{
+	float a = LengthArray[0];
+	float b = LengthArray[1];
+	float c = LengthArray[2];
+	float s = (a + b + c) / 2;
+	return sqrt(s * (s - a) * (s - b) * (s - c));
+}
+QVector3D OpenGLWidget::SamplePoint(QVector<QVector3D> trianglePoints)
+{
+	QVector3D a = trianglePoints[0];
+	QVector3D b = trianglePoints[1];
+	QVector3D c = trianglePoints[2];
+
+	float ra = (float)rand() / RAND_MAX / 2;
+	float rb = (float)rand() / RAND_MAX / 2;
+	float rc = 1 - ra - rb;
+	return a * ra + b * rb + c *rc;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -292,5 +358,17 @@ void OpenGLWidget::DrawSTL()
 			);
 		}
 	glEnd();
+
+	/*glColor4f(0, 0, 0, 1);
+	glPointSize(3);
+	glBegin(GL_POINTS);
+	for (int i = 0; i < PointArray.size(); i++)
+	{
+		QVector3D p = PointArray[i];
+		QVector4D vec4P = QVector4D(p, 1);
+		vec4P = TransformMatrix * vec4P;
+		glVertex3f(vec4P.x() + OffsetToCenter.x(), vec4P.y() + OffsetToCenter.y(), vec4P.z() + OffsetToCenter.z());
+	}
+	glEnd();*/
 	#pragma endregion
 }
