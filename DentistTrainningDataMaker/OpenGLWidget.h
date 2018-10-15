@@ -29,13 +29,20 @@ public:
 	void initializeGL();
 	void paintGL();
 
+	//////////////////////////////////////////////////////////////////////////
 	// 滑鼠事件
+	//////////////////////////////////////////////////////////////////////////
 	void mousePressEvent(QMouseEvent *);
 	void mouseMoveEvent(QMouseEvent *);
 	void wheelEvent(QWheelEvent *);
 
+	//////////////////////////////////////////////////////////////////////////
 	// Connection Funciton
+	//////////////////////////////////////////////////////////////////////////
 	bool LoadSTLFile(QString);
+	void SetRenderTriangleBool(bool);
+	void SetRenderBorderBool(bool);
+	void SetRenderPointCloudBool(bool);
 
 private:
 	void CalcMatrix();						// 重算矩陣
@@ -45,6 +52,10 @@ private:
 	#pragma region 畫畫 Function
 	void							DrawGround();
 	void							DrawSTL();
+
+	bool							RenderTriangle_bool = true;
+	bool							RenderBorder_bool = true;
+	bool							RenderPointCloud_bool = false;
 
 	const float						GridSize = 10;
 	QVector2D						GridMin = QVector2D(-GridSize, -GridSize);

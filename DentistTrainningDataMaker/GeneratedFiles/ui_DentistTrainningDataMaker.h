@@ -13,6 +13,8 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QStatusBar>
@@ -28,6 +30,10 @@ public:
     QAction *actionLoadSTL;
     QWidget *centralWidget;
     OpenGLWidget *DisplayPanel;
+    QGroupBox *RenderOptionsBox;
+    QCheckBox *RenderBorder_CheckBox;
+    QCheckBox *RenderTriangle_CheckBox;
+    QCheckBox *RenderPointDot_CheckBox;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -43,11 +49,24 @@ public:
         DisplayPanel = new OpenGLWidget(centralWidget);
         DisplayPanel->setObjectName(QStringLiteral("DisplayPanel"));
         DisplayPanel->setGeometry(QRect(0, 0, 900, 900));
+        RenderOptionsBox = new QGroupBox(centralWidget);
+        RenderOptionsBox->setObjectName(QStringLiteral("RenderOptionsBox"));
+        RenderOptionsBox->setGeometry(QRect(1490, 10, 91, 211));
+        RenderBorder_CheckBox = new QCheckBox(RenderOptionsBox);
+        RenderBorder_CheckBox->setObjectName(QStringLiteral("RenderBorder_CheckBox"));
+        RenderBorder_CheckBox->setGeometry(QRect(10, 60, 61, 21));
+        RenderBorder_CheckBox->setChecked(true);
+        RenderTriangle_CheckBox = new QCheckBox(RenderOptionsBox);
+        RenderTriangle_CheckBox->setObjectName(QStringLiteral("RenderTriangle_CheckBox"));
+        RenderTriangle_CheckBox->setGeometry(QRect(10, 30, 61, 21));
+        RenderTriangle_CheckBox->setChecked(true);
+        RenderPointDot_CheckBox = new QCheckBox(RenderOptionsBox);
+        RenderPointDot_CheckBox->setObjectName(QStringLiteral("RenderPointDot_CheckBox"));
+        RenderPointDot_CheckBox->setGeometry(QRect(10, 90, 61, 21));
         DentistTrainningDataMakerClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistTrainningDataMakerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         DentistTrainningDataMakerClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
-        DentistTrainningDataMakerClass->insertToolBarBreak(mainToolBar);
         statusBar = new QStatusBar(DentistTrainningDataMakerClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
         DentistTrainningDataMakerClass->setStatusBar(statusBar);
@@ -63,6 +82,10 @@ public:
     {
         DentistTrainningDataMakerClass->setWindowTitle(QApplication::translate("DentistTrainningDataMakerClass", "DentistTrainningDataMaker", nullptr));
         actionLoadSTL->setText(QApplication::translate("DentistTrainningDataMakerClass", "1. \350\256\200\345\217\226 STL(From 3Shape)", nullptr));
+        RenderOptionsBox->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "Render\351\201\270\351\240\205", nullptr));
+        RenderBorder_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\225\253\351\202\212\347\225\214", nullptr));
+        RenderTriangle_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\225\253\351\235\242", nullptr));
+        RenderPointDot_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\225\253\351\273\236\351\233\262", nullptr));
     } // retranslateUi
 
 };

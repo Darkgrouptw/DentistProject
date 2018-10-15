@@ -20,4 +20,9 @@ private:
 
 private slots:
 	void LoadSTL();
+
+	// Render Options
+	void SetRenderTriangleBool();
+	void SetRenderBorderBool();
+	void SetRenderPointCloudBool();
 };

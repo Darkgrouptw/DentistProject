@@ -30,7 +30,9 @@ void OpenGLWidget::paintGL()
 	DrawSTL();
 }
 
+//////////////////////////////////////////////////////////////////////////
 // 滑鼠事件
+//////////////////////////////////////////////////////////////////////////
 void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 {
 	PressPoint = event->pos();
@@ -224,7 +226,20 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 			PointArray.push_back(SamplePoint(TempPointArray));
 	}
 	#pragma endregion
+	cout << PointArray.size() << endl;
 	return true;
+}
+void OpenGLWidget::SetRenderTriangleBool(bool RenderBool)
+{
+	RenderTriangle_bool = RenderBool;
+}
+void OpenGLWidget::SetRenderBorderBool(bool RenderBool)
+{
+	RenderBorder_bool = RenderBool;
+}
+void OpenGLWidget::SetRenderPointCloudBool(bool RenderBool)
+{
+	RenderPointCloud_bool = RenderBool;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -311,64 +326,73 @@ void OpenGLWidget::DrawSTL()
 		return;
 	#pragma endregion
 	#pragma region 跑每一個點，把它畫出來 (暫時先用 OpenGL 1 來畫)
-	glColor4f(0.968f, 0.863f, 0.445f, 1);					// #F7DD72
-	glBegin(GL_TRIANGLES);
-	for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
-		for (MeshType::FaceVertexIter fv_iter = STLFile.fv_iter(f_iter); fv_iter.is_valid(); fv_iter++)
-		{
-			MeshType::Point p = STLFile.point(fv_iter);
-
-			// 算出矩陣結果
-			QVector4D matrixP(p[0], p[1], p[2], 1);
-			matrixP = TransformMatrix * matrixP;
-
-			// 畫出來
-			glVertex3f(
-				matrixP[0] + OffsetToCenter.x(),
-				matrixP[1] + OffsetToCenter.y(),
-				matrixP[2] + OffsetToCenter.z()
-			);
-		}
-	glEnd();
-
-	glColor4f(0, 0, 0, 1);
-	glBegin(GL_LINES);
-	for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
-		for (MeshType::FaceEdgeIter fe_iter = STLFile.fe_iter(f_iter); fe_iter.is_valid(); fe_iter++)
-		{
-			
-			MeshType::Point FirstP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 0)));
-			MeshType::Point SecondP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 1)));
-
-			// 算出矩陣結果
-			QVector4D matrixFirstP(FirstP[0], FirstP[1], FirstP[2], 1);
-			QVector4D matrixSecondP(SecondP[0], SecondP[1], SecondP[2], 1);
-			matrixFirstP = TransformMatrix * matrixFirstP;
-			matrixSecondP = TransformMatrix * matrixSecondP;
-
-			glVertex3f(
-				matrixFirstP[0] + OffsetToCenter.x(),
-				matrixFirstP[1] + OffsetToCenter.y(),
-				matrixFirstP[2] + OffsetToCenter.z()
-			);
-			glVertex3f(
-				matrixSecondP[0] + OffsetToCenter.x(),
-				matrixSecondP[1] + OffsetToCenter.y(),
-				matrixSecondP[2] + OffsetToCenter.z()
-			);
-		}
-	glEnd();
-
-	/*glColor4f(0, 0, 0, 1);
-	glPointSize(3);
-	glBegin(GL_POINTS);
-	for (int i = 0; i < PointArray.size(); i++)
+	if (RenderTriangle_bool)
 	{
-		QVector3D p = PointArray[i];
-		QVector4D vec4P = QVector4D(p, 1);
-		vec4P = TransformMatrix * vec4P;
-		glVertex3f(vec4P.x() + OffsetToCenter.x(), vec4P.y() + OffsetToCenter.y(), vec4P.z() + OffsetToCenter.z());
+		glColor4f(0.968f, 0.863f, 0.445f, 1);					// #F7DD72
+		glBegin(GL_TRIANGLES);
+		for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
+			for (MeshType::FaceVertexIter fv_iter = STLFile.fv_iter(f_iter); fv_iter.is_valid(); fv_iter++)
+			{
+				MeshType::Point p = STLFile.point(fv_iter);
+
+				// 算出矩陣結果
+				QVector4D matrixP(p[0], p[1], p[2], 1);
+				matrixP = TransformMatrix * matrixP;
+
+				// 畫出來
+				glVertex3f(
+					matrixP[0] + OffsetToCenter.x(),
+					matrixP[1] + OffsetToCenter.y(),
+					matrixP[2] + OffsetToCenter.z()
+				);
+			}
+		glEnd();
 	}
-	glEnd();*/
+	if (RenderBorder_bool)
+	{
+		glColor4f(0, 0, 0, 1);
+		glBegin(GL_LINES);
+		for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
+			for (MeshType::FaceEdgeIter fe_iter = STLFile.fe_iter(f_iter); fe_iter.is_valid(); fe_iter++)
+			{
+
+				MeshType::Point FirstP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 0)));
+				MeshType::Point SecondP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 1)));
+
+				// 算出矩陣結果
+				QVector4D matrixFirstP(FirstP[0], FirstP[1], FirstP[2], 1);
+				QVector4D matrixSecondP(SecondP[0], SecondP[1], SecondP[2], 1);
+				matrixFirstP = TransformMatrix * matrixFirstP;
+				matrixSecondP = TransformMatrix * matrixSecondP;
+
+				glVertex3f(
+					matrixFirstP[0] + OffsetToCenter.x(),
+					matrixFirstP[1] + OffsetToCenter.y(),
+					matrixFirstP[2] + OffsetToCenter.z()
+				);
+				glVertex3f(
+					matrixSecondP[0] + OffsetToCenter.x(),
+					matrixSecondP[1] + OffsetToCenter.y(),
+					matrixSecondP[2] + OffsetToCenter.z()
+				);
+			}
+		glEnd();
+	}
+
+	// 點雲
+	if (RenderPointCloud_bool)
+	{
+		glColor4f(0, 0, 0, 1);
+		glPointSize(3);
+		glBegin(GL_POINTS);
+		for (int i = 0; i < PointArray.size(); i++)
+		{
+			QVector3D p = PointArray[i];
+			QVector4D vec4P = QVector4D(p, 1);
+			vec4P = TransformMatrix * vec4P;
+			glVertex3f(vec4P.x() + OffsetToCenter.x(), vec4P.y() + OffsetToCenter.y(), vec4P.z() + OffsetToCenter.z());
+		}
+		glEnd();
+	}
 	#pragma endregion
 }

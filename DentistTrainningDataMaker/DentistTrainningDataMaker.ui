@@ -24,13 +24,71 @@
      </rect>
     </property>
    </widget>
+   <widget class="QGroupBox" name="RenderOptionsBox">
+    <property name="geometry">
+     <rect>
+      <x>1490</x>
+      <y>10</y>
+      <width>91</width>
+      <height>211</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Render選項</string>
+    </property>
+    <widget class="QCheckBox" name="RenderBorder_CheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>61</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>畫邊界</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="RenderTriangle_CheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>61</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>畫面</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="RenderPointDot_CheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>61</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>畫點雲</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
    <addaction name="actionLoadSTL"/>
   </widget>
