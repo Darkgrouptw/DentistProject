@@ -139,6 +139,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataManager.h" />
+    <ClInclude Include="GlobalDefine.h" />
     <ClInclude Include="OpenGLWidget.h" />
     <ClInclude Include="RawDataManager.h" />
     <ClInclude Include="TRcuda.cuh" />

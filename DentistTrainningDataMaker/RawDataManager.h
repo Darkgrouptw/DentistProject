@@ -2,6 +2,8 @@
 /*
 這邊
 */
+#include "GlobalDefine.h"
+//#include "OCT64C.h"
 #include "DataManager.h"
 #include "TRCuda.cuh"
 
@@ -30,10 +32,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 底下這邊的步驟可以二選一
 	// 可以：
-	// rawDataToPCSet	=> 讀檔，然後把資料存起來
-	// (未執行)	=> 直接從 OCT 讀資料
+	// ReadRawDataFromFile	=> 讀檔，然後把資料存起來
+	// ScanDataFromDevice	=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataFromFile(QString);
+	void ScanDataFromDevice();
 
 	void RawToPointCloud();
 	void TranformToIMG();
@@ -44,5 +47,6 @@ private:
 	int				LerpFunction(int, int, int, int, int);
 
 	QByteArray buffer;
+	//int32_t			deviceID;
 };
 

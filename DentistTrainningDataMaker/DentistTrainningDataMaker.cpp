@@ -8,7 +8,7 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	// 事件連結
 	connect(ui.actionLoadSTL,				SIGNAL(triggered()),			this,	SLOT(LoadSTL()));
 
-
+	// 顯示事件
 	connect(ui.RenderTriangle_CheckBox,		SIGNAL(clicked()),			this,	SLOT(SetRenderTriangleBool()));
 	connect(ui.RenderBorder_CheckBox,		SIGNAL(clicked()),			this,	SLOT(SetRenderBorderBool()));
 	connect(ui.RenderPointDot_CheckBox,		SIGNAL(clicked()),			this,	SLOT(SetRenderPointCloudBool()));

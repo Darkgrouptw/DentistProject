@@ -5,6 +5,8 @@
 
 #include "ui_DentistTrainningDataMaker.h"
 
+#include "RawDataManager.h"
+
 using namespace std;
 
 class DentistTrainningDataMaker : public QMainWindow
@@ -16,7 +18,7 @@ public:
 
 private:
 	Ui::DentistTrainningDataMakerClass ui;
-
+	RawDataManager rawManager;
 
 private slots:
 	void LoadSTL();
