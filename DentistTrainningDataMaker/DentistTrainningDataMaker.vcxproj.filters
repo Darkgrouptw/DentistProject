@@ -43,6 +43,9 @@
     <Filter Include="Cuda">
       <UniqueIdentifier>{190c0b00-8144-4525-a081-7adbf543a916}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{695d24c1-5dc5-4176-9c95-9842a19d59a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,5 +100,13 @@
     <CudaCompile Include="TRcuda.cu">
       <Filter>Cuda</Filter>
     </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Release\DentistTrainningDataMaker\Shaders\Model.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistTrainningDataMaker\Shaders\Model.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

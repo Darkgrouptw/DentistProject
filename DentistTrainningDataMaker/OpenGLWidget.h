@@ -11,6 +11,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QOpenGLWidget>
+#include <QOpenGLShader>
+#include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_4_5_Core>
 
 #include "OpenMesh/Core/IO/MeshIO.hh"
@@ -26,28 +28,31 @@ public:
 	OpenGLWidget(QWidget*);
 	~OpenGLWidget();
 
-	void initializeGL();
-	void paintGL();
+	void		initializeGL();
+	void		paintGL();
 
 	//////////////////////////////////////////////////////////////////////////
 	// 滑鼠事件
 	//////////////////////////////////////////////////////////////////////////
-	void mousePressEvent(QMouseEvent *);
-	void mouseMoveEvent(QMouseEvent *);
-	void wheelEvent(QWheelEvent *);
+	void		mousePressEvent(QMouseEvent *);
+	void		mouseMoveEvent(QMouseEvent *);
+	void		wheelEvent(QWheelEvent *);
 
 	//////////////////////////////////////////////////////////////////////////
 	// Connection Funciton
 	//////////////////////////////////////////////////////////////////////////
-	bool LoadSTLFile(QString);
-	void SetRenderTriangleBool(bool);
-	void SetRenderBorderBool(bool);
-	void SetRenderPointCloudBool(bool);
+	bool		LoadSTLFile(QString);
+	void		SetRenderTriangleBool(bool);
+	void		SetRenderBorderBool(bool);
+	void		SetRenderPointCloudBool(bool);
 
 private:
-	void CalcMatrix();						// 重算矩陣
-	float CalcArea(QVector<float>);			// 給三個邊長，算面積
-	QVector3D SamplePoint(QVector<QVector3D>);
+	// 初始化
+	void		InitProgram();						// 初始化 Program
+
+	void		CalcMatrix();						// 重算矩陣
+	float		CalcArea(QVector<float>);			// 給三個邊長，算面積
+	QVector3D	SamplePoint(QVector<QVector3D>);
 
 	#pragma region 畫畫 Function
 	void							DrawGround();
@@ -60,6 +65,20 @@ private:
 	const float						GridSize = 10;
 	QVector2D						GridMin = QVector2D(-GridSize, -GridSize);
 	QVector2D						GridMax = QVector2D(GridSize, GridSize);
+
+	// Shader
+	QOpenGLShaderProgram			*program = NULL;
+	int								ProjectionMatrixLoc;
+	int								ViewMatrixLoc;
+	int								ModelMatrixLoc;
+
+	// Render Data
+	QVector<QVector3D>				VertexData;
+	QVector<QVector3D>				BaryCentricData;
+
+	// Buffer
+	GLuint							VertexBuffer = -1;
+	GLuint							BaryCentricBuffer = -1;
 
 	// MVP 矩陣
 	QMatrix4x4						ProjectionMatrix;

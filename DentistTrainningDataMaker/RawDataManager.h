@@ -3,18 +3,19 @@
 這邊
 */
 #include "GlobalDefine.h"
-//#include "OCT64C.h"
+#include "OCT64C.h"
 #include "DataManager.h"
 #include "TRCuda.cuh"
+
+#include <msclr\marshal_cppstd.h>
 
 #include <QVector>
 #include <QDataStream>
 #include <QByteArray>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 
 // 這邊是為了要讓邊界 Smooth 一點
 struct IndexMapInfo
@@ -47,6 +48,6 @@ private:
 	int				LerpFunction(int, int, int, int, int);
 
 	QByteArray buffer;
-	//int32_t			deviceID;
+	int32_t			deviceID;
 };
 

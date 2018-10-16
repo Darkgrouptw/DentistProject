@@ -17,11 +17,12 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 // Render Options
 void DentistTrainningDataMaker::LoadSTL()
 {
-	QString STLFileName = QFileDialog::getOpenFileName(this, tr("Load STL"), "./STLs", tr("STL (*.stl)"));
+	QString STLFileName = QFileDialog::getOpenFileName(this, tr("Load STL"), "./STLs", tr("STL (*.stl)"), nullptr, QFileDialog::DontUseNativeDialog);
 	system("cls");
 	cout << "讀取位置：" << STLFileName.toStdString() << endl;
 
 	ui.DisplayPanel->LoadSTLFile(STLFileName);
+	ui.DisplayPanel->update();
 }
 
 void DentistTrainningDataMaker::SetRenderTriangleBool()

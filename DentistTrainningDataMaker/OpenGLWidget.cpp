@@ -5,6 +5,8 @@ OpenGLWidget::OpenGLWidget(QWidget* parent = 0) : QOpenGLWidget(parent)
 }
 OpenGLWidget::~OpenGLWidget()
 {
+	if (program != NULL)
+		delete program;
 }
 
 void OpenGLWidget::initializeGL()
@@ -13,6 +15,7 @@ void OpenGLWidget::initializeGL()
 	glClearColor(0.5f, 0.5, 0.5f, 1);
 	glEnable(GL_DEPTH_TEST);
 
+	InitProgram();
 	CalcMatrix();
 }
 void OpenGLWidget::paintGL()
@@ -182,6 +185,9 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 		float offsetZ = (squareMaxPos.z() + squareMinPos.z()) / 2;
 		OffsetToCenter = QVector3D(-offsetX, -squareMinPos.y(), -offsetZ);
 	}
+
+	QVector4D tempOffset = TransformMatrix.inverted() * QVector4D(OffsetToCenter, 1);
+	TransformMatrix.translate(tempOffset.toVector3D());
 	cout << "Offset: " << OffsetToCenter.x() << " " << OffsetToCenter.y() << " " << OffsetToCenter.z() << endl;
 	#pragma endregion
 	#pragma region 跑每一個點，算出面積
@@ -226,6 +232,50 @@ bool OpenGLWidget::LoadSTLFile(QString FileName)
 			PointArray.push_back(SamplePoint(TempPointArray));
 	}
 	#pragma endregion
+	#pragma region 跑每一個點，並算 BaryCentric 座標
+	// 清空
+	VertexData.clear();
+	BaryCentricData.clear();
+
+	// 結果
+	for (MeshType::FaceIter f_it = STLFile.faces_begin(); f_it != STLFile.faces_end(); f_it++)
+	{
+		for (MeshType::FaceVertexIter fv_it = STLFile.fv_iter(f_it); fv_it.is_valid(); fv_it++)
+		{
+			// 取點
+			MeshType::Point p = STLFile.point(fv_it);
+
+			// 轉換成 QVector3D
+			QVector3D tempPoint(p[0], p[1], p[2]);
+			VertexData.push_back(tempPoint);
+		}
+		// 裝三個值進去
+		BaryCentricData.push_back(QVector3D(1, 0, 0));
+		BaryCentricData.push_back(QVector3D(0, 1, 0));
+		BaryCentricData.push_back(QVector3D(0, 0, 1));
+	}
+
+	#pragma endregion
+	#pragma region 產生 Buffer
+	// 先刪除舊有的 Buffer
+	if (VertexBuffer != -1)
+	{
+		glDeleteBuffers(1, &VertexBuffer);
+		glDeleteBuffers(1, &BaryCentricBuffer);
+	}
+
+	// 產生 Buffer
+	glGenBuffers(1, &VertexBuffer);
+	glGenBuffers(1, &BaryCentricBuffer);
+
+	// Bind Vertex Buffer
+	glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, VertexData.size() * sizeof(QVector3D), VertexData.constData(), GL_STATIC_DRAW);
+
+	// Bind BaryCentric Buffer
+	glBindBuffer(GL_ARRAY_BUFFER, BaryCentricBuffer);
+	glBufferData(GL_ARRAY_BUFFER, BaryCentricData.size() * sizeof(QVector3D), BaryCentricData.constData(), GL_STATIC_DRAW);
+	#pragma endregion
 	cout << PointArray.size() << endl;
 	return true;
 }
@@ -240,6 +290,20 @@ void OpenGLWidget::SetRenderBorderBool(bool RenderBool)
 void OpenGLWidget::SetRenderPointCloudBool(bool RenderBool)
 {
 	RenderPointCloud_bool = RenderBool;
+}
+
+// 初始化
+void OpenGLWidget::InitProgram()
+{
+	program = new QOpenGLShaderProgram();
+	program->addShaderFromSourceFile(QOpenGLShader::Vertex,		"./Shaders/Model.vert");
+	program->addShaderFromSourceFile(QOpenGLShader::Fragment,	"./Shaders/Model.frag");
+	program->link();
+
+	// Get Location
+	ProjectionMatrixLoc		= program->uniformLocation("ProjectionMatrix");
+	ViewMatrixLoc			= program->uniformLocation("ViewMatrix");
+	ModelMatrixLoc			= program->uniformLocation("ModelMatrix");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -273,6 +337,7 @@ float OpenGLWidget::CalcArea(QVector<float> LengthArray)
 	float s = (a + b + c) / 2;
 	return sqrt(s * (s - a) * (s - b) * (s - c));
 }
+
 QVector3D OpenGLWidget::SamplePoint(QVector<QVector3D> trianglePoints)
 {
 	QVector3D a = trianglePoints[0];
@@ -325,74 +390,91 @@ void OpenGLWidget::DrawSTL()
 	if (!IsLoaded)
 		return;
 	#pragma endregion
-	#pragma region 跑每一個點，把它畫出來 (暫時先用 OpenGL 1 來畫)
-	if (RenderTriangle_bool)
-	{
-		glColor4f(0.968f, 0.863f, 0.445f, 1);					// #F7DD72
-		glBegin(GL_TRIANGLES);
-		for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
-			for (MeshType::FaceVertexIter fv_iter = STLFile.fv_iter(f_iter); fv_iter.is_valid(); fv_iter++)
-			{
-				MeshType::Point p = STLFile.point(fv_iter);
+	#pragma region 跑每一個點，把它畫出來
+	// 設定 Uniform Data
+	program->bind();
+	program->setUniformValue(ProjectionMatrixLoc,	ProjectionMatrix);
+	program->setUniformValue(ViewMatrixLoc,			ViewMatrix);
+	program->setUniformValue(ModelMatrixLoc,		TransformMatrix);
 
-				// 算出矩陣結果
-				QVector4D matrixP(p[0], p[1], p[2], 1);
-				matrixP = TransformMatrix * matrixP;
+	// 傳資料上去
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-				// 畫出來
-				glVertex3f(
-					matrixP[0] + OffsetToCenter.x(),
-					matrixP[1] + OffsetToCenter.y(),
-					matrixP[2] + OffsetToCenter.z()
-				);
-			}
-		glEnd();
-	}
-	if (RenderBorder_bool)
-	{
-		glColor4f(0, 0, 0, 1);
-		glBegin(GL_LINES);
-		for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
-			for (MeshType::FaceEdgeIter fe_iter = STLFile.fe_iter(f_iter); fe_iter.is_valid(); fe_iter++)
-			{
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, BaryCentricBuffer);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-				MeshType::Point FirstP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 0)));
-				MeshType::Point SecondP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 1)));
+	glDrawArrays(GL_TRIANGLES, 0, VertexData.size());
+	program->release();
+	//if (RenderTriangle_bool)
+	//{
+	//	glColor4f(0.968f, 0.863f, 0.445f, 1);					// #F7DD72
+	//	glBegin(GL_TRIANGLES);
+	//	for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
+	//		for (MeshType::FaceVertexIter fv_iter = STLFile.fv_iter(f_iter); fv_iter.is_valid(); fv_iter++)
+	//		{
+	//			MeshType::Point p = STLFile.point(fv_iter);
 
-				// 算出矩陣結果
-				QVector4D matrixFirstP(FirstP[0], FirstP[1], FirstP[2], 1);
-				QVector4D matrixSecondP(SecondP[0], SecondP[1], SecondP[2], 1);
-				matrixFirstP = TransformMatrix * matrixFirstP;
-				matrixSecondP = TransformMatrix * matrixSecondP;
+	//			// 算出矩陣結果
+	//			QVector4D matrixP(p[0], p[1], p[2], 1);
+	//			matrixP = TransformMatrix * matrixP;
 
-				glVertex3f(
-					matrixFirstP[0] + OffsetToCenter.x(),
-					matrixFirstP[1] + OffsetToCenter.y(),
-					matrixFirstP[2] + OffsetToCenter.z()
-				);
-				glVertex3f(
-					matrixSecondP[0] + OffsetToCenter.x(),
-					matrixSecondP[1] + OffsetToCenter.y(),
-					matrixSecondP[2] + OffsetToCenter.z()
-				);
-			}
-		glEnd();
-	}
+	//			// 畫出來
+	//			glVertex3f(
+	//				matrixP[0] + OffsetToCenter.x(),
+	//				matrixP[1] + OffsetToCenter.y(),
+	//				matrixP[2] + OffsetToCenter.z()
+	//			);
+	//		}
+	//	glEnd();
+	//}
+	//if (RenderBorder_bool)
+	//{
+	//	glColor4f(0, 0, 0, 1);
+	//	glBegin(GL_LINES);
+	//	for (MeshType::FaceIter f_iter = STLFile.faces_begin(); f_iter != STLFile.faces_end(); f_iter++)
+	//		for (MeshType::FaceEdgeIter fe_iter = STLFile.fe_iter(f_iter); fe_iter.is_valid(); fe_iter++)
+	//		{
 
-	// 點雲
-	if (RenderPointCloud_bool)
-	{
-		glColor4f(0, 0, 0, 1);
-		glPointSize(3);
-		glBegin(GL_POINTS);
-		for (int i = 0; i < PointArray.size(); i++)
-		{
-			QVector3D p = PointArray[i];
-			QVector4D vec4P = QVector4D(p, 1);
-			vec4P = TransformMatrix * vec4P;
-			glVertex3f(vec4P.x() + OffsetToCenter.x(), vec4P.y() + OffsetToCenter.y(), vec4P.z() + OffsetToCenter.z());
-		}
-		glEnd();
-	}
+	//			MeshType::Point FirstP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 0)));
+	//			MeshType::Point SecondP = STLFile.point(STLFile.to_vertex_handle(STLFile.halfedge_handle(fe_iter, 1)));
+
+	//			// 算出矩陣結果
+	//			QVector4D matrixFirstP(FirstP[0], FirstP[1], FirstP[2], 1);
+	//			QVector4D matrixSecondP(SecondP[0], SecondP[1], SecondP[2], 1);
+	//			matrixFirstP = TransformMatrix * matrixFirstP;
+	//			matrixSecondP = TransformMatrix * matrixSecondP;
+
+	//			glVertex3f(
+	//				matrixFirstP[0] + OffsetToCenter.x(),
+	//				matrixFirstP[1] + OffsetToCenter.y(),
+	//				matrixFirstP[2] + OffsetToCenter.z()
+	//			);
+	//			glVertex3f(
+	//				matrixSecondP[0] + OffsetToCenter.x(),
+	//				matrixSecondP[1] + OffsetToCenter.y(),
+	//				matrixSecondP[2] + OffsetToCenter.z()
+	//			);
+	//		}
+	//	glEnd();
+	//}
+
+	//// 點雲
+	//if (RenderPointCloud_bool)
+	//{
+	//	glColor4f(0, 0, 0, 1);
+	//	glPointSize(3);
+	//	glBegin(GL_POINTS);
+	//	for (int i = 0; i < PointArray.size(); i++)
+	//	{
+	//		QVector3D p = PointArray[i];
+	//		QVector4D vec4P = QVector4D(p, 1);
+	//		vec4P = TransformMatrix * vec4P;
+	//		glVertex3f(vec4P.x() + OffsetToCenter.x(), vec4P.y() + OffsetToCenter.y(), vec4P.z() + OffsetToCenter.z());
+	//	}
+	//	glEnd();
+	//}
 	#pragma endregion
 }

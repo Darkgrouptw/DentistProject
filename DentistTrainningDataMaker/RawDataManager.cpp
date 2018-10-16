@@ -44,9 +44,8 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 }
 void RawDataManager::ScanDataFromDevice()
 {
-	/*
-	pin_ptr<int32_t> tmp_deviceID = &deviceID;
-	InitADC(4, tmp_deviceID);
+	cli::pin_ptr<int32_t> tmp_deviceID = &deviceID;
+	/*InitADC(4, tmp_deviceID);
 	clock_t scan_t1 = clock();
 
 	//AboutADC(deviceID);

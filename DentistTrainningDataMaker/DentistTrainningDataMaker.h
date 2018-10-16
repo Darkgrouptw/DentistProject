@@ -18,6 +18,8 @@ public:
 
 private:
 	Ui::DentistTrainningDataMakerClass ui;
+
+	//QFileDialog dia
 	RawDataManager rawManager;
 
 private slots:
