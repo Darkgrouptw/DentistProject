@@ -1,13 +1,10 @@
 ﻿#pragma once
 /*
-這邊
+這邊是管理所有裝置的 class (包含 藍芽、OCT)
 */
-#include "GlobalDefine.h"
-#include "OCT64C.h"
 #include "DataManager.h"
 #include "TRCuda.cuh"
-
-#include <msclr\marshal_cppstd.h>
+#include "BluetoothManager.h"
 
 #include <QVector>
 #include <QDataStream>
@@ -41,13 +38,21 @@ public:
 
 	void RawToPointCloud();
 	void TranformToIMG();
-private:
-	DataManager		DManager;
-	TRcuda			theTRcuda;
 
-	int				LerpFunction(int, int, int, int, int);
+	BluetoothManager	bleManager;
+private:
+	// 以前的資料
+	DataManager			DManager;
+	TRcuda				theTRcuda;
+
+	//State_Connection	mState_Connection = State_Connection::Start;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Helper Function
+	//////////////////////////////////////////////////////////////////////////
+	int					LerpFunction(int, int, int, int, int);
 
 	QByteArray buffer;
-	int32_t			deviceID;
+	//int32_t				deviceID;
 };
 

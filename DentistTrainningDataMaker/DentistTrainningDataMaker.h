@@ -24,9 +24,16 @@ private:
 
 private slots:
 	void LoadSTL();
+	void ScanData();
 
 	// Render Options
 	void SetRenderTriangleBool();
 	void SetRenderBorderBool();
 	void SetRenderPointCloudBool();
+
+	// 藍芽
+	void SearchCOM();
+	void ConnectCOM();
+	void ScanBLEDevice();
+	void ConnectBLEDeivce();
 };

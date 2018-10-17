@@ -14,10 +14,12 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
 #include "openglwidget.h"
@@ -34,8 +36,17 @@ public:
     QCheckBox *RenderBorder_CheckBox;
     QCheckBox *RenderTriangle_CheckBox;
     QCheckBox *RenderPointDot_CheckBox;
+    QTabWidget *tabWidget;
+    QWidget *Tab_Deivce;
+    QGroupBox *BluetoothDeviceBox;
+    QComboBox *COMList;
+    QPushButton *BtnSearchCom;
+    QPushButton *BtnConnectCOM;
+    QPushButton *BtnConnectBLEDevice;
+    QPushButton *BtnScanBLEDevice;
+    QComboBox *BLEDeviceList;
+    QWidget *tab_2;
     QToolBar *mainToolBar;
-    QStatusBar *statusBar;
 
     void setupUi(QMainWindow *DentistTrainningDataMakerClass)
     {
@@ -51,7 +62,7 @@ public:
         DisplayPanel->setGeometry(QRect(0, 0, 900, 900));
         RenderOptionsBox = new QGroupBox(centralWidget);
         RenderOptionsBox->setObjectName(QStringLiteral("RenderOptionsBox"));
-        RenderOptionsBox->setGeometry(QRect(1490, 10, 91, 211));
+        RenderOptionsBox->setGeometry(QRect(1500, 10, 90, 211));
         RenderBorder_CheckBox = new QCheckBox(RenderOptionsBox);
         RenderBorder_CheckBox->setObjectName(QStringLiteral("RenderBorder_CheckBox"));
         RenderBorder_CheckBox->setGeometry(QRect(10, 60, 61, 21));
@@ -63,17 +74,47 @@ public:
         RenderPointDot_CheckBox = new QCheckBox(RenderOptionsBox);
         RenderPointDot_CheckBox->setObjectName(QStringLiteral("RenderPointDot_CheckBox"));
         RenderPointDot_CheckBox->setGeometry(QRect(10, 90, 61, 21));
+        tabWidget = new QTabWidget(centralWidget);
+        tabWidget->setObjectName(QStringLiteral("tabWidget"));
+        tabWidget->setGeometry(QRect(900, 570, 700, 300));
+        Tab_Deivce = new QWidget();
+        Tab_Deivce->setObjectName(QStringLiteral("Tab_Deivce"));
+        BluetoothDeviceBox = new QGroupBox(Tab_Deivce);
+        BluetoothDeviceBox->setObjectName(QStringLiteral("BluetoothDeviceBox"));
+        BluetoothDeviceBox->setGeometry(QRect(10, 10, 511, 231));
+        COMList = new QComboBox(BluetoothDeviceBox);
+        COMList->setObjectName(QStringLiteral("COMList"));
+        COMList->setGeometry(QRect(10, 20, 291, 22));
+        BtnSearchCom = new QPushButton(BluetoothDeviceBox);
+        BtnSearchCom->setObjectName(QStringLiteral("BtnSearchCom"));
+        BtnSearchCom->setGeometry(QRect(310, 20, 91, 23));
+        BtnConnectCOM = new QPushButton(BluetoothDeviceBox);
+        BtnConnectCOM->setObjectName(QStringLiteral("BtnConnectCOM"));
+        BtnConnectCOM->setGeometry(QRect(410, 20, 91, 23));
+        BtnConnectBLEDevice = new QPushButton(BluetoothDeviceBox);
+        BtnConnectBLEDevice->setObjectName(QStringLiteral("BtnConnectBLEDevice"));
+        BtnConnectBLEDevice->setGeometry(QRect(410, 60, 91, 23));
+        BtnScanBLEDevice = new QPushButton(BluetoothDeviceBox);
+        BtnScanBLEDevice->setObjectName(QStringLiteral("BtnScanBLEDevice"));
+        BtnScanBLEDevice->setGeometry(QRect(310, 60, 91, 23));
+        BLEDeviceList = new QComboBox(BluetoothDeviceBox);
+        BLEDeviceList->setObjectName(QStringLiteral("BLEDeviceList"));
+        BLEDeviceList->setGeometry(QRect(10, 60, 291, 22));
+        tabWidget->addTab(Tab_Deivce, QString());
+        tab_2 = new QWidget();
+        tab_2->setObjectName(QStringLiteral("tab_2"));
+        tabWidget->addTab(tab_2, QString());
         DentistTrainningDataMakerClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistTrainningDataMakerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
         DentistTrainningDataMakerClass->addToolBar(Qt::TopToolBarArea, mainToolBar);
-        statusBar = new QStatusBar(DentistTrainningDataMakerClass);
-        statusBar->setObjectName(QStringLiteral("statusBar"));
-        DentistTrainningDataMakerClass->setStatusBar(statusBar);
 
         mainToolBar->addAction(actionLoadSTL);
 
         retranslateUi(DentistTrainningDataMakerClass);
+
+        tabWidget->setCurrentIndex(0);
+
 
         QMetaObject::connectSlotsByName(DentistTrainningDataMakerClass);
     } // setupUi
@@ -86,6 +127,13 @@ public:
         RenderBorder_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\225\253\351\202\212\347\225\214", nullptr));
         RenderTriangle_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\225\253\351\235\242", nullptr));
         RenderPointDot_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\225\253\351\273\236\351\233\262", nullptr));
+        BluetoothDeviceBox->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "\350\227\215\350\212\275\350\243\235\347\275\256", nullptr));
+        BtnSearchCom->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\220\234\345\260\213 COM Port", nullptr));
+        BtnConnectCOM->setText(QApplication::translate("DentistTrainningDataMakerClass", "\351\200\243\347\265\220 COM Port", nullptr));
+        BtnConnectBLEDevice->setText(QApplication::translate("DentistTrainningDataMakerClass", "\345\273\272\347\253\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
+        BtnScanBLEDevice->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\220\234\345\260\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistTrainningDataMakerClass", "\350\243\235\347\275\256\347\256\241\347\220\206", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("DentistTrainningDataMakerClass", "Tab 2", nullptr));
     } // retranslateUi
 
 };

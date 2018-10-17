@@ -63,6 +63,9 @@
     <ClCompile Include="DataManager.cpp">
       <Filter>Source Files\RawDataManager</Filter>
     </ClCompile>
+    <ClCompile Include="BluetoothManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DentistTrainningDataMaker.h">
@@ -94,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="GlobalDefine.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothManager.h">
+      <Filter>Header Files\RawDataManger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

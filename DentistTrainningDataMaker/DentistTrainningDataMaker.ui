@@ -27,9 +27,9 @@
    <widget class="QGroupBox" name="RenderOptionsBox">
     <property name="geometry">
      <rect>
-      <x>1490</x>
+      <x>1500</x>
       <y>10</y>
-      <width>91</width>
+      <width>90</width>
       <height>211</height>
      </rect>
     </property>
@@ -82,6 +82,114 @@
      </property>
     </widget>
    </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>900</x>
+      <y>570</y>
+      <width>700</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="Tab_Deivce">
+     <attribute name="title">
+      <string>裝置管理</string>
+     </attribute>
+     <widget class="QGroupBox" name="BluetoothDeviceBox">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>511</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>藍芽裝置</string>
+      </property>
+      <widget class="QComboBox" name="COMList">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>291</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="BtnSearchCom">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>20</y>
+         <width>91</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>搜尋 COM Port</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="BtnConnectCOM">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>20</y>
+         <width>91</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>連結 COM Port</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="BtnConnectBLEDevice">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>60</y>
+         <width>91</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>建立藍芽連線</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="BtnScanBLEDevice">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>60</y>
+         <width>91</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>搜尋藍芽連線</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="BLEDeviceList">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>60</y>
+         <width>291</width>
+         <height>22</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Tab 2</string>
+     </attribute>
+    </widget>
+   </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -92,7 +200,6 @@
    </attribute>
    <addaction name="actionLoadSTL"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionLoadSTL">
    <property name="text">
     <string>1. 讀取 STL(From 3Shape)</string>
