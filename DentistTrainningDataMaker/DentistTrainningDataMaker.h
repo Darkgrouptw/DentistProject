@@ -36,4 +36,7 @@ private slots:
 	void ConnectCOM();
 	void ScanBLEDevice();
 	void ConnectBLEDeivce();
+
+	// OCT
+	void ReadRawDataToImage();
 };

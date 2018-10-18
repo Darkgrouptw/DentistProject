@@ -39,7 +39,10 @@ BluetoothManager::~BluetoothManager()
 
 void BluetoothManager::SendUIPointer(QVector<QObject*> objList)
 {
-	bleTextList = (QComboBox*)objList[0];
+	BLEStatus		= (QLabel*)		objList[0];
+	QuaternionText	= (QLabel*)		objList[1];
+	MainWindow		= (QMainWindow*) objList[2];
+	bleTextList		= (QComboBox*)	objList[3];
 }
 QStringList BluetoothManager::GetCOMPortsArray()
 {
@@ -64,6 +67,7 @@ void BluetoothManager::Initalize(QString str)
 		cout << "成功打開 COM" << endl;
 	else
 		cout << "打不開 COM" << endl;
+	
 }
 void BluetoothManager::Scan()
 {
@@ -101,15 +105,19 @@ bool BluetoothManager::IsInitialize()
 void BluetoothManager::Callback_DeviceInitDone(string com)
 {
 	cout << "藍芽初始化: " <<  com << " " << (device->IsInitialized()? "成功!": "失敗!") << endl;
+	BLEStatus->setText(codec->toUnicode("藍芽狀態：初始化成功"));
 }
 void BluetoothManager::Callback_DeviceCloseDone(string com)
 {
 	cout << "藍芽關閉完成: " << com << " " << (!device->IsInitialized() ? "成功!" : "失敗!") << endl;
+	BLEStatus->setText(codec->toUnicode("藍芽狀態：未連結"));
 }
 
 void BluetoothManager::Callback_DeviceDiscovered(LibBLE::DeviceInfo* deviceInfo)
 {
 	cout << "找到裝置: " << deviceInfo->DeviceName << " " << deviceInfo->DeviceAddress << endl;
+	BLEStatus->setText(codec->toUnicode("藍芽狀態：搜尋裝置"));
+
 	deviceInfoList.push_back(deviceInfo);
 	bleTextList->addItem(QString::fromStdString(deviceInfo->DeviceName + "(" + deviceInfo->DeviceAddress + ")"));
 }
@@ -133,7 +141,12 @@ void BluetoothManager::Callback_TerminateLinkDone(LibGlove::DeviceInfo* deviceIn
 }
 void BluetoothManager::Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*, float quat[])
 {
-	cout << quat[0] << " " << quat[1] << " " << quat[2] << " " << quat[3] << endl;
+	// 改狀態
+	BLEStatus->setText(codec->toUnicode("藍芽狀態：傳輸資料中"));
+
+	// 旋轉結果
+	string Quaternion_Output = "Ｗ： " + to_string(quat[0]) + "\nＸ： " + to_string(quat[1]) + "\nＹ： " + to_string(quat[2]) + "\nＺ： " + to_string(quat[3]);
+	QuaternionText->setText(codec->toUnicode(Quaternion_Output.c_str()));
 }
 
 //////////////////////////////////////////////////////////////////////////

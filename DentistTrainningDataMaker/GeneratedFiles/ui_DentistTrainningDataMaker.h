@@ -17,6 +17,7 @@
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTabWidget>
@@ -45,6 +46,10 @@ public:
     QPushButton *BtnConnectBLEDevice;
     QPushButton *BtnScanBLEDevice;
     QComboBox *BLEDeviceList;
+    QLabel *BLEStatus;
+    QLabel *QuaternionText;
+    QGroupBox *OCTDeviceBox;
+    QPushButton *RawDataToImage;
     QWidget *tab_2;
     QToolBar *mainToolBar;
 
@@ -100,6 +105,22 @@ public:
         BLEDeviceList = new QComboBox(BluetoothDeviceBox);
         BLEDeviceList->setObjectName(QStringLiteral("BLEDeviceList"));
         BLEDeviceList->setGeometry(QRect(10, 60, 291, 22));
+        BLEStatus = new QLabel(BluetoothDeviceBox);
+        BLEStatus->setObjectName(QStringLiteral("BLEStatus"));
+        BLEStatus->setGeometry(QRect(10, 90, 161, 31));
+        QFont font;
+        font.setPointSize(12);
+        BLEStatus->setFont(font);
+        QuaternionText = new QLabel(BluetoothDeviceBox);
+        QuaternionText->setObjectName(QStringLiteral("QuaternionText"));
+        QuaternionText->setGeometry(QRect(10, 120, 121, 101));
+        QuaternionText->setFont(font);
+        OCTDeviceBox = new QGroupBox(Tab_Deivce);
+        OCTDeviceBox->setObjectName(QStringLiteral("OCTDeviceBox"));
+        OCTDeviceBox->setGeometry(QRect(530, 20, 151, 221));
+        RawDataToImage = new QPushButton(OCTDeviceBox);
+        RawDataToImage->setObjectName(QStringLiteral("RawDataToImage"));
+        RawDataToImage->setGeometry(QRect(10, 30, 131, 23));
         tabWidget->addTab(Tab_Deivce, QString());
         tab_2 = new QWidget();
         tab_2->setObjectName(QStringLiteral("tab_2"));
@@ -132,6 +153,13 @@ public:
         BtnConnectCOM->setText(QApplication::translate("DentistTrainningDataMakerClass", "\351\200\243\347\265\220 COM Port", nullptr));
         BtnConnectBLEDevice->setText(QApplication::translate("DentistTrainningDataMakerClass", "\345\273\272\347\253\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
         BtnScanBLEDevice->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\220\234\345\260\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
+        BLEStatus->setText(QApplication::translate("DentistTrainningDataMakerClass", "\350\227\215\350\212\275\347\213\200\346\205\213\357\274\232\346\234\252\351\200\243\346\216\245", nullptr));
+        QuaternionText->setText(QApplication::translate("DentistTrainningDataMakerClass", "\357\274\267\357\274\232 0\n"
+"\357\274\270\357\274\232 0\n"
+"\357\274\271\357\274\232 0\n"
+"\357\274\272\357\274\232 0", nullptr));
+        OCTDeviceBox->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "OCT \347\233\270\351\227\234", nullptr));
+        RawDataToImage->setText(QApplication::translate("DentistTrainningDataMakerClass", "Raw Data \350\275\211\346\210\220\345\234\226", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistTrainningDataMakerClass", "\350\243\235\347\275\256\347\256\241\347\220\206", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(tab_2), QApplication::translate("DentistTrainningDataMakerClass", "Tab 2", nullptr));
     } // retranslateUi

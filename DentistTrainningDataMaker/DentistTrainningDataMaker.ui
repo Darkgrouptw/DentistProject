@@ -182,6 +182,71 @@
         </rect>
        </property>
       </widget>
+      <widget class="QLabel" name="BLEStatus">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>90</y>
+         <width>161</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>藍芽狀態：未連接</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="QuaternionText">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>120</y>
+         <width>121</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Ｗ： 0
+Ｘ： 0
+Ｙ： 0
+Ｚ： 0</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="OCTDeviceBox">
+      <property name="geometry">
+       <rect>
+        <x>530</x>
+        <y>20</y>
+        <width>151</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>OCT 相關</string>
+      </property>
+      <widget class="QPushButton" name="RawDataToImage">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Raw Data 轉成圖</string>
+       </property>
+      </widget>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_2">

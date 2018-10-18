@@ -19,11 +19,19 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	connect(ui.BtnConnectCOM,				SIGNAL(clicked()),				this,	SLOT(ConnectCOM()));
 	connect(ui.BtnScanBLEDevice,			SIGNAL(clicked()),				this,	SLOT(ScanBLEDevice()));
 	connect(ui.BtnConnectBLEDevice,			SIGNAL(clicked()),				this,	SLOT(ConnectBLEDeivce()));
+	
+	// OCT 相關
+	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
 
 	#pragma region 傳 UI 指標進去
 	QVector<QObject*>		objList;
 
+	objList.push_back(ui.BLEStatus);
+	objList.push_back(ui.QuaternionText);
+	objList.push_back(this);
 	objList.push_back(ui.BLEDeviceList);
+	
+
 	rawManager.bleManager.SendUIPointer(objList);
 	#pragma endregion
 }
@@ -82,6 +90,12 @@ void DentistTrainningDataMaker::ScanBLEDevice()
 }
 void DentistTrainningDataMaker::ConnectBLEDeivce()
 {
-	// cout << rawManager.bleManager.IsInitialize() << endl;
 	rawManager.bleManager.Connect(ui.BLEDeviceList->currentIndex());
+}
+
+// OCT 相關
+void DentistTrainningDataMaker::ReadRawDataToImage()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, tr("讀取 Raw Data"), ".", tr("* (*.*"), nullptr, QFileDialog::DontUseNativeDialog);
+	rawManager.ReadRawDataFromFile(RawFileName);
 }

@@ -154,6 +154,11 @@
     <None Include="..\x64\Release\DentistTrainningDataMaker\Shaders\Model.frag" />
     <None Include="..\x64\Release\DentistTrainningDataMaker\Shaders\Model.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="OCT64">
+      <HintPath>..\OtherPackages\OCT\OCT64.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
     <Import Project="$(QtMsBuild)\qt.targets" />

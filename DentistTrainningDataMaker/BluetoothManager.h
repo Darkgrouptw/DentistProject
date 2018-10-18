@@ -9,10 +9,14 @@
 #include <string>
 #include <functional>
 
+#include <QTextCodec>
 #include <QString>
 #include <QVector>
 #include <QStringList>
+#include <QLabel>
 #include <QComboBox>
+#include <QMessageBox>
+#include <QMainWindow>
 
 // 重新命名 Namespace (因為明明就是藍芽模組，硬要寫成手套= =)
 namespace LibBLE = LibGlove;
@@ -52,7 +56,13 @@ private:
 	void				Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*, float[]);
 
 	// UI pointer
+	QLabel*				BLEStatus;
+	QLabel*				QuaternionText;
+	QMainWindow*		MainWindow;
 	QComboBox*			bleTextList;
+
+	// Other
+	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
