@@ -44,6 +44,7 @@ private:
 	// 以前的資料
 	DataManager			DManager;
 	TRcuda				theTRcuda;
+	cv::Mat				OCTMask;
 
 	//State_Connection	mState_Connection = State_Connection::Start;
 

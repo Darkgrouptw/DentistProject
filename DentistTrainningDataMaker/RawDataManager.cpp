@@ -3,6 +3,9 @@
 RawDataManager::RawDataManager()
 {
 	DManager.ReadCalibrationData();
+	OCTMask = cv::imread("OCTImages/Mask.png");
+	OCTMask.convertTo(OCTMask, CV_32F);
+	OCTMask /= 255;
 }
 RawDataManager::~RawDataManager()
 {
@@ -220,17 +223,21 @@ void RawDataManager::RawToPointCloud()
 }
 void RawDataManager::TranformToIMG()
 {
+	bool DoFastLabel = true;
 	//////////////////////////////////////////////////////////////////////////
 	// 這邊底下是舊的 Code
 	// 不是我寫的 QAQ
 	//////////////////////////////////////////////////////////////////////////
 	// 取 60 ~ 200
+	float CutFFTBorder_Thesold = 0.01f;
 	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
 	for (int x = 60; x <= 200; x++)
 	{
 		// Mat
 		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+		cv::Mat CutFFTBorder = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
 		cv::Mat FastLabel = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, cv::Scalar(0, 0, 0));
+		cv::Mat SobelMask_Y;
 		cv::Mat ContourTest;
 
 		// 原本的變數
@@ -245,7 +252,7 @@ void RawDataManager::TranformToIMG()
 		{
 			// 這個 For 迴圈是算每一個結果
 			// 也就是去算深度底下，1024 個結果
-			for (int col = 0; col < theTRcuda.VolumeSize_Z; col++)
+			for (int col = 1; col < theTRcuda.VolumeSize_Z; col++)
 			{
 				tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
 				midIdx = ((125 * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
@@ -253,7 +260,10 @@ void RawDataManager::TranformToIMG()
 
 				// 調整過飽和度的 顏色
 				ImageResult.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idt - 0.5) + 0.5);
-				//ImageResult.at<float>(row, col) = idt;
+				if (ImageResult.at<float>(row, col) - OCTMask.at<float>(row, col) > CutFFTBorder_Thesold)
+					CutFFTBorder.at<float>(row, col) = ImageResult.at<float>(row, col);
+				else
+					CutFFTBorder.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idt - 0.5) + 0.5 - OCTMask.at<float>(row, col));
 			}
 
 			// 這個迴圈是去算
@@ -263,7 +273,7 @@ void RawDataManager::TranformToIMG()
 				posZ = theTRcuda.PointType[tmpIdx + 1];
 				
 				// 通常不會太靠近
-				if(posZ  <  100)
+				if(posZ  <  10)
 					continue;
 
 				IndexMapInfo tempInfo;
@@ -276,44 +286,53 @@ void RawDataManager::TranformToIMG()
 					FastLabel.at<uchar>(row, i) = uchar(255);
 			}
 		}
+		GaussianBlur(ImageResult, SobelMask_Y, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+		Sobel(SobelMask_Y, SobelMask_Y, CV_32F, 1, 0, 3, 1, 0, cv::BORDER_DEFAULT);
+		convertScaleAbs(SobelMask_Y.clone(), SobelMask_Y);
 
 		//////////////////////////////////////////////////////////////////////////
 		// 找出邊界
 		//////////////////////////////////////////////////////////////////////////
-		int arryIndex = 0;
-		int FromIndex = 0;
-		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		if (DoFastLabel && IndexMap.size() > 0)
 		{
-			// 這邊是正常情況下，剛剛好有找到的 Z 值
-			if (IndexMap.size() <= arryIndex && arryIndex - 2 >= 0)
-				FromIndex = LerpFunction(
-					IndexMap[arryIndex - 2].index, IndexMap[arryIndex - 2].ZValue,
-					IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
-					row
-				);
-			else if (row == IndexMap[arryIndex].index)
-				FromIndex = IndexMap[arryIndex++].ZValue;
-			else if (row < IndexMap[arryIndex].index && arryIndex > 0)
-				// 因為第一個沒有 -1 ，所以需要額外分開來做
-				FromIndex = LerpFunction(
-					IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
-					IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
-					row
-				);
-			else  if (row < IndexMap[arryIndex].index && arryIndex == 0)
-				FromIndex = LerpFunction(
-					IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
-					IndexMap[arryIndex + 1].index, IndexMap[arryIndex + 1].ZValue,
-					row
-				);
-			else
-				std::cout << "Error!!" << std::endl;
-			FromIndex = qBound(0, FromIndex, theTRcuda.VolumeSize_Z - 1);
-			
+			int arryIndex = 0;
+			int FromIndex = 0;
+			for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+			{
+				// 這邊是正常情況下，剛剛好有找到的 Z 值
+				if (IndexMap.size() <= arryIndex && arryIndex - 2 >= 0)
+					FromIndex = LerpFunction(
+						IndexMap[arryIndex - 2].index, IndexMap[arryIndex - 2].ZValue,
+						IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
+						row
+					);
+				else if (row == IndexMap[arryIndex].index)
+					FromIndex = IndexMap[arryIndex++].ZValue;
+				else if (row < IndexMap[arryIndex].index && arryIndex > 0)
+					// 因為第一個沒有 -1 ，所以需要額外分開來做
+					FromIndex = LerpFunction(
+						IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
+						IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
+						row
+					);
+				else  if (row < IndexMap[arryIndex].index && arryIndex == 0)
+					FromIndex = LerpFunction(
+						IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
+						IndexMap[arryIndex + 1].index, IndexMap[arryIndex + 1].ZValue,
+						row
+					);
+				else
+				{
+					std::cout << "Fast Label 跳過 (" << row << ")!!" << std::endl;
+					break;
+				}
+				FromIndex = qBound(0, FromIndex, theTRcuda.VolumeSize_Z - 1);
 
-			// 填白色
-			for (int i = FromIndex; i < theTRcuda.VolumeSize_Z; i++)
-				FastLabel.at<uchar>(row, i) = uchar(255);
+
+				// 填白色
+				for (int i = FromIndex; i < theTRcuda.VolumeSize_Z; i++)
+					FastLabel.at<uchar>(row, i) = uchar(255);
+			}
 		}
 
 		// 這邊是將 Contour & 結果，合再一起
@@ -332,16 +351,23 @@ void RawDataManager::TranformToIMG()
 			}
 		}
 
-		cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+		//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 		ImageResult.convertTo(ImageResult, CV_8U, 255);
-		cv::imwrite("origin_v2/" + std::to_string(x) + ".png", ImageResult);
+		cv::imwrite("OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
 
-		cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("label_v2/" + std::to_string(x) + ".png", FastLabel);
+		//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+		cv::imwrite("OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
 
-		cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("combine_v2/" + std::to_string(x) + ".png", ContourTest);
+		//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+		cv::imwrite("OCTImages/combine_v2/" + std::to_string(x) + ".png", ContourTest);
+
+		SobelMask_Y.convertTo(SobelMask_Y, CV_8U, 255);
+		cv::imwrite("OCTImages/SobelMask_v2/" + std::to_string(x) + ".png", SobelMask_Y);
+
+		CutFFTBorder.convertTo(CutFFTBorder, CV_8U, 255);
+		cv::imwrite("OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", CutFFTBorder);
 	}
+	cout << "轉檔完成!!" << endl;
 }
 
 //////////////////////////////////////////////////////////////////////////
