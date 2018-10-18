@@ -3,7 +3,7 @@
 RawDataManager::RawDataManager()
 {
 	DManager.ReadCalibrationData();
-	OCTMask = cv::imread("OCTImages/Mask.png");
+	OCTMask = cv::imread("Images/Mask.png");
 	OCTMask.convertTo(OCTMask, CV_32F);
 	OCTMask /= 255;
 }
@@ -353,19 +353,19 @@ void RawDataManager::TranformToIMG()
 
 		//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 		ImageResult.convertTo(ImageResult, CV_8U, 255);
-		cv::imwrite("OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
+		cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
 
 		//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
+		cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
 
 		//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("OCTImages/combine_v2/" + std::to_string(x) + ".png", ContourTest);
+		cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ContourTest);
 
 		SobelMask_Y.convertTo(SobelMask_Y, CV_8U, 255);
-		cv::imwrite("OCTImages/SobelMask_v2/" + std::to_string(x) + ".png", SobelMask_Y);
+		cv::imwrite("Images/OCTImages/SobelMask_v2/" + std::to_string(x) + ".png", SobelMask_Y);
 
 		CutFFTBorder.convertTo(CutFFTBorder, CV_8U, 255);
-		cv::imwrite("OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", CutFFTBorder);
+		cv::imwrite("Images/OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", CutFFTBorder);
 	}
 	cout << "轉檔完成!!" << endl;
 }
