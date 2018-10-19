@@ -92,47 +92,27 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
-      <string>裝置管理</string>
+      <string>藍芽裝置</string>
      </attribute>
-     <widget class="QGroupBox" name="BluetoothDeviceBox">
+     <widget class="QGroupBox" name="BLEDeviceBox">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>10</y>
         <width>511</width>
-        <height>231</height>
+        <height>101</height>
        </rect>
       </property>
       <property name="title">
-       <string>藍芽裝置</string>
+       <string>裝置設定</string>
       </property>
-      <widget class="QComboBox" name="COMList">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>291</width>
-         <height>22</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="BtnSearchCom">
-       <property name="geometry">
-        <rect>
-         <x>310</x>
-         <y>20</y>
-         <width>91</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>搜尋 COM Port</string>
-       </property>
-      </widget>
       <widget class="QPushButton" name="BtnConnectCOM">
        <property name="geometry">
         <rect>
@@ -144,19 +124,6 @@
        </property>
        <property name="text">
         <string>連結 COM Port</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="BtnConnectBLEDevice">
-       <property name="geometry">
-        <rect>
-         <x>410</x>
-         <y>60</y>
-         <width>91</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>建立藍芽連線</string>
        </property>
       </widget>
       <widget class="QPushButton" name="BtnScanBLEDevice">
@@ -172,6 +139,32 @@
         <string>搜尋藍芽連線</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="BtnConnectBLEDevice">
+       <property name="geometry">
+        <rect>
+         <x>410</x>
+         <y>60</y>
+         <width>91</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>建立藍芽連線</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="BtnSearchCom">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>20</y>
+         <width>91</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>搜尋 COM Port</string>
+       </property>
+      </widget>
       <widget class="QComboBox" name="BLEDeviceList">
        <property name="geometry">
         <rect>
@@ -182,29 +175,34 @@
         </rect>
        </property>
       </widget>
-      <widget class="QLabel" name="BLEStatus">
+      <widget class="QComboBox" name="COMList">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>90</y>
-         <width>161</width>
-         <height>31</height>
+         <y>20</y>
+         <width>291</width>
+         <height>22</height>
         </rect>
        </property>
-       <property name="font">
-        <font>
-         <pointsize>12</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>藍芽狀態：未連接</string>
-       </property>
       </widget>
+     </widget>
+     <widget class="QGroupBox" name="BLEDeviceInfoBox">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>110</y>
+        <width>181</width>
+        <height>161</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>藍芽資訊</string>
+      </property>
       <widget class="QLabel" name="QuaternionText">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>120</y>
+         <y>50</y>
          <width>121</width>
          <height>101</height>
         </rect>
@@ -221,38 +219,108 @@
 Ｚ： 0</string>
        </property>
       </widget>
-     </widget>
-     <widget class="QGroupBox" name="OCTDeviceBox">
-      <property name="geometry">
-       <rect>
-        <x>530</x>
-        <y>20</y>
-        <width>151</width>
-        <height>221</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>OCT 相關</string>
-      </property>
-      <widget class="QPushButton" name="RawDataToImage">
+      <widget class="QLabel" name="BLEStatus">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
-         <width>131</width>
-         <height>23</height>
+         <y>20</y>
+         <width>161</width>
+         <height>31</height>
         </rect>
        </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
-        <string>Raw Data 轉成圖</string>
+        <string>藍芽狀態：未連接</string>
        </property>
       </widget>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="Tab_OCT">
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>OCT 裝置設定</string>
      </attribute>
+     <widget class="QPushButton" name="RawDataToImage">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>50</y>
+        <width>131</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Raw Data 轉成圖</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>80</y>
+        <width>131</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="OCTNormalSettingbOX">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>541</width>
+        <height>251</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>常用設定</string>
+      </property>
+      <widget class="QLineEdit" name="SaveLocationText">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>40</y>
+         <width>431</width>
+         <height>20</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="SaveLocationLabel">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>111</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>儲存資料的路徑：</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="SaveLocationBtn">
+       <property name="geometry">
+        <rect>
+         <x>450</x>
+         <y>40</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>選擇路徑</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </widget>
   </widget>

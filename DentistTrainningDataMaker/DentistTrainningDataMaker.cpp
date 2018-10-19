@@ -22,6 +22,7 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	
 	// OCT 相關
 	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
+	connect(ui.SaveLocationBtn,				SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 
 	#pragma region 傳 UI 指標進去
 	QVector<QObject*>		objList;
@@ -34,6 +35,25 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 
 	rawManager.bleManager.SendUIPointer(objList);
 	#pragma endregion
+	#pragma region 初始化參數
+	QString SaveLocation_Temp;
+
+	QDate date = QDate::currentDate();
+	
+	currentDateStr = date.toString("yyyy.MM.dd");
+	cout << "日期：" << currentDateStr.toStdString() << endl;
+	#ifdef TEST_NO_OCT
+	// 表示在桌機測試
+	SaveLocation_Temp = "F:/OCT Scan DataSet/" + currentDateStr;
+	#else
+	// 表示在醫院測試
+	SaveLocation_Temp = "V:/OCT Scan DataSet/" + currentDateStr;
+	#endif
+
+	// 創建資料夾
+	QDir().mkpath(SaveLocation_Temp);
+	ui.SaveLocationText->setText(SaveLocation_Temp);
+	#pragma endregion
 }
 
 // 其他事件
@@ -43,8 +63,11 @@ void DentistTrainningDataMaker::LoadSTL()
 	system("cls");
 	cout << "讀取位置：" << STLFileName.toStdString() << endl;
 
-	ui.DisplayPanel->LoadSTLFile(STLFileName);
-	ui.DisplayPanel->update();
+	if (STLFileName != "")
+	{
+		ui.DisplayPanel->LoadSTLFile(STLFileName);
+		ui.DisplayPanel->update();
+	}
 }
 void DentistTrainningDataMaker::ScanData()
 {
@@ -96,8 +119,22 @@ void DentistTrainningDataMaker::ConnectBLEDeivce()
 // OCT 相關
 void DentistTrainningDataMaker::ReadRawDataToImage()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/2018.10.18", tr("* (*.*"), nullptr, QFileDialog::DontUseNativeDialog);
-	rawManager.ReadRawDataFromFile(RawFileName);
-	rawManager.RawToPointCloud();
-	rawManager.TranformToIMG();
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/2018.10.18", tr("* (*.*)"), nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.RawToPointCloud();
+		rawManager.TranformToIMG();
+	}
+}
+void DentistTrainningDataMaker::ChooseSaveLocaton()
+{
+	QString OCT_SaveLocation = QFileDialog::getExistingDirectory(this, "Save OCT Data Location", ui.SaveLocationText->text() + "/../", QFileDialog::DontUseNativeDialog);
+	if (OCT_SaveLocation != "")
+	{
+		ui.SaveLocationText->setText(OCT_SaveLocation);
+
+		// 創建目錄
+		QDir().mkdir(OCT_SaveLocation);
+	}
 }

@@ -2,9 +2,13 @@
 #include <iostream>
 #include <QtWidgets/QMainWindow>
 #include <QFileDialog>
+#include <QDir>
+#include <QDate>
+#include <QTime>
 
 #include "ui_DentistTrainningDataMaker.h"
 
+#include "GlobalDefine.h"
 #include "RawDataManager.h"
 
 using namespace std;
@@ -22,6 +26,8 @@ private:
 	//QFileDialog dia
 	RawDataManager rawManager;
 
+	// 時間字串
+	QString currentDateStr;
 private slots:
 	void LoadSTL();
 	void ScanData();
@@ -37,6 +43,7 @@ private slots:
 	void ScanBLEDevice();
 	void ConnectBLEDeivce();
 
-	// OCT
+	// OCT 相關
 	void ReadRawDataToImage();
+	void ChooseSaveLocaton();
 };

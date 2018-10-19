@@ -45,8 +45,78 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 
 	std::cout << "ReadRawData done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s" << std::endl;
 }
-void RawDataManager::ScanDataFromDevice()
+void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 {
+	//string SaveName = "V:/OCT20170928";
+
+	#pragma region 初始化裝置
+	OCT64::OCT64::Init(
+		4,
+		OCT_DeviceID
+	);
+	#pragma endregion
+	#pragma region 開 Port
+	SerialPort port(gcnew System::String(OCTDevicePort.c_str()), 9600);
+	port.Open();
+
+	if (!port.IsOpen)
+	{
+		cout << "OCT 的 COM 打不開!!" << endl;
+		return;
+	}
+
+	// 先休眠
+	Thread::Sleep(100);
+	port.RtsEnable = true;
+	#pragma endregion
+	#pragma region 開始掃描
+	float LV_65 = 65;
+	unsigned int SampleCount = 2048;
+	OCT_DataLen = 1;
+	OCT_ErrorBoolean = false;
+	System::String^ ErrorString = gcnew System::String("");
+	System::String^ SaveFileName_C = gcnew System::String(SaveFileName.toStdString().c_str());
+
+
+	OCT64::OCT64::StartCap(
+		OCT_DeviceID,						// 裝置 ID
+		OCT_HandleOut,						// Handle (要傳給 Scan 的)
+		LV_65,								// ?
+		SampleCount,						// 2048
+		OCT_DataLen,						// 資料長度
+		true,								// 這個好像是要步要 output?
+		SaveFileName_C,						// 儲存位置
+		OCT_ErrorBoolean,					// ?
+		ErrorString							// 錯誤訊息
+	);
+	// StartCap(deviceID, tmp_Handle, LV_65, SampRec, tmp_ByteLen, Savedata, SaveName, tmp_ErrorBoolean, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
+
+	// 動慢軸
+	OCT_AllDataLen = OCT_DataLen * 2;
+	int PicNumber = 0;
+	while (PicNumber < 125) {
+		/*OCT64::OCT64::Scan(
+			OCT_HandleOut,
+		);*/
+		//ScanADC(HandleOut, AllDatabyte, ArrSize, ByteLen, outarr, OutArrLenIn, tmp_OutArrLenOut, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
+		//memcpy(final_oct_arr, outarr, sizeof(unsigned short) * PIC_SIZE);
+
+		// 繼續往下掃
+		PicNumber++;
+
+		//final_oct_arr = final_oct_arr + PIC_SIZE;
+
+	}
+	#pragma endregion
+	#pragma region 關閉已開的 Port
+	OCT64::OCT64::AboutADC(OCT_DeviceID);
+	port.RtsEnable = false;
+	port.Close();
+	#pragma endregion
+
+
+
+
 	/*pin_ptr<int32_t> tmp_deviceID = &deviceID;
 	InitADC(4, tmp_deviceID);
 	clock_t scan_t1 = clock();

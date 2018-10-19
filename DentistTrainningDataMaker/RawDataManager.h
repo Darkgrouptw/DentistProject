@@ -34,7 +34,7 @@ public:
 	// ScanDataFromDevice	=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataFromFile(QString);
-	void ScanDataFromDevice();
+	void ScanDataFromDevice(QString);
 
 	void RawToPointCloud();
 	void TranformToIMG();
@@ -46,7 +46,15 @@ private:
 	TRcuda				theTRcuda;
 	cv::Mat				OCTMask;
 
-	//State_Connection	mState_Connection = State_Connection::Start;
+	//////////////////////////////////////////////////////////////////////////
+	// OCT
+	//////////////////////////////////////////////////////////////////////////
+	string				OCTDevicePort = "COM6";									// 這個是那台機器預設的 COM 位置
+	unsigned int		OCT_HandleOut;
+	unsigned int		OCT_DataLen;
+	unsigned int		OCT_AllDataLen;
+	bool				OCT_ErrorBoolean;
+	int					OCT_DeviceID;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
@@ -54,6 +62,5 @@ private:
 	int					LerpFunction(int, int, int, int, int);
 
 	QByteArray buffer;
-	//int32_t				deviceID;
 };
 
