@@ -113,6 +113,11 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 	port.RtsEnable = false;
 	port.Close();
 	#pragma endregion
+	#pragma region 轉資料
+	// 要將資料轉到 DManager.rawDP 上
+	//vector<char> tmp_char(final_oct_char, final_oct_char + PIC_SIZE * 250);
+	//theTRcuda.RawToPointCloud(tmp_char.data(), tmp_char.size(), 250, 2048);
+	#pragma endregion
 
 
 
@@ -285,14 +290,18 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 	std::cout << "full_scan_time:" << full_scan_time << "s" << std::endl;
 	std::cout << "all_time:" << all_time << "s" << std::endl;*/
 }
-
 void RawDataManager::RawToPointCloud()
 {
 	RawDataProperty *tmpRDP = &DManager.rawDP;
 	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
-void RawDataManager::TranformToIMG()
+void RawDataManager::TranformToIMG(bool OnlyShow = false)
 {
+	ImageResultArray.clear();
+	CutFFTBorderArray.clear();
+	FastLabelArray.clear();
+	CombineTestArray.clear();
+
 	bool DoFastLabel = true;
 	//////////////////////////////////////////////////////////////////////////
 	// 這邊底下是舊的 Code
@@ -307,8 +316,7 @@ void RawDataManager::TranformToIMG()
 		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
 		cv::Mat CutFFTBorder = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
 		cv::Mat FastLabel = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, cv::Scalar(0, 0, 0));
-		cv::Mat SobelMask_Y;
-		cv::Mat ContourTest;
+		cv::Mat ConbineTest;
 
 		// 原本的變數
 		int tmpIdx;
@@ -356,9 +364,6 @@ void RawDataManager::TranformToIMG()
 					FastLabel.at<uchar>(row, i) = uchar(255);
 			}
 		}
-		GaussianBlur(ImageResult, SobelMask_Y, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
-		Sobel(SobelMask_Y, SobelMask_Y, CV_32F, 1, 0, 3, 1, 0, cv::BORDER_DEFAULT);
-		convertScaleAbs(SobelMask_Y.clone(), SobelMask_Y);
 
 		//////////////////////////////////////////////////////////////////////////
 		// 找出邊界
@@ -407,9 +412,9 @@ void RawDataManager::TranformToIMG()
 
 		// 這邊是將 Contour & 結果，合再一起
 		// 先複製一份
-		ContourTest = ImageResult.clone();
-		ContourTest.convertTo(ContourTest, CV_8U, 255);
-		cv::cvtColor(ContourTest.clone(), ContourTest, cv::COLOR_GRAY2BGR);
+		ConbineTest = CutFFTBorder.clone();
+		ConbineTest.convertTo(ConbineTest, CV_8U, 255);
+		cv::cvtColor(ConbineTest.clone(), ConbineTest, cv::COLOR_GRAY2BGR);
 		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
 		{
 			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
@@ -417,27 +422,34 @@ void RawDataManager::TranformToIMG()
 			{
 				posZ = theTRcuda.PointType[tmpIdx + 1];
 				cv::Point contourPoint(posZ, row);
-				cv::circle(ContourTest, contourPoint, 1, cv::Scalar(0, 255, 255), CV_FILLED);
+				cv::circle(ConbineTest, contourPoint, 1, cv::Scalar(0, 255, 255), CV_FILLED);
 			}
 		}
 
-		//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		ImageResult.convertTo(ImageResult, CV_8U, 255);
-		cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
+		// 使否只要顯示
+		if (!OnlyShow)
+		{
+			//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+			ImageResult.convertTo(ImageResult, CV_8U, 255);
+			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
 
-		//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
+			//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+			cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
 
-		//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ContourTest);
+			//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+			cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ConbineTest);
 
-		SobelMask_Y.convertTo(SobelMask_Y, CV_8U, 255);
-		cv::imwrite("Images/OCTImages/SobelMask_v2/" + std::to_string(x) + ".png", SobelMask_Y);
+			CutFFTBorder.convertTo(CutFFTBorder, CV_8U, 255);
+			cv::imwrite("Images/OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", CutFFTBorder);
+		}
 
-		CutFFTBorder.convertTo(CutFFTBorder, CV_8U, 255);
-		cv::imwrite("Images/OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", CutFFTBorder);
+		// 暫存到陣列李
+		ImageResultArray.push_back(ImageResult);
+		CutFFTBorderArray.push_back(CutFFTBorder);
+		FastLabelArray.push_back(FastLabel);
+		CombineTestArray.push_back(ConbineTest);
 	}
-	cout << "轉檔完成!!" << endl;
+	cout << "轉成圖片完成!!" << endl;
 }
 
 //////////////////////////////////////////////////////////////////////////

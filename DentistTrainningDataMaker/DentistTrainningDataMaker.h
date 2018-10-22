@@ -46,4 +46,6 @@ private slots:
 	// OCT 相關
 	void ReadRawDataToImage();
 	void ChooseSaveLocaton();
+	void SaveWithTime(int);
+	void AutoSaveWhileScan(int);
 };

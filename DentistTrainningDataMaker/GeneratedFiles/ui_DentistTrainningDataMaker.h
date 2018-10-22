@@ -57,6 +57,8 @@ public:
     QLineEdit *SaveLocationText;
     QLabel *SaveLocationLabel;
     QPushButton *SaveLocationBtn;
+    QCheckBox *SaveWithTime_CheckBox;
+    QCheckBox *AutoScanWhileScanning_CheckBox_2;
     QToolBar *mainToolBar;
 
     void setupUi(QMainWindow *DentistTrainningDataMakerClass)
@@ -147,6 +149,14 @@ public:
         SaveLocationBtn = new QPushButton(OCTNormalSettingbOX);
         SaveLocationBtn->setObjectName(QStringLiteral("SaveLocationBtn"));
         SaveLocationBtn->setGeometry(QRect(450, 40, 75, 23));
+        SaveWithTime_CheckBox = new QCheckBox(OCTNormalSettingbOX);
+        SaveWithTime_CheckBox->setObjectName(QStringLiteral("SaveWithTime_CheckBox"));
+        SaveWithTime_CheckBox->setGeometry(QRect(10, 80, 91, 16));
+        SaveWithTime_CheckBox->setChecked(true);
+        AutoScanWhileScanning_CheckBox_2 = new QCheckBox(OCTNormalSettingbOX);
+        AutoScanWhileScanning_CheckBox_2->setObjectName(QStringLiteral("AutoScanWhileScanning_CheckBox_2"));
+        AutoScanWhileScanning_CheckBox_2->setGeometry(QRect(10, 110, 111, 16));
+        AutoScanWhileScanning_CheckBox_2->setChecked(true);
         tabWidget->addTab(Tab_OCT, QString());
         DentistTrainningDataMakerClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistTrainningDataMakerClass);
@@ -188,6 +198,8 @@ public:
         OCTNormalSettingbOX->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "\345\270\270\347\224\250\350\250\255\345\256\232", nullptr));
         SaveLocationLabel->setText(QApplication::translate("DentistTrainningDataMakerClass", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));
         SaveLocationBtn->setText(QApplication::translate("DentistTrainningDataMakerClass", "\351\201\270\346\223\207\350\267\257\345\276\221", nullptr));
+        SaveWithTime_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\344\273\245\346\231\202\351\226\223\345\204\262\345\255\230", nullptr));
+        AutoScanWhileScanning_CheckBox_2->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistTrainningDataMakerClass", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
     } // retranslateUi
 

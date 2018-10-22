@@ -35,9 +35,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataFromFile(QString);
 	void ScanDataFromDevice(QString);
-
 	void RawToPointCloud();
-	void TranformToIMG();
+	void TranformToIMG(bool);
 
 	BluetoothManager	bleManager;
 private:
@@ -55,6 +54,12 @@ private:
 	unsigned int		OCT_AllDataLen;
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
+
+	// 存圖片的陣列
+	QVector<cv::Mat>	ImageResultArray;
+	QVector<cv::Mat>	CutFFTBorderArray;
+	QVector<cv::Mat>	FastLabelArray;
+	QVector<cv::Mat>	CombineTestArray;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
