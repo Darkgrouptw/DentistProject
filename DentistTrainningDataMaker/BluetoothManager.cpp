@@ -39,6 +39,8 @@ BluetoothManager::~BluetoothManager()
 
 void BluetoothManager::SendUIPointer(QVector<QObject*> objList)
 {
+	// 確認是不是有多傳，忘了改的
+	assert(objList.size() == 4);
 	BLEStatus		= (QLabel*)		objList[0];
 	QuaternionText	= (QLabel*)		objList[1];
 	MainWindow		= (QMainWindow*) objList[2];

@@ -28,6 +28,8 @@ private:
 
 	// 時間字串
 	QString currentDateStr;
+
+
 private slots:
 	void LoadSTL();
 	void ScanData();
@@ -48,4 +50,7 @@ private slots:
 	void ChooseSaveLocaton();
 	void SaveWithTime(int);
 	void AutoSaveWhileScan(int);
+
+	// 顯示部分的事件
+	void ScanNumSlider_Change(int);
 };

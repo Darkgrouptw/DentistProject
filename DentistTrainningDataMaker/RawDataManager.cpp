@@ -11,6 +11,26 @@ RawDataManager::~RawDataManager()
 {
 }
 
+// UI 相關
+void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
+{
+	// 確認是不是有多傳，忘了改的
+	assert(UIPointer.size() == 2);
+	ImageResult = (QLabel*)UIPointer[0];
+	FinalResult = (QLabel*)UIPointer[1];
+}
+void RawDataManager::ShowImageIndex(int index)
+{
+	if (60 <= index && index <= 200 && ImageResultArray.size() > 0)
+	{
+		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index - 60], CV_32F);
+		QImage Pixmap_FinalResult = Mat2QImage(CombineTestArray[index - 60], CV_8UC3);
+		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
+		FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
+	}
+}
+
+// OCT 相關的步驟
 void RawDataManager::ReadRawDataFromFile(QString FileName)
 {
 	clock_t t1, t2;
@@ -308,7 +328,7 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 	// 不是我寫的 QAQ
 	//////////////////////////////////////////////////////////////////////////
 	// 取 60 ~ 200
-	float CutFFTBorder_Thesold = 0.01f;
+	float CutFFTBorder_Thesold = 0.001f;
 	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
 	for (int x = 60; x <= 200; x++)
 	{
@@ -430,8 +450,12 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 		if (!OnlyShow)
 		{
 			//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-			ImageResult.convertTo(ImageResult, CV_8U, 255);
-			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
+			cv::Mat TempImage;
+			ImageResult.convertTo(TempImage, CV_8U, 255);
+			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", TempImage);
+
+			CutFFTBorder.convertTo(TempImage, CV_8U, 255);
+			cv::imwrite("Images/OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", TempImage);
 
 			//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 			cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
@@ -439,8 +463,6 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 			//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 			cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ConbineTest);
 
-			CutFFTBorder.convertTo(CutFFTBorder, CV_8U, 255);
-			cv::imwrite("Images/OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", CutFFTBorder);
 		}
 
 		// 暫存到陣列李
@@ -458,4 +480,19 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 int RawDataManager::LerpFunction(int lastIndex, int lastValue, int nextIndex, int nextValue, int index)
 {
 	return (index - lastIndex) * (nextValue - lastValue) / (nextIndex - lastIndex) + lastValue;
+}
+QImage RawDataManager::Mat2QImage(cv::Mat const& src, int Type)
+{
+	cv::Mat temp;												// make the same cv::Mat
+	if (Type == CV_8UC3)
+		cvtColor(src, temp, CV_BGR2RGB);						// cvtColor Makes a copt, that what i need
+	else if (Type == CV_32F)
+	{
+		src.convertTo(temp, CV_8U, 255);
+		cvtColor(temp, temp, CV_GRAY2RGB);						// cvtColor Makes a copt, that what i need
+	}
+	QImage dest((const uchar *)temp.data, temp.cols, temp.rows, temp.step, QImage::Format_RGB888);
+	dest.bits();												// enforce deep copy, see documentation 
+																// of QImage::QImage ( const uchar * data, int width, int height, Format format )
+	return dest;
 }

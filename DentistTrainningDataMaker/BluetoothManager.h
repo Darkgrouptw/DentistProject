@@ -7,6 +7,7 @@
 #using <System.dll> 
 #include <iostream>
 #include <string>
+#include <cassert>
 #include <functional>
 
 #include <QTextCodec>

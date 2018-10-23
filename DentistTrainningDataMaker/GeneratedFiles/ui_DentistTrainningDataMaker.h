@@ -21,6 +21,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSlider>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QWidget>
@@ -58,7 +59,16 @@ public:
     QLabel *SaveLocationLabel;
     QPushButton *SaveLocationBtn;
     QCheckBox *SaveWithTime_CheckBox;
-    QCheckBox *AutoScanWhileScanning_CheckBox_2;
+    QCheckBox *AutoScanWhileScan_CheckBox;
+    QGroupBox *ScanResult;
+    QLabel *ImageResult;
+    QLabel *FinalResult;
+    QLabel *ImageResultText;
+    QLabel *FinalResultText;
+    QSlider *ScanNumSlider;
+    QLabel *ScanNum_Min;
+    QLabel *ScanNum_Max;
+    QLabel *ScanNum_Value;
     QToolBar *mainToolBar;
 
     void setupUi(QMainWindow *DentistTrainningDataMakerClass)
@@ -153,11 +163,44 @@ public:
         SaveWithTime_CheckBox->setObjectName(QStringLiteral("SaveWithTime_CheckBox"));
         SaveWithTime_CheckBox->setGeometry(QRect(10, 80, 91, 16));
         SaveWithTime_CheckBox->setChecked(true);
-        AutoScanWhileScanning_CheckBox_2 = new QCheckBox(OCTNormalSettingbOX);
-        AutoScanWhileScanning_CheckBox_2->setObjectName(QStringLiteral("AutoScanWhileScanning_CheckBox_2"));
-        AutoScanWhileScanning_CheckBox_2->setGeometry(QRect(10, 110, 111, 16));
-        AutoScanWhileScanning_CheckBox_2->setChecked(true);
+        AutoScanWhileScan_CheckBox = new QCheckBox(OCTNormalSettingbOX);
+        AutoScanWhileScan_CheckBox->setObjectName(QStringLiteral("AutoScanWhileScan_CheckBox"));
+        AutoScanWhileScan_CheckBox->setGeometry(QRect(10, 110, 111, 16));
+        AutoScanWhileScan_CheckBox->setChecked(true);
         tabWidget->addTab(Tab_OCT, QString());
+        ScanResult = new QGroupBox(centralWidget);
+        ScanResult->setObjectName(QStringLiteral("ScanResult"));
+        ScanResult->setGeometry(QRect(910, 0, 581, 531));
+        ImageResult = new QLabel(ScanResult);
+        ImageResult->setObjectName(QStringLiteral("ImageResult"));
+        ImageResult->setGeometry(QRect(10, 40, 550, 134));
+        ImageResult->setStyleSheet(QStringLiteral(""));
+        FinalResult = new QLabel(ScanResult);
+        FinalResult->setObjectName(QStringLiteral("FinalResult"));
+        FinalResult->setGeometry(QRect(10, 210, 550, 134));
+        FinalResult->setStyleSheet(QStringLiteral(""));
+        ImageResultText = new QLabel(ScanResult);
+        ImageResultText->setObjectName(QStringLiteral("ImageResultText"));
+        ImageResultText->setGeometry(QRect(10, 20, 101, 16));
+        FinalResultText = new QLabel(ScanResult);
+        FinalResultText->setObjectName(QStringLiteral("FinalResultText"));
+        FinalResultText->setGeometry(QRect(10, 190, 151, 16));
+        ScanNumSlider = new QSlider(ScanResult);
+        ScanNumSlider->setObjectName(QStringLiteral("ScanNumSlider"));
+        ScanNumSlider->setEnabled(false);
+        ScanNumSlider->setGeometry(QRect(10, 360, 501, 22));
+        ScanNumSlider->setMinimum(60);
+        ScanNumSlider->setMaximum(200);
+        ScanNumSlider->setOrientation(Qt::Horizontal);
+        ScanNum_Min = new QLabel(ScanResult);
+        ScanNum_Min->setObjectName(QStringLiteral("ScanNum_Min"));
+        ScanNum_Min->setGeometry(QRect(10, 390, 21, 16));
+        ScanNum_Max = new QLabel(ScanResult);
+        ScanNum_Max->setObjectName(QStringLiteral("ScanNum_Max"));
+        ScanNum_Max->setGeometry(QRect(500, 390, 21, 16));
+        ScanNum_Value = new QLabel(ScanResult);
+        ScanNum_Value->setObjectName(QStringLiteral("ScanNum_Value"));
+        ScanNum_Value->setGeometry(QRect(530, 360, 21, 16));
         DentistTrainningDataMakerClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistTrainningDataMakerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -199,8 +242,16 @@ public:
         SaveLocationLabel->setText(QApplication::translate("DentistTrainningDataMakerClass", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));
         SaveLocationBtn->setText(QApplication::translate("DentistTrainningDataMakerClass", "\351\201\270\346\223\207\350\267\257\345\276\221", nullptr));
         SaveWithTime_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\344\273\245\346\231\202\351\226\223\345\204\262\345\255\230", nullptr));
-        AutoScanWhileScanning_CheckBox_2->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230", nullptr));
+        AutoScanWhileScan_CheckBox->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistTrainningDataMakerClass", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
+        ScanResult->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "\346\216\203\346\217\217\347\265\220\346\236\234", nullptr));
+        ImageResult->setText(QString());
+        FinalResult->setText(QString());
+        ImageResultText->setText(QApplication::translate("DentistTrainningDataMakerClass", "OCT \350\275\211\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
+        FinalResultText->setText(QApplication::translate("DentistTrainningDataMakerClass", "\350\231\225\347\220\206\345\256\214 & \346\212\223\345\207\272\351\202\212\347\225\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
+        ScanNum_Min->setText(QApplication::translate("DentistTrainningDataMakerClass", "60", nullptr));
+        ScanNum_Max->setText(QApplication::translate("DentistTrainningDataMakerClass", "200", nullptr));
+        ScanNum_Value->setText(QApplication::translate("DentistTrainningDataMakerClass", "60", nullptr));
     } // retranslateUi
 
 };

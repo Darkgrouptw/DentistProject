@@ -25,7 +25,11 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	connect(ui.SaveLocationBtn,				SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime(int)));
 
+	// 顯示部分
+	connect(ui.ScanNumSlider,				SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
+
 	#pragma region 傳 UI 指標進去
+	// 藍芽的部分
 	QVector<QObject*>		objList;
 
 	objList.push_back(ui.BLEStatus);
@@ -33,8 +37,14 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	objList.push_back(this);
 	objList.push_back(ui.BLEDeviceList);
 	
-
 	rawManager.bleManager.SendUIPointer(objList);
+
+	// OCT 顯示的部分
+	objList.clear();
+	objList.push_back(ui.ImageResult);
+	objList.push_back(ui.FinalResult);
+
+	rawManager.SendUIPointer(objList);
 	#pragma endregion
 	#pragma region 初始化參數
 	QString SaveLocation_Temp;
@@ -126,6 +136,16 @@ void DentistTrainningDataMaker::ReadRawDataToImage()
 		rawManager.ReadRawDataFromFile(RawFileName);
 		rawManager.RawToPointCloud();
 		rawManager.TranformToIMG(false);
+
+		// UI 更改
+		ui.ScanNumSlider->setEnabled(true);
+		ScanNumSlider_Change(60);
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
 	}
 }
 void DentistTrainningDataMaker::ChooseSaveLocaton()
@@ -146,4 +166,11 @@ void DentistTrainningDataMaker::SaveWithTime(int signalNumber)
 void DentistTrainningDataMaker::AutoSaveWhileScan(int signalNumber)
 {
 
+}
+
+// 顯示部分的事件
+void DentistTrainningDataMaker::ScanNumSlider_Change(int value)
+{
+	rawManager.ShowImageIndex(value);
+	ui.ScanNum_Value->setText(QString::number(value));
 }

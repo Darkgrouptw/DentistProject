@@ -425,7 +425,7 @@
       <string>處理完 &amp; 抓出邊界的結果：</string>
      </property>
     </widget>
-    <widget class="QSlider" name="horizontalSlider">
+    <widget class="QSlider" name="ScanNumSlider">
      <property name="enabled">
       <bool>false</bool>
      </property>
