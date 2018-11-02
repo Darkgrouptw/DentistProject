@@ -3,9 +3,6 @@
 RawDataManager::RawDataManager()
 {
 	DManager.ReadCalibrationData();
-	OCTMask = cv::imread("Images/Mask.png");
-	OCTMask.convertTo(OCTMask, CV_32F);
-	OCTMask /= 255;
 }
 RawDataManager::~RawDataManager()
 {
@@ -315,26 +312,24 @@ void RawDataManager::RawToPointCloud()
 	RawDataProperty *tmpRDP = &DManager.rawDP;
 	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
-void RawDataManager::TranformToIMG(bool OnlyShow = false)
+void RawDataManager::TranformToIMG(bool NeedSave = false)
 {
 	ImageResultArray.clear();
-	CutFFTBorderArray.clear();
 	FastLabelArray.clear();
 	CombineTestArray.clear();
 
 	bool DoFastLabel = true;
+
 	//////////////////////////////////////////////////////////////////////////
 	// 這邊底下是舊的 Code
 	// 不是我寫的 QAQ
 	//////////////////////////////////////////////////////////////////////////
 	// 取 60 ~ 200
-	float CutFFTBorder_Thesold = 0.001f;
 	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
 	for (int x = 60; x <= 200; x++)
 	{
 		// Mat
 		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		cv::Mat CutFFTBorder = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
 		cv::Mat FastLabel = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, cv::Scalar(0, 0, 0));
 		cv::Mat ConbineTest;
 
@@ -358,10 +353,6 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 
 				// 調整過飽和度的 顏色
 				ImageResult.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idt - 0.5) + 0.5);
-				if (ImageResult.at<float>(row, col) - OCTMask.at<float>(row, col) > CutFFTBorder_Thesold)
-					CutFFTBorder.at<float>(row, col) = ImageResult.at<float>(row, col);
-				else
-					CutFFTBorder.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idt - 0.5) + 0.5 - OCTMask.at<float>(row, col));
 			}
 
 			// 這個迴圈是去算
@@ -432,7 +423,7 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 
 		// 這邊是將 Contour & 結果，合再一起
 		// 先複製一份
-		ConbineTest = CutFFTBorder.clone();
+		ConbineTest = ImageResult.clone();
 		ConbineTest.convertTo(ConbineTest, CV_8U, 255);
 		cv::cvtColor(ConbineTest.clone(), ConbineTest, cv::COLOR_GRAY2BGR);
 		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
@@ -447,15 +438,12 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 		}
 
 		// 使否只要顯示
-		if (!OnlyShow)
+		if (NeedSave)
 		{
 			//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 			cv::Mat TempImage;
 			ImageResult.convertTo(TempImage, CV_8U, 255);
 			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", TempImage);
-
-			CutFFTBorder.convertTo(TempImage, CV_8U, 255);
-			cv::imwrite("Images/OCTImages/CutFFTBorder_v2/" + std::to_string(x) + ".png", TempImage);
 
 			//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 			cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
@@ -467,7 +455,6 @@ void RawDataManager::TranformToIMG(bool OnlyShow = false)
 
 		// 暫存到陣列李
 		ImageResultArray.push_back(ImageResult);
-		CutFFTBorderArray.push_back(CutFFTBorder);
 		FastLabelArray.push_back(FastLabel);
 		CombineTestArray.push_back(ConbineTest);
 	}

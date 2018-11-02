@@ -135,11 +135,14 @@ void DentistTrainningDataMaker::ReadRawDataToImage()
 	{
 		rawManager.ReadRawDataFromFile(RawFileName);
 		rawManager.RawToPointCloud();
-		rawManager.TranformToIMG(false);
+		rawManager.TranformToIMG(true);
 
 		// UI 更改
 		ui.ScanNumSlider->setEnabled(true);
-		ScanNumSlider_Change(60);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
 	}
 	else
 	{

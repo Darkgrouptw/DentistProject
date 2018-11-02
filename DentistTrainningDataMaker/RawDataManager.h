@@ -6,6 +6,7 @@
 #include "TRCuda.cuh"
 #include "BluetoothManager.h"
 
+#include <cmath>
 #include <QVector>
 #include <QDataStream>
 #include <QLabel>
@@ -55,7 +56,6 @@ private:
 	// 以前的資料
 	DataManager			DManager;
 	TRcuda				theTRcuda;
-	cv::Mat				OCTMask;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -72,7 +72,6 @@ private:
 	// 存圖片的陣列
 	//////////////////////////////////////////////////////////////////////////
 	QVector<cv::Mat>	ImageResultArray;
-	QVector<cv::Mat>	CutFFTBorderArray;
 	QVector<cv::Mat>	FastLabelArray;
 	QVector<cv::Mat>	CombineTestArray;
 

@@ -173,11 +173,11 @@ public:
         ScanResult->setGeometry(QRect(910, 0, 581, 531));
         ImageResult = new QLabel(ScanResult);
         ImageResult->setObjectName(QStringLiteral("ImageResult"));
-        ImageResult->setGeometry(QRect(10, 40, 550, 134));
+        ImageResult->setGeometry(QRect(10, 40, 550, 135));
         ImageResult->setStyleSheet(QStringLiteral(""));
         FinalResult = new QLabel(ScanResult);
         FinalResult->setObjectName(QStringLiteral("FinalResult"));
-        FinalResult->setGeometry(QRect(10, 210, 550, 134));
+        FinalResult->setGeometry(QRect(10, 210, 550, 135));
         FinalResult->setStyleSheet(QStringLiteral(""));
         ImageResultText = new QLabel(ScanResult);
         ImageResultText->setObjectName(QStringLiteral("ImageResultText"));
@@ -191,6 +191,7 @@ public:
         ScanNumSlider->setGeometry(QRect(10, 360, 501, 22));
         ScanNumSlider->setMinimum(60);
         ScanNumSlider->setMaximum(200);
+        ScanNumSlider->setValue(60);
         ScanNumSlider->setOrientation(Qt::Horizontal);
         ScanNum_Min = new QLabel(ScanResult);
         ScanNum_Min->setObjectName(QStringLiteral("ScanNum_Min"));
