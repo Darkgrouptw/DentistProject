@@ -137,8 +137,6 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 	#pragma endregion
 
 
-
-
 	/*pin_ptr<int32_t> tmp_deviceID = &deviceID;
 	InitADC(4, tmp_deviceID);
 	clock_t scan_t1 = clock();
@@ -314,11 +312,13 @@ void RawDataManager::RawToPointCloud()
 }
 void RawDataManager::TranformToIMG(bool NeedSave = false)
 {
+	// 如果跑出結果是全黑的，那有可能是顯卡記憶體不夠的問題
 	ImageResultArray.clear();
-	FastLabelArray.clear();
+	SmoothResultArray.clear();
+	// FastLabelArray.clear();
 	CombineTestArray.clear();
 
-	bool DoFastLabel = true;
+	// bool DoFastLabel = true;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 這邊底下是舊的 Code
@@ -330,17 +330,18 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 	{
 		// Mat
 		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		cv::Mat FastLabel = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, cv::Scalar(0, 0, 0));
+		cv::Mat SmoothResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+		//cv::Mat FastLabel = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, cv::Scalar(0, 0, 0));
 		cv::Mat ConbineTest;
 
 		// 原本的變數
 		int tmpIdx;
 		int midIdx;
-		float idt, idtmax = 0, idtmin = 9999;
+		float idt, idtSmooth, idtmax = 0, idtmin = 9999;
 		int posZ;
 
 		// Map 參數
-		QVector<IndexMapInfo> IndexMap;
+		//QVector<IndexMapInfo> IndexMap;
 		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
 		{
 			// 這個 For 迴圈是算每一個結果
@@ -350,13 +351,16 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 				tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
 				midIdx = ((125 * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
 				idt = ((float)theTRcuda.VolumeData[tmpIdx] / (float)3.509173f) - (float)(3.39f / 3.509173f);// 調整後能量區間
+				idtSmooth = ((float)theTRcuda.VolumeDataAvg[tmpIdx] / (float)3.509173f) - (float)(3.39f / 3.509173f);
 
 				// 調整過飽和度的 顏色
 				ImageResult.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idt - 0.5) + 0.5);
+				SmoothResult.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idtSmooth - 0.5) + 0.5);
 			}
 
 			// 這個迴圈是去算
 			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
+			/*
 			if (theTRcuda.PointType[tmpIdx + 3] == 1 && theTRcuda.PointType[tmpIdx + 1] != 0) 
 			{
 				posZ = theTRcuda.PointType[tmpIdx + 1];
@@ -373,53 +377,51 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 				//cout << row << " " << posZ << endl;
 				for (int i = posZ; i < 1024; i++)
 					FastLabel.at<uchar>(row, i) = uchar(255);
-			}
+			}*/
 		}
 
 		//////////////////////////////////////////////////////////////////////////
 		// 找出邊界
 		//////////////////////////////////////////////////////////////////////////
-		if (DoFastLabel && IndexMap.size() > 0)
-		{
-			int arryIndex = 0;
-			int FromIndex = 0;
-			for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
-			{
-				// 這邊是正常情況下，剛剛好有找到的 Z 值
-				if (IndexMap.size() <= arryIndex && arryIndex - 2 >= 0)
-					FromIndex = LerpFunction(
-						IndexMap[arryIndex - 2].index, IndexMap[arryIndex - 2].ZValue,
-						IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
-						row
-					);
-				else if (row == IndexMap[arryIndex].index)
-					FromIndex = IndexMap[arryIndex++].ZValue;
-				else if (row < IndexMap[arryIndex].index && arryIndex > 0)
-					// 因為第一個沒有 -1 ，所以需要額外分開來做
-					FromIndex = LerpFunction(
-						IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
-						IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
-						row
-					);
-				else  if (row < IndexMap[arryIndex].index && arryIndex == 0)
-					FromIndex = LerpFunction(
-						IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
-						IndexMap[arryIndex + 1].index, IndexMap[arryIndex + 1].ZValue,
-						row
-					);
-				else
-				{
-					std::cout << "Fast Label 跳過 (" << row << ")!!" << std::endl;
-					break;
-				}
-				FromIndex = qBound(0, FromIndex, theTRcuda.VolumeSize_Z - 1);
-
-
-				// 填白色
-				for (int i = FromIndex; i < theTRcuda.VolumeSize_Z; i++)
-					FastLabel.at<uchar>(row, i) = uchar(255);
-			}
-		}
+		//if (DoFastLabel && IndexMap.size() > 0)
+		//{
+		//	int arryIndex = 0;
+		//	int FromIndex = 0;
+		//	for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		//	{
+		//		// 這邊是正常情況下，剛剛好有找到的 Z 值
+		//		if (IndexMap.size() <= arryIndex && arryIndex - 2 >= 0)
+		//			FromIndex = LerpFunction(
+		//				IndexMap[arryIndex - 2].index, IndexMap[arryIndex - 2].ZValue,
+		//				IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
+		//				row
+		//			);
+		//		else if (row == IndexMap[arryIndex].index)
+		//			FromIndex = IndexMap[arryIndex++].ZValue;
+		//		else if (row < IndexMap[arryIndex].index && arryIndex > 0)
+		//			// 因為第一個沒有 -1 ，所以需要額外分開來做
+		//			FromIndex = LerpFunction(
+		//				IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
+		//				IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
+		//				row
+		//			);
+		//		else  if (row < IndexMap[arryIndex].index && arryIndex == 0)
+		//			FromIndex = LerpFunction(
+		//				IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
+		//				IndexMap[arryIndex + 1].index, IndexMap[arryIndex + 1].ZValue,
+		//				row
+		//			);
+		//		else
+		//		{
+		//			std::cout << "Fast Label 跳過 (" << row << ")!!" << std::endl;
+		//			break;
+		//		}
+		//		FromIndex = qBound(0, FromIndex, theTRcuda.VolumeSize_Z - 1);
+		//		// 填白色
+		//		for (int i = FromIndex; i < theTRcuda.VolumeSize_Z; i++)
+		//			FastLabel.at<uchar>(row, i) = uchar(255);
+		//	}
+		//}
 
 		// 這邊是將 Contour & 結果，合再一起
 		// 先複製一份
@@ -445,8 +447,11 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 			ImageResult.convertTo(TempImage, CV_8U, 255);
 			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", TempImage);
 
+			SmoothResult.convertTo(TempImage, CV_8U, 255);
+			cv::imwrite("Images/OCTImages/smooth_v2/" + std::to_string(x) + ".png", TempImage);
+
 			//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-			cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
+			//cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
 
 			//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
 			cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ConbineTest);
@@ -455,7 +460,8 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 
 		// 暫存到陣列李
 		ImageResultArray.push_back(ImageResult);
-		FastLabelArray.push_back(FastLabel);
+		SmoothResultArray.push_back(SmoothResult);
+		//FastLabelArray.push_back(FastLabel);
 		CombineTestArray.push_back(ConbineTest);
 	}
 	cout << "轉成圖片完成!!" << endl;

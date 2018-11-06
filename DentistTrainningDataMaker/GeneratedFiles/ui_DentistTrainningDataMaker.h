@@ -237,7 +237,7 @@ public:
 "\357\274\272\357\274\232 0", nullptr));
         BLEStatus->setText(QApplication::translate("DentistTrainningDataMakerClass", "\350\227\215\350\212\275\347\213\200\346\205\213\357\274\232\346\234\252\351\200\243\346\216\245", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistTrainningDataMakerClass", "\350\227\215\350\212\275\350\243\235\347\275\256", nullptr));
-        RawDataToImage->setText(QApplication::translate("DentistTrainningDataMakerClass", "Raw Data \350\275\211\346\210\220\345\234\226", nullptr));
+        RawDataToImage->setText(QApplication::translate("DentistTrainningDataMakerClass", "Raw Data \350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", nullptr));
         pushButton->setText(QApplication::translate("DentistTrainningDataMakerClass", "PushButton", nullptr));
         OCTNormalSettingbOX->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "\345\270\270\347\224\250\350\250\255\345\256\232", nullptr));
         SaveLocationLabel->setText(QApplication::translate("DentistTrainningDataMakerClass", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));

@@ -130,7 +130,7 @@ void DentistTrainningDataMaker::ConnectBLEDeivce()
 // OCT 相關
 void DentistTrainningDataMaker::ReadRawDataToImage()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/2018.10.18", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
 		rawManager.ReadRawDataFromFile(RawFileName);
