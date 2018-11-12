@@ -24,6 +24,7 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
 	connect(ui.SaveLocationBtn,				SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime(int)));
+	connect(ui.ScanButton,					SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,				SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
@@ -167,6 +168,14 @@ void DentistTrainningDataMaker::SaveWithTime(int signalNumber)
 	cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
 }
 void DentistTrainningDataMaker::AutoSaveWhileScan(int signalNumber)
+{
+	cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
+}
+void DentistTrainningDataMaker::ScanOCT()
+{
+	// 掃描
+}
+void DentistTrainningDataMaker::BorderTest()
 {
 
 }

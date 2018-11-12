@@ -256,7 +256,7 @@
        <string>Raw Data 轉成圖輸出</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="EasyBorderDetect">
       <property name="geometry">
        <rect>
         <x>560</x>
@@ -266,7 +266,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>PushButton</string>
+       <string>簡易邊界測試</string>
       </property>
      </widget>
      <widget class="QGroupBox" name="OCTNormalSettingbOX">
@@ -350,6 +350,19 @@
        </property>
        <property name="checked">
         <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="ScanButton">
+       <property name="geometry">
+        <rect>
+         <x>370</x>
+         <y>130</y>
+         <width>151</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>掃    描</string>
        </property>
       </widget>
      </widget>
