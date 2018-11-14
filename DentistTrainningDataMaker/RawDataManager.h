@@ -7,16 +7,19 @@
 #include "BluetoothManager.h"
 
 #include <cmath>
+#include <vector>
 #include <QVector>
 #include <QDataStream>
 #include <QLabel>
 #include <QByteArray>
 #include <QPixmap>
 #include <QImage>
+#include <QMessageBox>
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/xfeatures2d.hpp"
 
 // 這邊是為了要讓邊界 Smooth 一點
 /*struct IndexMapInfo
@@ -46,9 +49,10 @@ public:
 	// ScanDataFromDevice	=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataFromFile(QString);
-	void ScanDataFromDevice(QString);
-	void RawToPointCloud();
-	void TranformToIMG(bool);
+	void ScanDataFromDevice(QString);											// 輸入儲存路徑
+	void RawToPointCloud();														// 把 Raw 檔，轉乘點雲
+	void TranformToIMG(bool);													// 轉換成圖檔
+	bool ShakeDetect(QMainWindow*, bool);										// 
 
 	// 藍芽的部分
 	BluetoothManager	bleManager;
@@ -91,7 +95,10 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	int					LerpFunction(int, int, int, int, int);
 	QImage				Mat2QImage(cv::Mat const &, int);
+	vector<cv::DMatch>	SURF_Feature_Detect(cv::Mat, cv::Mat, bool IsShowDebug = false);							// 做 SIFT 判斷
+
 
 	QByteArray buffer;
+	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 };
 

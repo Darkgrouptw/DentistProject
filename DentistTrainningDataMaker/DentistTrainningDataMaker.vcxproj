@@ -101,7 +101,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;opengl32.lib;glu32.lib;LibGlove.lib;Qt5OpenGL.lib;Qt5Widgets.lib;OpenMeshCore.lib;opencv_world341.lib;cuda.lib;cudart.lib;cufft.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;opengl32.lib;glu32.lib;LibGlove.lib;Qt5OpenGL.lib;Qt5Widgets.lib;OpenMeshCore.lib;opencv_core341.lib;opencv_cudaarithm341.lib;opencv_features2d341.lib;opencv_flann341.lib;opencv_highgui341.lib;opencv_imgcodecs341.lib;opencv_imgproc341.lib;opencv_videoio341.lib;opencv_xfeatures2d341.lib;cuda.lib;cudart.lib;cufft.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>

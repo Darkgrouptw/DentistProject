@@ -22,13 +22,16 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	
 	// OCT 相關
 	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
+	connect(ui.EasyBorderDetect,			SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
 	connect(ui.SaveLocationBtn,				SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime(int)));
 	connect(ui.ScanButton,					SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
+	connect(ui.BeepSoundTest,				SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,				SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
 
+	// 其他
 	#pragma region 傳 UI 指標進去
 	// 藍芽的部分
 	QVector<QObject*>		objList;
@@ -152,6 +155,30 @@ void DentistTrainningDataMaker::ReadRawDataToImage()
 		ui.ScanNumSlider->setValue(60);
 	}
 }
+void DentistTrainningDataMaker::ReadRawDataForBorderTest()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.RawToPointCloud();
+		rawManager.TranformToIMG(false);
+		rawManager.ShakeDetect(this, true);
+
+		// UI 更改
+		/*ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);*/
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
+	}
+}
 void DentistTrainningDataMaker::ChooseSaveLocaton()
 {
 	QString OCT_SaveLocation = QFileDialog::getExistingDirectory(this, "Save OCT Data Location", ui.SaveLocationText->text() + "/../", QFileDialog::DontUseNativeDialog);
@@ -175,9 +202,9 @@ void DentistTrainningDataMaker::ScanOCT()
 {
 	// 掃描
 }
-void DentistTrainningDataMaker::BorderTest()
+void DentistTrainningDataMaker::BeepSoundTest()
 {
-
+	cout << "\a";
 }
 
 // 顯示部分的事件

@@ -2,6 +2,7 @@
 
 RawDataManager::RawDataManager()
 {
+	cout << "OpenCV Version: " << CV_VERSION << endl;
 	DManager.ReadCalibrationData();
 }
 RawDataManager::~RawDataManager()
@@ -325,8 +326,8 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 	// 不是我寫的 QAQ
 	//////////////////////////////////////////////////////////////////////////
 	// 取 60 ~ 200
-	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
-	for (int x = 60; x <= 200; x++)
+	for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
+	//for (int x = 60; x <= 200; x++)
 	{
 		// Mat
 		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
@@ -466,6 +467,28 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 	}
 	cout << "轉成圖片完成!!" << endl;
 }
+bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug = false)
+{
+	// 錯誤判斷，判斷進入這個 Function 一定要有資料
+	if (ImageResultArray.size() == 0)
+	{
+		QMessageBox::critical(main, codec->toUnicode("Function 錯誤"), codec->toUnicode("沒有資料可以執行!!"));
+		return false;
+	}
+	cv::Mat FirstImage = SmoothResultArray[0];
+	FirstImage.convertTo(FirstImage, CV_8U, 255);
+	cv::Mat LastImage = SmoothResultArray[SmoothResultArray.size() - 1];
+	LastImage.convertTo(LastImage, CV_8U, 255);
+
+	// 這邊做兩個判斷
+	// 1. 如果 PSNR 高於 30
+	// 2. SURF 找出大於等於 2 個
+	if (PSNR(FirstImage, LastImage) > 30 ||
+		SURF_Feature_Detect(FirstImage, LastImage).size() >= 2)
+		return true;
+	return false;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Helper Function
@@ -488,4 +511,45 @@ QImage RawDataManager::Mat2QImage(cv::Mat const& src, int Type)
 	dest.bits();												// enforce deep copy, see documentation 
 																// of QImage::QImage ( const uchar * data, int width, int height, Format format )
 	return dest;
+}
+vector<cv::DMatch> RawDataManager::SURF_Feature_Detect(cv::Mat img_1, cv::Mat img_2, bool IsShowDebug)
+{
+	// 用 SURF 來抓 Feature
+	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(400);
+	vector<cv::KeyPoint> keypoints1, keypoints2;
+	cv::Mat descriptors1, descriptors2;
+	detector->detectAndCompute(img_1, cv::noArray(), keypoints1, descriptors1);
+	detector->detectAndCompute(img_2, cv::noArray(), keypoints2, descriptors2);
+
+	// KNN 找 Matching
+	cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+	vector<vector<cv::DMatch>> knn_matches;
+	matcher->knnMatch(descriptors1, descriptors2, knn_matches, 2);
+
+	// 抓出好的 Feature 點
+	const float ratio_thresh = 0.6f;
+	vector<cv::DMatch> good_matches;
+	for (size_t i = 0; i < knn_matches.size(); i++)
+		if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
+			good_matches.push_back(knn_matches[i][0]);
+
+
+	if (IsShowDebug)
+	{
+		cv::Mat img_matches;
+		cv::drawMatches(
+			img_1, keypoints1,
+			img_2, keypoints2,
+			good_matches,
+			img_matches,
+			cv::Scalar::all(-1),
+			cv::Scalar::all(-1),
+			std::vector<char>(),
+			cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS
+		);
+
+		imshow("Good Matches", img_matches);
+	}
+	cout << "好的 Feature 數: " << good_matches.size() << endl;
+	return good_matches;
 }

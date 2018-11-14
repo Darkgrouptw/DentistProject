@@ -47,11 +47,12 @@ private slots:
 
 	// OCT 相關
 	void ReadRawDataToImage();
+	void ReadRawDataForBorderTest();	// 邊界測試
 	void ChooseSaveLocaton();
 	void SaveWithTime(int);				// UI 是否勾選(儲存加上時間)
 	void AutoSaveWhileScan(int);		// UI 是否勾選(掃描自動儲存)
 	void ScanOCT();						// 掃描按鈕
-	void BorderTest();					// 邊界測試
+	void BeepSoundTest();				// 測試掃描時會使用的 Beep Sound
 
 	// 顯示部分的事件
 	void ScanNumSlider_Change(int);
