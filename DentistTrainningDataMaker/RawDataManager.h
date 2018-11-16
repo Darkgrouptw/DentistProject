@@ -19,7 +19,6 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/xfeatures2d.hpp"
 
 // 這邊是為了要讓邊界 Smooth 一點
 /*struct IndexMapInfo
@@ -95,7 +94,6 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	int					LerpFunction(int, int, int, int, int);
 	QImage				Mat2QImage(cv::Mat const &, int);
-	vector<cv::DMatch>	SURF_Feature_Detect(cv::Mat, cv::Mat, bool);			// 做 SIFT 判斷
 
 
 	QByteArray buffer;

@@ -464,13 +464,13 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>60</number>
+      <number>0</number>
      </property>
      <property name="maximum">
-      <number>200</number>
+      <number>249</number>
      </property>
      <property name="value">
-      <number>60</number>
+      <number>0</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -486,7 +486,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>60</string>
+      <string>0</string>
      </property>
     </widget>
     <widget class="QLabel" name="ScanNum_Max">
@@ -499,7 +499,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>200</string>
+      <string>249</string>
      </property>
     </widget>
     <widget class="QLabel" name="ScanNum_Value">
@@ -512,7 +512,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>60</string>
+      <string>0</string>
      </property>
     </widget>
    </widget>

@@ -19,10 +19,10 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 }
 void RawDataManager::ShowImageIndex(int index)
 {
-	if (60 <= index && index <= 200 && ImageResultArray.size() > 0)
+	if (0 <= index && index < 250 && ImageResultArray.size() > 0)
 	{
-		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index - 60], CV_32F);
-		QImage Pixmap_FinalResult = Mat2QImage(CombineTestArray[index - 60], CV_8UC3);
+		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index], CV_32F);
+		QImage Pixmap_FinalResult = Mat2QImage(CombineTestArray[index], CV_8UC3);
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 		FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
 	}
@@ -484,7 +484,6 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 	// 1. 如果 PSNR 高於 30
 	// 2. SURF 找出大於等於 2 個
 	double PSNR_Value = PSNR(FirstImage, LastImage);
-	int SURF_Value = SURF_Feature_Detect(FirstImage, LastImage, IsShowForDebug).size();
 	cout << "PSNR: " << PSNR_Value << endl;
 	if (PSNR_Value > 30)
 		return true;
@@ -513,45 +512,4 @@ QImage RawDataManager::Mat2QImage(cv::Mat const& src, int Type)
 	dest.bits();												// enforce deep copy, see documentation 
 																// of QImage::QImage ( const uchar * data, int width, int height, Format format )
 	return dest;
-}
-vector<cv::DMatch> RawDataManager::SURF_Feature_Detect(cv::Mat img_1, cv::Mat img_2, bool IsShowDebug)
-{
-	// 用 SURF 來抓 Feature
-	cv::Ptr<cv::xfeatures2d::SURF> detector = cv::xfeatures2d::SURF::create(400);
-	vector<cv::KeyPoint> keypoints1, keypoints2;
-	cv::Mat descriptors1, descriptors2;
-	detector->detectAndCompute(img_1, cv::noArray(), keypoints1, descriptors1);
-	detector->detectAndCompute(img_2, cv::noArray(), keypoints2, descriptors2);
-
-	// KNN 找 Matching
-	cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
-	vector<vector<cv::DMatch>> knn_matches;
-	matcher->knnMatch(descriptors1, descriptors2, knn_matches, 2);
-
-	// 抓出好的 Feature 點
-	const float ratio_thresh = 0.7f;
-	vector<cv::DMatch> good_matches;
-	for (size_t i = 0; i < knn_matches.size(); i++)
-		if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)
-			good_matches.push_back(knn_matches[i][0]);
-
-
-	if (IsShowDebug)
-	{
-		cv::Mat img_matches;
-		cv::drawMatches(
-			img_1, keypoints1,
-			img_2, keypoints2,
-			good_matches,
-			img_matches,
-			cv::Scalar::all(-1),
-			cv::Scalar::all(-1),
-			std::vector<char>(),
-			cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS
-		);
-
-		imshow("Good Matches", img_matches);
-	}
-	cout << "好的 Feature 數: " << good_matches.size() << endl;
-	return good_matches;
 }

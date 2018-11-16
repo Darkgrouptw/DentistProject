@@ -139,14 +139,14 @@ void DentistTrainningDataMaker::ReadRawDataToImage()
 	{
 		rawManager.ReadRawDataFromFile(RawFileName);
 		rawManager.RawToPointCloud();
-		rawManager.TranformToIMG(true);
+		rawManager.TranformToIMG(false);
 
 		// UI 更改
 		ui.ScanNumSlider->setEnabled(true);
-		if (ui.ScanNumSlider->value() == 60)
-			ScanNumSlider_Change(60);
+		if (ui.ScanNumSlider->value() == 0)
+			ScanNumSlider_Change(0);
 		else
-			ui.ScanNumSlider->setValue(60);
+			ui.ScanNumSlider->setValue(0);
 	}
 	else
 	{
@@ -166,11 +166,11 @@ void DentistTrainningDataMaker::ReadRawDataForBorderTest()
 		cout << (rawManager.ShakeDetect(this, true) ? "無晃動!!" : "有晃動!!") << endl;
 
 		// UI 更改
-		/*ui.ScanNumSlider->setEnabled(true);
-		if (ui.ScanNumSlider->value() == 60)
-			ScanNumSlider_Change(60);
+		ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 0)
+			ScanNumSlider_Change(0);
 		else
-			ui.ScanNumSlider->setValue(60);*/
+			ui.ScanNumSlider->setValue(0);
 	}
 	else
 	{

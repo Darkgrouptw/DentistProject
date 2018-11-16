@@ -197,9 +197,9 @@ public:
         ScanNumSlider->setObjectName(QStringLiteral("ScanNumSlider"));
         ScanNumSlider->setEnabled(false);
         ScanNumSlider->setGeometry(QRect(10, 360, 501, 22));
-        ScanNumSlider->setMinimum(60);
-        ScanNumSlider->setMaximum(200);
-        ScanNumSlider->setValue(60);
+        ScanNumSlider->setMinimum(0);
+        ScanNumSlider->setMaximum(249);
+        ScanNumSlider->setValue(0);
         ScanNumSlider->setOrientation(Qt::Horizontal);
         ScanNum_Min = new QLabel(ScanResult);
         ScanNum_Min->setObjectName(QStringLiteral("ScanNum_Min"));
@@ -260,9 +260,9 @@ public:
         FinalResult->setText(QString());
         ImageResultText->setText(QApplication::translate("DentistTrainningDataMakerClass", "OCT \350\275\211\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
         FinalResultText->setText(QApplication::translate("DentistTrainningDataMakerClass", "\350\231\225\347\220\206\345\256\214 & \346\212\223\345\207\272\351\202\212\347\225\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
-        ScanNum_Min->setText(QApplication::translate("DentistTrainningDataMakerClass", "60", nullptr));
-        ScanNum_Max->setText(QApplication::translate("DentistTrainningDataMakerClass", "200", nullptr));
-        ScanNum_Value->setText(QApplication::translate("DentistTrainningDataMakerClass", "60", nullptr));
+        ScanNum_Min->setText(QApplication::translate("DentistTrainningDataMakerClass", "0", nullptr));
+        ScanNum_Max->setText(QApplication::translate("DentistTrainningDataMakerClass", "249", nullptr));
+        ScanNum_Value->setText(QApplication::translate("DentistTrainningDataMakerClass", "0", nullptr));
     } // retranslateUi
 
 };
