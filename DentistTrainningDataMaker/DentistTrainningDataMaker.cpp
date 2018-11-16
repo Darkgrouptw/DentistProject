@@ -24,7 +24,8 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
 	connect(ui.EasyBorderDetect,			SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
 	connect(ui.SaveLocationBtn,				SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
-	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime(int)));
+	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
+	connect(ui.AutoScanWhileScan_CheckBox,	SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.ScanButton,					SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
 	connect(ui.BeepSoundTest,				SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
 
@@ -55,7 +56,7 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 
 	QDate date = QDate::currentDate();
 	
-	currentDateStr = date.toString("yyyy.MM.dd");
+	QString currentDateStr = date.toString("yyyy.MM.dd");
 	cout << "日期：" << currentDateStr.toStdString() << endl;
 	#ifdef TEST_NO_OCT
 	// 表示在桌機測試
@@ -188,17 +189,62 @@ void DentistTrainningDataMaker::ChooseSaveLocaton()
 		QDir().mkdir(OCT_SaveLocation);
 	}
 }
-void DentistTrainningDataMaker::SaveWithTime(int signalNumber)
+void DentistTrainningDataMaker::SaveWithTime_ChangeEvent(int signalNumber)
 {
-	cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
+	if (!ui.SaveWithTime_CheckBox->isChecked())
+	{
+		QMessageBox::information(
+			this,																												// 此視窗
+			codec->toUnicode("貼心的提醒視窗"),																					// Title
+			codec->toUnicode("如果取消勾選，那儲存位置會以掃描順序來定\n(Ex: V:/OCT OCT Scan DataSet/1)")						// 中間的文字解說
+		);
+	}
+	//cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
 }
-void DentistTrainningDataMaker::AutoSaveWhileScan(int signalNumber)
+void DentistTrainningDataMaker::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 {
-	cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
+	if (ui.AutoScanWhileScan_CheckBox->isChecked())
+	{
+		QMessageBox::information(
+			this,																												// 此視窗
+			codec->toUnicode("貼心的提醒視窗"),																					// Title
+			codec->toUnicode("如果勾選，會增加資料儲存致硬碟的時間")															// 中間的文字解說
+		);
+	}
+	//cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
 }
 void DentistTrainningDataMaker::ScanOCT()
 {
+	#pragma region 檔名處理
+	QString SaveLocation;							// 最後儲存的路徑
+	if (ui.SaveWithTime_CheckBox->isChecked())
+	{
+		QTime currentTime = QTime::currentTime();
+		QString TimeFileName = currentTime.toString("hh:mm:ss.zzz");
+		cout << "現在時間: " << TimeFileName.toStdString() << endl;
+
+		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(TimeFileName);
+	}
+	else
+	{
+		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(QString::number(ScanIndex));
+		ScanIndex++;
+	}
+	cout << "儲存位置: " << SaveLocation.toStdString() << endl;
+	#pragma endregion
+	//QString location = 
+
 	// 掃描
+	#ifdef TEST_NO_OCT
+	// 判斷是否有
+	//QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
+	#else
+	// 開始 Scan
+
+	//ui.SaveLocationText
+
+	//rawManager.ScanDataFromDevice()
+	#endif
 }
 void DentistTrainningDataMaker::BeepSoundTest()
 {

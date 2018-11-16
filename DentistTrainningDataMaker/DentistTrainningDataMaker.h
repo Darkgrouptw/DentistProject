@@ -11,6 +11,7 @@
 #include "GlobalDefine.h"
 #include "RawDataManager.h"
 
+#include <QMessageBox>
 using namespace std;
 
 class DentistTrainningDataMaker : public QMainWindow
@@ -26,9 +27,9 @@ private:
 	//QFileDialog dia
 	RawDataManager rawManager;
 
-	// 時間字串
-	QString currentDateStr;
-
+	// 儲存時，如果不溝時間，會以 Index 儲存
+	int ScanIndex = 0;
+	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 
 private slots:
 	void LoadSTL();
@@ -47,12 +48,12 @@ private slots:
 
 	// OCT 相關
 	void ReadRawDataToImage();
-	void ReadRawDataForBorderTest();	// 邊界測試
+	void ReadRawDataForBorderTest();				// 邊界測試
 	void ChooseSaveLocaton();
-	void SaveWithTime(int);				// UI 是否勾選(儲存加上時間)
-	void AutoSaveWhileScan(int);		// UI 是否勾選(掃描自動儲存)
-	void ScanOCT();						// 掃描按鈕
-	void BeepSoundTest();				// 測試掃描時會使用的 Beep Sound
+	void SaveWithTime_ChangeEvent(int);				// UI 是否勾選(儲存加上時間)
+	void AutoSaveWhileScan_ChangeEvent(int);		// UI 是否勾選(掃描自動儲存)
+	void ScanOCT();									// 掃描按鈕
+	void BeepSoundTest();							// 測試掃描時會使用的 Beep Sound
 
 	// 顯示部分的事件
 	void ScanNumSlider_Change(int);
