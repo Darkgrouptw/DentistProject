@@ -62,6 +62,9 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 	t2 = clock();
 
 	std::cout << "ReadRawData done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s" << std::endl;
+
+	RawDataProperty *tmpRDP = &DManager.rawDP;
+	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
 void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 {
@@ -95,35 +98,50 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 	System::String^ ErrorString = gcnew System::String("");
 	System::String^ SaveFileName_C = gcnew System::String(SaveFileName.toStdString().c_str());
 
-
 	OCT64::OCT64::StartCap(
 		OCT_DeviceID,						// 裝置 ID
 		OCT_HandleOut,						// Handle (要傳給 Scan 的)
 		LV_65,								// ?
 		SampleCount,						// 2048
 		OCT_DataLen,						// 資料長度
-		true,								// 這個好像是要步要 output?
+		true,								// 這個好像是要步要 output
 		SaveFileName_C,						// 儲存位置
-		OCT_ErrorBoolean,					// ?
+		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息
 	);
+	// cout << "OCT StartCap Error String: " << MarshalString(ErrorString);
 	// StartCap(deviceID, tmp_Handle, LV_65, SampRec, tmp_ByteLen, Savedata, SaveName, tmp_ErrorBoolean, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
+
+	// 要接的 Array
+	cli::array<unsigned short>^ OutDataArray = gcnew cli::array<unsigned short>(OCT_PIC_SIZE);				// 暫存的 Array
+	unsigned short* Final_OCT_Array = new unsigned short[OCT_PIC_SIZE * 125];								// 取值得 Array
+	unsigned short* Temp_OCT_Pointer = Final_OCT_Array;														// 暫存，因為上面那個會一直位移 (別問我，前人就這樣寫= =)
+	char* Final_OCT_Char = new char[OCT_PIC_SIZE * 250];													// 最後要丟到 Cuda 的 Array
 
 	// 動慢軸
 	OCT_AllDataLen = OCT_DataLen * 2;
 	int PicNumber = 0;
 	while (PicNumber < 125) {
-		/*OCT64::OCT64::Scan(
-			OCT_HandleOut,
-		);*/
+		// 掃描
+		cli::array<unsigned short>^ inputArray = gcnew cli::array<unsigned short>(OCT_PIC_SIZE);
+		OCT64::OCT64::Scan(
+			OCT_HandleOut,					// Handle
+			OCT_AllDataLen,					// 資料大小
+			inputArray,						// 這個沒有用
+			OutDataArray,					// 掃描的結果
+			ErrorString						// 錯誤訊息
+		);
 		//ScanADC(HandleOut, AllDatabyte, ArrSize, ByteLen, outarr, OutArrLenIn, tmp_OutArrLenOut, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
+
+		// cli Array 轉到 manage array
+		pin_ptr<unsigned short> pinPtrArray = &OutDataArray[OutDataArray->GetLowerBound(0)];
+		memcpy(Final_OCT_Array, pinPtrArray, sizeof(unsigned short) * OCT_PIC_SIZE);
+		Final_OCT_Array += OCT_PIC_SIZE;																	// Offset 一段距離
 		//memcpy(final_oct_arr, outarr, sizeof(unsigned short) * PIC_SIZE);
+		//final_oct_arr = final_oct_arr + PIC_SIZE;
 
 		// 繼續往下掃
 		PicNumber++;
-
-		//final_oct_arr = final_oct_arr + PIC_SIZE;
-
 	}
 	#pragma endregion
 	#pragma region 關閉已開的 Port
@@ -131,13 +149,18 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 	port.RtsEnable = false;
 	port.Close();
 	#pragma endregion
-	#pragma region 轉資料
+	#pragma region 丟到 Cuda 上解資料
+	OCT_DataType_Transfrom(Temp_OCT_Pointer, OCT_PIC_SIZE * 125, Final_OCT_Char);
+	// unsigned_short_to_char(interator, PIC_SIZE * 125, final_oct_char);
+
 	// 要將資料轉到 DManager.rawDP 上
-	//vector<char> tmp_char(final_oct_char, final_oct_char + PIC_SIZE * 250);
-	//theTRcuda.RawToPointCloud(tmp_char.data(), tmp_char.size(), 250, 2048);
+	vector<char> VectorScan(Final_OCT_Char, Final_OCT_Char + OCT_PIC_SIZE * 250);
+	theTRcuda.RawToPointCloud(VectorScan.data(), VectorScan.size(), 250, 2048);
 	#pragma endregion
-
-
+	#pragma region 刪除新創的 New Array
+	delete Final_OCT_Array;
+	delete Final_OCT_Char;
+	#pragma endregion
 	/*pin_ptr<int32_t> tmp_deviceID = &deviceID;
 	InitADC(4, tmp_deviceID);
 	clock_t scan_t1 = clock();
@@ -305,11 +328,6 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 
 	std::cout << "full_scan_time:" << full_scan_time << "s" << std::endl;
 	std::cout << "all_time:" << all_time << "s" << std::endl;*/
-}
-void RawDataManager::RawToPointCloud()
-{
-	RawDataProperty *tmpRDP = &DManager.rawDP;
-	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
 void RawDataManager::TranformToIMG(bool NeedSave = false)
 {
@@ -512,4 +530,28 @@ QImage RawDataManager::Mat2QImage(cv::Mat const& src, int Type)
 	dest.bits();												// enforce deep copy, see documentation 
 																// of QImage::QImage ( const uchar * data, int width, int height, Format format )
 	return dest;
+}
+string RawDataManager::MarshalString(System::String^ s)
+{
+	using namespace System::Runtime::InteropServices;
+	const char* chars =
+		(const char*)(Marshal::StringToHGlobalAnsi(s)).ToPointer();
+	string os = chars;
+	Marshal::FreeHGlobal(System::IntPtr((void*)chars));
+	return os;
+}
+void RawDataManager::OCT_DataType_Transfrom(unsigned short *input, int inputlen, char *output)
+{
+	int outputlen_tmp = 0;
+	for (int i = 0; i < inputlen; i++) 
+	{
+		unsigned short tmp_short = input[i];
+		tmp_short = tmp_short >> 8;
+
+		output[outputlen_tmp] = input[i];
+		outputlen_tmp++;
+
+		output[outputlen_tmp] = tmp_short;
+		outputlen_tmp++;
+	}
 }

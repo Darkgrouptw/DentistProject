@@ -970,7 +970,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	int floatDataSize = data_Size;
 	int size_X = floatDataSize / size_Z / size_Y / 2;
 	t2 = clock();
-	std::cout << "MemcpyHostToDevice done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "MemcpyHostToDevice done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// Raw data to float
 	t1 = clock();
@@ -991,8 +991,8 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	cudaFree(gpuData);
 
 	t2 = clock();
-	std::cout << "floatDataSize : " << floatDataSize << "\n";
-	std::cout << "RawDataToFloat done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "floatDataSize : " << floatDataSize << "\n";
+	//std::cout << "RawDataToFloat done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	/* debug output : Raw data to float
 	cout<<"gpuError : "<<cudaGetErrorString(gpuError)<<"\n";
@@ -1031,8 +1031,8 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 		cudaFree(gpuCutDataX);
 
 		t2 = clock();
-		std::cout << "floatDataSize : " << floatDataSize << "\n";
-		std::cout << "CutUselessData done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+		//std::cout << "floatDataSize : " << floatDataSize << "\n";
+		//std::cout << "CutUselessData done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	}
 
 	// Reverse data
@@ -1046,7 +1046,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	cudaFree(gpuFloatData);
 
 	t2 = clock();
-	std::cout << "Reverse done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Reverse done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	//lambda to k
 	t1 = clock();
@@ -1070,15 +1070,15 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	cudaFree(gpuPXscale);
 	cudaFree(gpuStepVal);
 	t2 = clock();
-	std::cout << "lambda to k done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "lambda to k done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// data out for RawDataScanP draw
 	if (RawDataScanP != NULL)
 		free(RawDataScanP);
 	RawDataScanP = (float*)malloc(sizeof(float) * size_Z * size_Y);
 	gpuError = cudaMemcpy(RawDataScanP, gpuReversedData, sizeof(float) * size_Z * size_Y, cudaMemcpyDeviceToHost);
-	std::cout << "RawDataScanP[size_Z*125]"<< RawDataScanP[size_Z*125] << " \n";
-	std::cout << "RawDataScanP[size_Z*126-1]" << RawDataScanP[size_Z * 126-1] << " \n";
+	//std::cout << "RawDataScanP[size_Z*125]"<< RawDataScanP[size_Z*125] << " \n";
+	//std::cout << "RawDataScanP[size_Z*126-1]" << RawDataScanP[size_Z * 126-1] << " \n";
 	int over_count = 0;
 	for (int i = 0; i < size_Z; i++)
 	{
@@ -1087,7 +1087,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 			over_count++;
 		}
 	}
-	std::cout << "over count:" << over_count << "\n";
+	//std::cout << "over count:" << over_count << "\n";
 	
 	
 	// Sample X Y
@@ -1110,8 +1110,8 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 
 		t2 = clock();
 		//cout << "gpuError : " << cudaGetErrorString(gpuError) << "\n";
-		std::cout << "floatDataSize : " << floatDataSize << "\n";
-		std::cout << "SampleXY done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+		//std::cout << "floatDataSize : " << floatDataSize << "\n";
+		//std::cout << "SampleXY done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	}//*/
 
 	// CUFFT
@@ -1156,8 +1156,8 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	else
 		cudaFree(gpuReversedData);
 	t2 = clock();
-	std::cout << "cuff nx : " << NX << " Batch : " << BATCH << " split : " << split << "\n";
-	std::cout << "CUFFT done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "cuff nx : " << NX << " Batch : " << BATCH << " split : " << split << "\n";
+	//std::cout << "CUFFT done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// Shift data
 	t1 = clock();
@@ -1170,7 +1170,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	cudaFree(gpuFloatData);
 
 	t2 = clock();
-	std::cout << "Shift data done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Shift data done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// data out for opengl draw
 	if (VolumeData != NULL)
@@ -1189,7 +1189,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	cudaFree(gpuShiftData);
 
 	t2 = clock();
-	std::cout << "Averge done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Averge done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	if (VolumeDataAvg != NULL)
 		free(VolumeDataAvg);
@@ -1203,7 +1203,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	gpuError = cudaDeviceSynchronize();
 
 	t2 = clock();
-	std::cout << "gpuSumThresh done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "gpuSumThresh done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	
 	// Peak Detect
 	t1 = clock();
@@ -1215,7 +1215,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 
 	cudaFree(gpuAvergeData);
 	t2 = clock();
-	std::cout << "Peak Detect done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Peak Detect done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// Min Peak
 	t1 = clock();
@@ -1236,7 +1236,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	gpuSetMinPeak << <gridDimX, blockDimX >> >(gpuPointType, floatDataSize, size_X, size_Y, size_Z, tmpMinPeak, boardNRange);
 	gpuError = cudaDeviceSynchronize();
 	t2 = clock();
-	std::cout << "Min Peak done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Min Peak done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// Board Detect
 	t1 = clock();
@@ -1247,7 +1247,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	}
 
 	t2 = clock();
-	std::cout << "Board Detect done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Board Detect done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	//Test Mapping Time
 	t1 = clock();
@@ -1259,7 +1259,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	cudaFree(gpuMappingT);
 
 	t2 = clock();
-	std::cout << "Mapping done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Mapping done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	//*/
 	//pull data from gpu to cpu
@@ -1276,7 +1276,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	VolumeSize_Z = size_Z;
 	std::cout << "X: " << size_X << " Y: " << size_Y << " Z: " << size_Z << "\n";
 	t2 = clock();
-	std::cout << "Pull Data done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
+	//std::cout << "Pull Data done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	t4 = clock();
 	std::cout << "RawToPointCloud Total t: " << (t4 - t3) / (double)(CLOCKS_PER_SEC) << " s\n";
 }

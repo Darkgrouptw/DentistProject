@@ -138,7 +138,6 @@ void DentistTrainningDataMaker::ReadRawDataToImage()
 	if (RawFileName != "")
 	{
 		rawManager.ReadRawDataFromFile(RawFileName);
-		rawManager.RawToPointCloud();
 		rawManager.TranformToIMG(false);
 
 		// UI 更改
@@ -161,7 +160,6 @@ void DentistTrainningDataMaker::ReadRawDataForBorderTest()
 	if (RawFileName != "")
 	{
 		rawManager.ReadRawDataFromFile(RawFileName);
-		rawManager.RawToPointCloud();
 		rawManager.TranformToIMG(false);
 		cout << (rawManager.ShakeDetect(this, true) ? "無晃動!!" : "有晃動!!") << endl;
 

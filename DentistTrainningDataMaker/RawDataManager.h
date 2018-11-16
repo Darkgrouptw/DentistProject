@@ -48,9 +48,8 @@ public:
 	// ScanDataFromDevice	=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataFromFile(QString);
-	void ScanDataFromDevice(QString);											// 輸入儲存路徑
-	void RawToPointCloud();														// 把 Raw 檔，轉乘點雲
-	void TranformToIMG(bool);													// 轉換成圖檔
+	void ScanDataFromDevice(QString);											// 輸入儲存路徑，轉點雲
+	void TranformToIMG(bool);													// 轉換成圖檔，轉點雲
 	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
 
 	// 藍芽的部分
@@ -70,6 +69,7 @@ private:
 	unsigned int		OCT_AllDataLen;
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
+	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
@@ -94,7 +94,8 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	int					LerpFunction(int, int, int, int, int);
 	QImage				Mat2QImage(cv::Mat const &, int);
-
+	string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
+	void				OCT_DataType_Transfrom(unsigned short *, int , char *);	// 這邊是因為他要轉到 char
 
 	QByteArray buffer;
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
