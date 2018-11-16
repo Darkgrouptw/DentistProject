@@ -163,7 +163,7 @@ void DentistTrainningDataMaker::ReadRawDataForBorderTest()
 		rawManager.ReadRawDataFromFile(RawFileName);
 		rawManager.RawToPointCloud();
 		rawManager.TranformToIMG(false);
-		rawManager.ShakeDetect(this, true);
+		cout << (rawManager.ShakeDetect(this, true) ? "無晃動!!" : "有晃動!!") << endl;
 
 		// UI 更改
 		/*ui.ScanNumSlider->setEnabled(true);

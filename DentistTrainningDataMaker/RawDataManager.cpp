@@ -467,7 +467,7 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 	}
 	cout << "轉成圖片完成!!" << endl;
 }
-bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug = false)
+bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 {
 	// 錯誤判斷，判斷進入這個 Function 一定要有資料
 	if (ImageResultArray.size() == 0)
@@ -483,8 +483,10 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug = false)
 	// 這邊做兩個判斷
 	// 1. 如果 PSNR 高於 30
 	// 2. SURF 找出大於等於 2 個
-	if (PSNR(FirstImage, LastImage) > 30 ||
-		SURF_Feature_Detect(FirstImage, LastImage).size() >= 2)
+	double PSNR_Value = PSNR(FirstImage, LastImage);
+	int SURF_Value = SURF_Feature_Detect(FirstImage, LastImage, IsShowForDebug).size();
+	cout << "PSNR: " << PSNR_Value << endl;
+	if (PSNR_Value > 30)
 		return true;
 	return false;
 }
@@ -527,7 +529,7 @@ vector<cv::DMatch> RawDataManager::SURF_Feature_Detect(cv::Mat img_1, cv::Mat im
 	matcher->knnMatch(descriptors1, descriptors2, knn_matches, 2);
 
 	// 抓出好的 Feature 點
-	const float ratio_thresh = 0.6f;
+	const float ratio_thresh = 0.7f;
 	vector<cv::DMatch> good_matches;
 	for (size_t i = 0; i < knn_matches.size(); i++)
 		if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance)

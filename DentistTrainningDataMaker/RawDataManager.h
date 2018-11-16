@@ -52,7 +52,7 @@ public:
 	void ScanDataFromDevice(QString);											// 輸入儲存路徑
 	void RawToPointCloud();														// 把 Raw 檔，轉乘點雲
 	void TranformToIMG(bool);													// 轉換成圖檔
-	bool ShakeDetect(QMainWindow*, bool);										// 
+	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
 
 	// 藍芽的部分
 	BluetoothManager	bleManager;
@@ -95,7 +95,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	int					LerpFunction(int, int, int, int, int);
 	QImage				Mat2QImage(cv::Mat const &, int);
-	vector<cv::DMatch>	SURF_Feature_Detect(cv::Mat, cv::Mat, bool IsShowDebug = false);							// 做 SIFT 判斷
+	vector<cv::DMatch>	SURF_Feature_Detect(cv::Mat, cv::Mat, bool);			// 做 SIFT 判斷
 
 
 	QByteArray buffer;
