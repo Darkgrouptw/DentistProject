@@ -46,6 +46,12 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{695d24c1-5dc5-4176-9c95-9842a19d59a9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\SegNet Model">
+      <UniqueIdentifier>{d917be3c-1ea6-4672-9655-20f127dd79d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SegNet">
+      <UniqueIdentifier>{b7539f38-f167-4a76-af6c-27fec25a070a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -65,6 +71,9 @@
     </ClCompile>
     <ClCompile Include="BluetoothManager.cpp">
       <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SegnetModel.cpp">
+      <Filter>Source Files\SegNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -100,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="BluetoothManager.h">
       <Filter>Header Files\RawDataManger</Filter>
+    </ClInclude>
+    <ClInclude Include="SegnetModel.h">
+      <Filter>Header Files\SegNet Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

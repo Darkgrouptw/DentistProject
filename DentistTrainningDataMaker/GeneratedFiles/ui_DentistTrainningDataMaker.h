@@ -71,6 +71,8 @@ public:
     QLabel *ScanNum_Min;
     QLabel *ScanNum_Max;
     QLabel *ScanNum_Value;
+    QLabel *NetworkResult;
+    QLabel *NetworkResultText;
     QToolBar *mainToolBar;
 
     void setupUi(QMainWindow *DentistTrainningDataMakerClass)
@@ -178,38 +180,45 @@ public:
         tabWidget->addTab(Tab_OCT, QString());
         ScanResult = new QGroupBox(centralWidget);
         ScanResult->setObjectName(QStringLiteral("ScanResult"));
-        ScanResult->setGeometry(QRect(910, 0, 581, 531));
+        ScanResult->setGeometry(QRect(910, 0, 581, 561));
         ImageResult = new QLabel(ScanResult);
         ImageResult->setObjectName(QStringLiteral("ImageResult"));
         ImageResult->setGeometry(QRect(10, 40, 550, 135));
         ImageResult->setStyleSheet(QStringLiteral(""));
         FinalResult = new QLabel(ScanResult);
         FinalResult->setObjectName(QStringLiteral("FinalResult"));
-        FinalResult->setGeometry(QRect(10, 210, 550, 135));
+        FinalResult->setGeometry(QRect(10, 360, 550, 135));
         FinalResult->setStyleSheet(QStringLiteral(""));
         ImageResultText = new QLabel(ScanResult);
         ImageResultText->setObjectName(QStringLiteral("ImageResultText"));
         ImageResultText->setGeometry(QRect(10, 20, 101, 16));
         FinalResultText = new QLabel(ScanResult);
         FinalResultText->setObjectName(QStringLiteral("FinalResultText"));
-        FinalResultText->setGeometry(QRect(10, 190, 151, 16));
+        FinalResultText->setGeometry(QRect(10, 340, 151, 16));
         ScanNumSlider = new QSlider(ScanResult);
         ScanNumSlider->setObjectName(QStringLiteral("ScanNumSlider"));
         ScanNumSlider->setEnabled(false);
-        ScanNumSlider->setGeometry(QRect(10, 360, 501, 22));
+        ScanNumSlider->setGeometry(QRect(20, 510, 501, 22));
         ScanNumSlider->setMinimum(0);
         ScanNumSlider->setMaximum(249);
         ScanNumSlider->setValue(0);
         ScanNumSlider->setOrientation(Qt::Horizontal);
         ScanNum_Min = new QLabel(ScanResult);
         ScanNum_Min->setObjectName(QStringLiteral("ScanNum_Min"));
-        ScanNum_Min->setGeometry(QRect(10, 390, 21, 16));
+        ScanNum_Min->setGeometry(QRect(20, 540, 21, 16));
         ScanNum_Max = new QLabel(ScanResult);
         ScanNum_Max->setObjectName(QStringLiteral("ScanNum_Max"));
-        ScanNum_Max->setGeometry(QRect(500, 390, 21, 16));
+        ScanNum_Max->setGeometry(QRect(510, 540, 21, 16));
         ScanNum_Value = new QLabel(ScanResult);
         ScanNum_Value->setObjectName(QStringLiteral("ScanNum_Value"));
-        ScanNum_Value->setGeometry(QRect(530, 360, 21, 16));
+        ScanNum_Value->setGeometry(QRect(540, 510, 21, 16));
+        NetworkResult = new QLabel(ScanResult);
+        NetworkResult->setObjectName(QStringLiteral("NetworkResult"));
+        NetworkResult->setGeometry(QRect(10, 200, 550, 135));
+        NetworkResult->setStyleSheet(QStringLiteral(""));
+        NetworkResultText = new QLabel(ScanResult);
+        NetworkResultText->setObjectName(QStringLiteral("NetworkResultText"));
+        NetworkResultText->setGeometry(QRect(10, 180, 111, 16));
         DentistTrainningDataMakerClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistTrainningDataMakerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -263,6 +272,8 @@ public:
         ScanNum_Min->setText(QApplication::translate("DentistTrainningDataMakerClass", "0", nullptr));
         ScanNum_Max->setText(QApplication::translate("DentistTrainningDataMakerClass", "249", nullptr));
         ScanNum_Value->setText(QApplication::translate("DentistTrainningDataMakerClass", "0", nullptr));
+        NetworkResult->setText(QString());
+        NetworkResultText->setText(QApplication::translate("DentistTrainningDataMakerClass", "\347\266\262\350\267\257\345\210\244\346\226\267\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
     } // retranslateUi
 
 };

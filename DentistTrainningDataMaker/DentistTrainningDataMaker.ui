@@ -387,7 +387,7 @@
       <x>910</x>
       <y>0</y>
       <width>581</width>
-      <height>531</height>
+      <height>561</height>
      </rect>
     </property>
     <property name="title">
@@ -413,7 +413,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>210</y>
+       <y>360</y>
        <width>550</width>
        <height>135</height>
       </rect>
@@ -442,7 +442,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>190</y>
+       <y>340</y>
        <width>151</width>
        <height>16</height>
       </rect>
@@ -457,8 +457,8 @@
      </property>
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>360</y>
+       <x>20</x>
+       <y>510</y>
        <width>501</width>
        <height>22</height>
       </rect>
@@ -479,8 +479,8 @@
     <widget class="QLabel" name="ScanNum_Min">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>390</y>
+       <x>20</x>
+       <y>540</y>
        <width>21</width>
        <height>16</height>
       </rect>
@@ -492,8 +492,8 @@
     <widget class="QLabel" name="ScanNum_Max">
      <property name="geometry">
       <rect>
-       <x>500</x>
-       <y>390</y>
+       <x>510</x>
+       <y>540</y>
        <width>21</width>
        <height>16</height>
       </rect>
@@ -505,14 +505,43 @@
     <widget class="QLabel" name="ScanNum_Value">
      <property name="geometry">
       <rect>
-       <x>530</x>
-       <y>360</y>
+       <x>540</x>
+       <y>510</y>
        <width>21</width>
        <height>16</height>
       </rect>
      </property>
      <property name="text">
       <string>0</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="NetworkResult">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>200</y>
+       <width>550</width>
+       <height>135</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="NetworkResultText">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>180</y>
+       <width>111</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>網路判斷完的結果：</string>
      </property>
     </widget>
    </widget>

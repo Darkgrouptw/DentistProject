@@ -232,9 +232,7 @@ void DentistTrainningDataMaker::ScanOCT()
 	}
 	cout << "儲存位置: " << SaveLocation.toStdString() << endl;
 	#pragma endregion
-	//QString location = 
-
-	// 掃描
+	#pragma region 掃描
 	#ifdef TEST_NO_OCT
 	// 判斷是否有
 	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
@@ -259,6 +257,7 @@ void DentistTrainningDataMaker::ScanOCT()
 
 	}
 	#endif
+	#pragma endregion
 }
 void DentistTrainningDataMaker::BeepSoundTest()
 {
