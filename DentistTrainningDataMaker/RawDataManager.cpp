@@ -66,7 +66,7 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 	RawDataProperty *tmpRDP = &DManager.rawDP;
 	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
-void RawDataManager::ScanDataFromDevice(QString SaveFileName)
+void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 {
 	//string SaveName = "V:/OCT20170928";
 
@@ -104,7 +104,7 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName)
 		LV_65,								// ?
 		SampleCount,						// 2048
 		OCT_DataLen,						// 資料長度
-		true,								// 這個好像是要步要 output
+		NeedSave,							// 這個好像是要步要 output
 		SaveFileName_C,						// 儲存位置
 		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息

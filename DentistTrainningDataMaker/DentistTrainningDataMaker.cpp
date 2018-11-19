@@ -237,13 +237,27 @@ void DentistTrainningDataMaker::ScanOCT()
 	// 掃描
 	#ifdef TEST_NO_OCT
 	// 判斷是否有
-	//QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
+	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
 	#else
 	// 開始 Scan
 
 	//ui.SaveLocationText
 
-	//rawManager.ScanDataFromDevice()
+	bool NeedSave = ui.AutoScanWhileScan_CheckBox->isChecked();
+	while (true)
+	{
+		rawManager.ScanDataFromDevice(SaveLocation, NeedSave);
+		rawManager.TranformToIMG(NeedSave);
+		if (rawManager.ShakeDetect(this, true))
+		{
+			// 沒晃動到
+			cout << "沒有晃動到" << endl;
+			break;
+		}
+		else
+			cout << "晃到重拍" << endl;
+
+	}
 	#endif
 }
 void DentistTrainningDataMaker::BeepSoundTest()

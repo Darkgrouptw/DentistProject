@@ -48,7 +48,7 @@ public:
 	// ScanDataFromDevice	=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataFromFile(QString);
-	void ScanDataFromDevice(QString);											// 輸入儲存路徑，轉點雲
+	void ScanDataFromDevice(QString, bool);										// 輸入儲存路徑 和 要步要儲存，來轉點雲
 	void TranformToIMG(bool);													// 轉換成圖檔，轉點雲
 	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
 
