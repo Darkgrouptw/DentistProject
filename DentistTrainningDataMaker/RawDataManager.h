@@ -16,9 +16,9 @@
 #include <QImage>
 #include <QMessageBox>
 
-#include "opencv2/core/core.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // 這邊是為了要讓邊界 Smooth 一點
 /*struct IndexMapInfo
@@ -52,6 +52,9 @@ public:
 	void TranformToIMG(bool);													// 轉換成圖檔，轉點雲
 	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
 
+	// Netowrk 相關的 Function
+	QVector<cv::Mat> GenerateNetworkData();										// 這邊是產生要預測的資料
+
 	// 藍芽的部分
 	BluetoothManager	bleManager;
 private:
@@ -72,22 +75,23 @@ private:
 	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
 
 	//////////////////////////////////////////////////////////////////////////
+	// 網路
+	//////////////////////////////////////////////////////////////////////////
+	const int			NetworkCutRow = 50;
+	const int			NetworkCutCol = 500;
+
+	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
 	//////////////////////////////////////////////////////////////////////////
-	QVector<cv::Mat>	ImageResultArray;
-	QVector<cv::Mat>	SmoothResultArray;
-	//QVector<cv::Mat>	FastLabelArray;
-	QVector<cv::Mat>	CombineTestArray;
+	QVector<cv::Mat>	ImageResultArray;										// 原圖						(SegNet 使用)
+	QVector<cv::Mat>	SmoothResultArray;										// Smooth 過後的結果		(PSNR 判斷手晃使用)
+	QVector<cv::Mat>	CombineResultArray;										// 判斷完的結果圖			(顯示使用)
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer
 	//////////////////////////////////////////////////////////////////////////
 	QLabel*				ImageResult;
 	QLabel*				FinalResult;
-
-	//////////////////////////////////////////////////////////////////////////
-	// 儲存設定
-	//////////////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function

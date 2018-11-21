@@ -27,7 +27,8 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
 	connect(ui.AutoScanWhileScan_CheckBox,	SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.ScanButton,					SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
-	connect(ui.BeepSoundTest,				SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
+	connect(ui.BeepSoundTestButton,			SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
+	connect(ui.ShakeTestButton,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataForShakeTest()));
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,				SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
@@ -133,51 +134,6 @@ void DentistTrainningDataMaker::ConnectBLEDeivce()
 }
 
 // OCT 相關
-void DentistTrainningDataMaker::ReadRawDataToImage()
-{
-	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
-	if (RawFileName != "")
-	{
-		rawManager.ReadRawDataFromFile(RawFileName);
-		rawManager.TranformToIMG(false);
-
-		// UI 更改
-		ui.ScanNumSlider->setEnabled(true);
-		if (ui.ScanNumSlider->value() == 0)
-			ScanNumSlider_Change(0);
-		else
-			ui.ScanNumSlider->setValue(0);
-	}
-	else
-	{
-		// Slider
-		ui.ScanNumSlider->setEnabled(false);
-		ui.ScanNumSlider->setValue(60);
-	}
-}
-void DentistTrainningDataMaker::ReadRawDataForBorderTest()
-{
-	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
-	if (RawFileName != "")
-	{
-		rawManager.ReadRawDataFromFile(RawFileName);
-		rawManager.TranformToIMG(false);
-		cout << (rawManager.ShakeDetect(this, true) ? "無晃動!!" : "有晃動!!") << endl;
-
-		// UI 更改
-		ui.ScanNumSlider->setEnabled(true);
-		if (ui.ScanNumSlider->value() == 0)
-			ScanNumSlider_Change(0);
-		else
-			ui.ScanNumSlider->setValue(0);
-	}
-	else
-	{
-		// Slider
-		ui.ScanNumSlider->setEnabled(false);
-		ui.ScanNumSlider->setValue(60);
-	}
-}
 void DentistTrainningDataMaker::ChooseSaveLocaton()
 {
 	QString OCT_SaveLocation = QFileDialog::getExistingDirectory(this, "Save OCT Data Location", ui.SaveLocationText->text() + "/../", QFileDialog::DontUseNativeDialog);
@@ -220,7 +176,7 @@ void DentistTrainningDataMaker::ScanOCT()
 	if (ui.SaveWithTime_CheckBox->isChecked())
 	{
 		QTime currentTime = QTime::currentTime();
-		QString TimeFileName = currentTime.toString("hh:mm:ss.zzz");
+		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
 		cout << "現在時間: " << TimeFileName.toStdString() << endl;
 
 		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(TimeFileName);
@@ -236,6 +192,16 @@ void DentistTrainningDataMaker::ScanOCT()
 	#ifdef TEST_NO_OCT
 	// 判斷是否有
 	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
+
+	// 這邊是確認檔名 OK 不 OK
+	// 因為以前檔名有一個 Bug 導致會有 Error String 會有 Api Wait TimeOut (579) 的問題
+	/*QFile TestFile(SaveLocation);
+	if (!TestFile.open(QIODevice::WriteOnly))
+		cout << "此檔名有問題!!" << endl;
+	else
+		cout << "此檔名沒有問題!!" << endl;
+	TestFile.close();*/
+	return;
 	#else
 	// 開始 Scan
 
@@ -258,11 +224,85 @@ void DentistTrainningDataMaker::ScanOCT()
 	}
 	#endif
 	#pragma endregion
+	#pragma region 網路預測結果
+	//rawManager.GenerateNetworkData();
+	#pragma endregion
+}
+
+// OCT 測試
+void DentistTrainningDataMaker::ReadRawDataToImage()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.TranformToIMG(true);
+
+		// UI 更改
+		ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
+	}
+}
+void DentistTrainningDataMaker::ReadRawDataForBorderTest()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.TranformToIMG(false);
+		cout << (rawManager.ShakeDetect(this, true) ? "無晃動!!" : "有晃動!!") << endl;
+
+		// UI 更改
+		ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
+	}
+}
+void DentistTrainningDataMaker::ReadRawDataForShakeTest()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.TranformToIMG(false);
+		cout << (rawManager.ShakeDetect(this, true) ? "無晃動!!" : "有晃動!!") << endl;
+
+		// UI 更改
+		ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
+	}
 }
 void DentistTrainningDataMaker::BeepSoundTest()
 {
 	cout << "\a";
 }
+
 
 // 顯示部分的事件
 void DentistTrainningDataMaker::ScanNumSlider_Change(int value)

@@ -1,4 +1,4 @@
-#include "SegnetModel.h"
+﻿#include "SegNetModel.h"
 
 SegnetModel::SegnetModel()
 {

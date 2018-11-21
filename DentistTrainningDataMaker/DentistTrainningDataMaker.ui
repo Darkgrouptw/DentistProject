@@ -366,7 +366,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QPushButton" name="BeepSoundTest">
+     <widget class="QPushButton" name="BeepSoundTestButton">
       <property name="geometry">
        <rect>
         <x>560</x>
@@ -377,6 +377,19 @@
       </property>
       <property name="text">
        <string>Beep Sound 測試</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="ShakeTestButton">
+      <property name="geometry">
+       <rect>
+        <x>560</x>
+        <y>140</y>
+        <width>131</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>晃動偵測</string>
       </property>
      </widget>
     </widget>
@@ -408,6 +421,9 @@
      <property name="text">
       <string/>
      </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
     </widget>
     <widget class="QLabel" name="FinalResult">
      <property name="geometry">
@@ -423,6 +439,9 @@
      </property>
      <property name="text">
       <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLabel" name="ImageResultText">
@@ -464,13 +483,13 @@
       </rect>
      </property>
      <property name="minimum">
-      <number>0</number>
+      <number>60</number>
      </property>
      <property name="maximum">
-      <number>249</number>
+      <number>200</number>
      </property>
      <property name="value">
-      <number>0</number>
+      <number>60</number>
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -486,7 +505,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>0</string>
+      <string>60</string>
      </property>
     </widget>
     <widget class="QLabel" name="ScanNum_Max">
@@ -499,7 +518,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>249</string>
+      <string>200</string>
      </property>
     </widget>
     <widget class="QLabel" name="ScanNum_Value">
@@ -512,7 +531,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>0</string>
+      <string>60</string>
      </property>
     </widget>
     <widget class="QLabel" name="NetworkResult">
@@ -529,6 +548,9 @@
      </property>
      <property name="text">
       <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLabel" name="NetworkResultText">

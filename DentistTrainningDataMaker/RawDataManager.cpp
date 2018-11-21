@@ -19,12 +19,13 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 }
 void RawDataManager::ShowImageIndex(int index)
 {
-	if (0 <= index && index < 250 && ImageResultArray.size() > 0)
+	if (60 <= index && index <= 200 && ImageResultArray.size() > 0)
 	{
-		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index], CV_32F);
-		QImage Pixmap_FinalResult = Mat2QImage(CombineTestArray[index], CV_8UC3);
+		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index - 60], CV_32F);
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
-		FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
+
+		//QImage Pixmap_FinalResult = Mat2QImage(CombineResultArray[index], CV_8UC3);
+		//FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
 	}
 }
 
@@ -68,8 +69,6 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 }
 void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 {
-	//string SaveName = "V:/OCT20170928";
-
 	#pragma region 初始化裝置
 	OCT64::OCT64::Init(
 		4,
@@ -80,15 +79,12 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 	SerialPort port(gcnew System::String(OCTDevicePort.c_str()), 9600);
 	port.Open();
 
+	// 如果沒有開成功，或是搶 Port 會報錯
 	if (!port.IsOpen)
 	{
 		cout << "OCT 的 COM 打不開!!" << endl;
 		return;
 	}
-
-	// 先休眠
-	Thread::Sleep(100);
-	port.RtsEnable = true;
 	#pragma endregion
 	#pragma region 開始掃描
 	float LV_65 = 65;
@@ -109,7 +105,8 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息
 	);
-	// cout << "OCT StartCap Error String: " << MarshalString(ErrorString);
+	port.RtsEnable = true;
+	// cout << "OCT StartCap Error String: " << MarshalString(ErrorString) << endl;
 	// StartCap(deviceID, tmp_Handle, LV_65, SampRec, tmp_ByteLen, Savedata, SaveName, tmp_ErrorBoolean, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
 
 	// 要接的 Array
@@ -131,6 +128,7 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 			OutDataArray,					// 掃描的結果
 			ErrorString						// 錯誤訊息
 		);
+		// cout << "Scan Error String: " << MarshalString(ErrorString) << endl;
 		//ScanADC(HandleOut, AllDatabyte, ArrSize, ByteLen, outarr, OutArrLenIn, tmp_OutArrLenOut, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
 
 		// cli Array 轉到 manage array
@@ -150,6 +148,7 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 	port.Close();
 	#pragma endregion
 	#pragma region 丟到 Cuda 上解資料
+	// 要先轉成 Char
 	OCT_DataType_Transfrom(Temp_OCT_Pointer, OCT_PIC_SIZE * 125, Final_OCT_Char);
 	// unsigned_short_to_char(interator, PIC_SIZE * 125, final_oct_char);
 
@@ -157,8 +156,8 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 	vector<char> VectorScan(Final_OCT_Char, Final_OCT_Char + OCT_PIC_SIZE * 250);
 	theTRcuda.RawToPointCloud(VectorScan.data(), VectorScan.size(), 250, 2048);
 	#pragma endregion
-	#pragma region 刪除新創的 New Array
-	delete Final_OCT_Array;
+	#pragma region 刪除 New 出來的 Array
+	delete Temp_OCT_Pointer;
 	delete Final_OCT_Char;
 	#pragma endregion
 	/*pin_ptr<int32_t> tmp_deviceID = &deviceID;
@@ -334,8 +333,7 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 	// 如果跑出結果是全黑的，那有可能是顯卡記憶體不夠的問題
 	ImageResultArray.clear();
 	SmoothResultArray.clear();
-	// FastLabelArray.clear();
-	CombineTestArray.clear();
+	CombineResultArray.clear();
 
 	// bool DoFastLabel = true;
 
@@ -344,14 +342,12 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 	// 不是我寫的 QAQ
 	//////////////////////////////////////////////////////////////////////////
 	// 取 60 ~ 200
-	for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
-	//for (int x = 60; x <= 200; x++)
+	// for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
+	for (int x = 60; x <= 200; x++)
 	{
 		// Mat
 		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
 		cv::Mat SmoothResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		//cv::Mat FastLabel = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8U, cv::Scalar(0, 0, 0));
-		cv::Mat ConbineTest;
 
 		// 原本的變數
 		int tmpIdx;
@@ -360,7 +356,6 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 		int posZ;
 
 		// Map 參數
-		//QVector<IndexMapInfo> IndexMap;
 		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
 		{
 			// 這個 For 迴圈是算每一個結果
@@ -373,115 +368,34 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 				idtSmooth = ((float)theTRcuda.VolumeDataAvg[tmpIdx] / (float)3.509173f) - (float)(3.39f / 3.509173f);
 
 				// 調整過飽和度的 顏色
+				// 這個是根據東元那邊測是出來的結果
 				ImageResult.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idt - 0.5) + 0.5);
 				SmoothResult.at<float>(row, col) = cv::saturate_cast<float>(1.5 * (idtSmooth - 0.5) + 0.5);
 			}
 
 			// 這個迴圈是去算
 			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
-			/*
-			if (theTRcuda.PointType[tmpIdx + 3] == 1 && theTRcuda.PointType[tmpIdx + 1] != 0) 
-			{
-				posZ = theTRcuda.PointType[tmpIdx + 1];
-				
-				// 通常不會太靠近
-				if(posZ  <  10)
-					continue;
-
-				IndexMapInfo tempInfo;
-				tempInfo.index = row;
-				tempInfo.ZValue = posZ;
-				IndexMap.push_back(tempInfo);
-
-				//cout << row << " " << posZ << endl;
-				for (int i = posZ; i < 1024; i++)
-					FastLabel.at<uchar>(row, i) = uchar(255);
-			}*/
-		}
-
-		//////////////////////////////////////////////////////////////////////////
-		// 找出邊界
-		//////////////////////////////////////////////////////////////////////////
-		//if (DoFastLabel && IndexMap.size() > 0)
-		//{
-		//	int arryIndex = 0;
-		//	int FromIndex = 0;
-		//	for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
-		//	{
-		//		// 這邊是正常情況下，剛剛好有找到的 Z 值
-		//		if (IndexMap.size() <= arryIndex && arryIndex - 2 >= 0)
-		//			FromIndex = LerpFunction(
-		//				IndexMap[arryIndex - 2].index, IndexMap[arryIndex - 2].ZValue,
-		//				IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
-		//				row
-		//			);
-		//		else if (row == IndexMap[arryIndex].index)
-		//			FromIndex = IndexMap[arryIndex++].ZValue;
-		//		else if (row < IndexMap[arryIndex].index && arryIndex > 0)
-		//			// 因為第一個沒有 -1 ，所以需要額外分開來做
-		//			FromIndex = LerpFunction(
-		//				IndexMap[arryIndex - 1].index, IndexMap[arryIndex - 1].ZValue,
-		//				IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
-		//				row
-		//			);
-		//		else  if (row < IndexMap[arryIndex].index && arryIndex == 0)
-		//			FromIndex = LerpFunction(
-		//				IndexMap[arryIndex + 0].index, IndexMap[arryIndex + 0].ZValue,
-		//				IndexMap[arryIndex + 1].index, IndexMap[arryIndex + 1].ZValue,
-		//				row
-		//			);
-		//		else
-		//		{
-		//			std::cout << "Fast Label 跳過 (" << row << ")!!" << std::endl;
-		//			break;
-		//		}
-		//		FromIndex = qBound(0, FromIndex, theTRcuda.VolumeSize_Z - 1);
-		//		// 填白色
-		//		for (int i = FromIndex; i < theTRcuda.VolumeSize_Z; i++)
-		//			FastLabel.at<uchar>(row, i) = uchar(255);
-		//	}
-		//}
-
-		// 這邊是將 Contour & 結果，合再一起
-		// 先複製一份
-		ConbineTest = ImageResult.clone();
-		ConbineTest.convertTo(ConbineTest, CV_8U, 255);
-		cv::cvtColor(ConbineTest.clone(), ConbineTest, cv::COLOR_GRAY2BGR);
-		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
-		{
-			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
-			if (theTRcuda.PointType[tmpIdx + 3] == 1 && theTRcuda.PointType[tmpIdx + 1] != 0)
-			{
-				posZ = theTRcuda.PointType[tmpIdx + 1];
-				cv::Point contourPoint(posZ, row);
-				cv::circle(ConbineTest, contourPoint, 1, cv::Scalar(0, 255, 255), CV_FILLED);
-			}
 		}
 
 		// 使否只要顯示
 		if (NeedSave)
 		{
-			//cv::resize(ImageResult, ImageResult, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
+			// 原圖
 			cv::Mat TempImage;
 			ImageResult.convertTo(TempImage, CV_8U, 255);
 			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", TempImage);
 
+			// Smooth 影像
 			SmoothResult.convertTo(TempImage, CV_8U, 255);
 			cv::imwrite("Images/OCTImages/smooth_v2/" + std::to_string(x) + ".png", TempImage);
 
-			//cv::resize(FastLabel.clone(), FastLabel, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-			//cv::imwrite("Images/OCTImages/label_v2/" + std::to_string(x) + ".png", FastLabel);
-
-			//cv::resize(ContourTest.clone(), ContourTest, cv::Size(480, 360), 0, 0, cv::INTER_NEAREST);
-			cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ConbineTest);
-
+			// Combine 結果圖
+			//cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ConbineTest);
 		}
 
 		// 暫存到陣列李
 		ImageResultArray.push_back(ImageResult);
 		SmoothResultArray.push_back(SmoothResult);
-		//FastLabelArray.push_back(FastLabel);
-		CombineTestArray.push_back(ConbineTest);
 	}
 	cout << "轉成圖片完成!!" << endl;
 }
@@ -493,9 +407,9 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 		QMessageBox::critical(main, codec->toUnicode("Function 錯誤"), codec->toUnicode("沒有資料可以執行!!"));
 		return false;
 	}
-	cv::Mat FirstImage = SmoothResultArray[0];
+	cv::Mat FirstImage = SmoothResultArray[124];
 	FirstImage.convertTo(FirstImage, CV_8U, 255);
-	cv::Mat LastImage = SmoothResultArray[SmoothResultArray.size() - 1];
+	cv::Mat LastImage = SmoothResultArray[125];
 	LastImage.convertTo(LastImage, CV_8U, 255);
 
 	// 這邊做兩個判斷
@@ -503,11 +417,30 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 	// 2. SURF 找出大於等於 2 個
 	double PSNR_Value = PSNR(FirstImage, LastImage);
 	cout << "PSNR: " << PSNR_Value << endl;
-	if (PSNR_Value > 30)
+	if (PSNR_Value > 38)
 		return true;
 	return false;
 }
 
+// Netowrk 相關的 Function
+QVector<cv::Mat> RawDataManager::GenerateNetworkData()
+{
+	QVector<cv::Mat> InputData;
+	/*int ColTimes = ImageResultArray[0].rows / NetworkCutRow;
+	for (int i = 0; i <ImageResultArray.size(); i++)
+	{
+		for (int j = 0; j < ColTimes; j++)
+		{
+			cv::Mat InputMat(cv::Size(NetworkCutCol, NetworkCutRow), CV_8UC3);
+			vector<cv::Mat> channelsData;
+			cv::split(InputMat, channelsData);
+			cout << "Split Size:" << channelsData.size() << endl;
+			//ImageResultArray[i](cv::Rect(0, j * NetworkCutRow, NetworkCutCol, NetworkCutRow));
+		}
+		break;
+	}*/
+	return InputData;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Helper Function

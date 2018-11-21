@@ -129,7 +129,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OpenGLWidget.cpp" />
     <ClCompile Include="RawDataManager.cpp" />
-    <ClCompile Include="SegnetModel.cpp" />
+    <ClCompile Include="SegNetModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DentistTrainningDataMaker.h" />
@@ -146,7 +146,7 @@
     <ClInclude Include="GlobalDefine.h" />
     <ClInclude Include="OpenGLWidget.h" />
     <ClInclude Include="RawDataManager.h" />
-    <ClInclude Include="SegnetModel.h" />
+    <ClInclude Include="SegNetModel.h" />
     <ClInclude Include="TRcuda.cuh" />
   </ItemGroup>
   <ItemGroup>

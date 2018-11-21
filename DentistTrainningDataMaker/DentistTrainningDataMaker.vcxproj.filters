@@ -72,7 +72,7 @@
     <ClCompile Include="BluetoothManager.cpp">
       <Filter>Source Files\RawDataManager</Filter>
     </ClCompile>
-    <ClCompile Include="SegnetModel.cpp">
+    <ClCompile Include="SegNetModel.cpp">
       <Filter>Source Files\SegNet</Filter>
     </ClCompile>
   </ItemGroup>
@@ -110,7 +110,7 @@
     <ClInclude Include="BluetoothManager.h">
       <Filter>Header Files\RawDataManger</Filter>
     </ClInclude>
-    <ClInclude Include="SegnetModel.h">
+    <ClInclude Include="SegNetModel.h">
       <Filter>Header Files\SegNet Model</Filter>
     </ClInclude>
   </ItemGroup>

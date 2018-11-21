@@ -1,4 +1,9 @@
 ﻿#pragma once
+/*
+預測網路的 Code
+由於是不同於學長們寫的
+所以獨立出來
+*/
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <caffe/caffe.hpp>
@@ -45,14 +50,15 @@ struct NetworkSize {
 	}
 };
 
-class SegnetModel
+class SegNetModel
 {
 public:
-	SegnetModel();
-	~SegnetModel();
+	SegNetModel();
+	~SegNetModel();
 
 	void						Load(string, string);
-	Mat							Predict(Mat&);
+	//vector<Mat>					PreProcessing(Mat&);												// 這邊要丟進去的網路，要先做處理
+	Mat							Predict(Mat&);														// 預測
 	Mat							Visualization(Mat);													// 轉成看得懂的圖 Output
 
 private:
@@ -63,7 +69,7 @@ private:
 	NetworkSize					InputSize;
 	NetworkSize					OutputSize;
 	vector<Mat>					InputChannelPointer;												// 這邊存放資料 Network 對應到每一個 Channel 的位置 Array
-	string						LUT_file = "./Models/camvid11.png";
+	string						LUT_file = "./SegNetModel/camvid11.png";
 	Mat							LabelImg;
 
 	//////////////////////////////////////////////////////////////////////////
