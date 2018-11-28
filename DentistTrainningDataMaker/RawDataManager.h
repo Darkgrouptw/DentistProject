@@ -9,6 +9,7 @@
 #include <cmath>
 #include <vector>
 #include <QVector>
+#include <QVector3D>
 #include <QDataStream>
 #include <QLabel>
 #include <QByteArray>
@@ -53,15 +54,16 @@ public:
 	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
 
 	// Netowrk 相關的 Function
-	QVector<cv::Mat> GenerateNetworkData();										// 這邊是產生要預測的資料
+	QVector<cv::Mat>	GenerateNetworkData();									// 這邊是產生要預測的資料
+	void				SetPredictData(QVector<cv::Mat>);						// 設定 網路預測出來的資料
 
 	// 藍芽的部分
 	BluetoothManager	bleManager;
+
 private:
 	// 以前的資料
 	DataManager			DManager;
 	TRcuda				theTRcuda;
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// OCT
@@ -73,6 +75,12 @@ private:
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
 	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
+
+	//////////////////////////////////////////////////////////////////////////
+	// 點雲資料
+	//////////////////////////////////////////////////////////////////////////
+	QVector<QVector<QVector3D>> PointCloudArray;								// 每次掃描都會把結果船進去
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// 網路

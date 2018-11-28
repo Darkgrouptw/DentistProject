@@ -24,26 +24,32 @@ void RawDataManager::ShowImageIndex(int index)
 		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index - 60], CV_32F);
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 
-		//QImage Pixmap_FinalResult = Mat2QImage(CombineResultArray[index], CV_8UC3);
-		//FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
+		// 如果有東西的話才顯示 Network 預測的結果
+		if (CombineResultArray.size() > 0)
+		{
+			QImage Pixmap_FinalResult = Mat2QImage(CombineResultArray[index], CV_8UC3);
+			FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
+		}
 	}
 }
 
 // OCT 相關的步驟
 void RawDataManager::ReadRawDataFromFile(QString FileName)
 {
-	clock_t t1, t2;
-	t1 = clock();
+	clock_t startT, endT;
+	startT = clock();
 
 	QFile inputFile(FileName);
 	if (!inputFile.open(QIODevice::ReadOnly))
 	{
-		std::cout << "Raw Data 讀取錯誤" << std::endl;
+		cout << "Raw Data 讀取錯誤" << endl;
 		return;
 	}
+	else
+		cout << "讀取 Raw Data: " << FileName.toLocal8Bit().constData() << endl;
 
 	int bufferSize = inputFile.size() / sizeof(quint8);
-	std::cout << "Size : " << bufferSize << std::endl;
+	//cout << "Size : " << bufferSize << endl;
 
 	QDataStream qData(&inputFile);
 	buffer.clear();
@@ -55,14 +61,12 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 	int scanline = (DManager.rawDP.size_Z * 2) * DManager.rawDP.size_Y * 2;
 	for (int i = scanline; i < buffer.size(); i += scanline)
 		buffer.remove(i, scanline);
-
-	std::cout << "size of buffer : " << buffer.size() << std::endl;
 	DManager.rawDP.size_X = 2 * buffer.size() / ((DManager.rawDP.size_Z * 2) * DManager.rawDP.size_Y * 2);
 
 	inputFile.close();
-	t2 = clock();
+	endT = clock();
 
-	std::cout << "ReadRawData done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s" << std::endl;
+	cout << "ReadRawData done t: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
 
 	RawDataProperty *tmpRDP = &DManager.rawDP;
 	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
@@ -401,23 +405,51 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 }
 bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 {
+	clock_t startT, endT;
+	startT = clock();
+
 	// 錯誤判斷，判斷進入這個 Function 一定要有資料
 	if (ImageResultArray.size() == 0)
 	{
 		QMessageBox::critical(main, codec->toUnicode("Function 錯誤"), codec->toUnicode("沒有資料可以執行!!"));
 		return false;
 	}
-	cv::Mat FirstImage = SmoothResultArray[124];
+	cv::Mat FirstImage = SmoothResultArray[124 - 60];
 	FirstImage.convertTo(FirstImage, CV_8U, 255);
-	cv::Mat LastImage = SmoothResultArray[125];
+	cv::Mat LastImage = SmoothResultArray[125 - 60];
 	LastImage.convertTo(LastImage, CV_8U, 255);
 
-	// 這邊做兩個判斷
-	// 1. 如果 PSNR 高於 30
-	// 2. SURF 找出大於等於 2 個
-	double PSNR_Value = PSNR(FirstImage, LastImage);
-	cout << "PSNR: " << PSNR_Value << endl;
-	if (PSNR_Value > 38)
+	cv::Mat SmallFirstMat(cv::Size(500, 250), CV_8U);
+	cv::Mat SmallLastMat(cv::Size(500, 250), CV_8U);
+
+	cv::threshold(FirstImage(cv::Rect(0, 0, 500, 250)), SmallFirstMat, 20, 255, cv::THRESH_BINARY);
+	cv::threshold(LastImage(cv::Rect(0, 0, 500, 250)), SmallLastMat, 20, 255, cv::THRESH_BINARY);
+
+	cv::Size size(SmallFirstMat.cols / 10, SmallFirstMat.rows / 10);
+	cv::resize(SmallFirstMat, SmallFirstMat, size);
+	cv::resize(SmallLastMat, SmallLastMat, size);
+
+
+	float ZerosCount1 = 1.0f - (float)cv::countNonZero(SmallFirstMat) / SmallFirstMat.rows / SmallFirstMat.cols;
+	float ZerosCount2 = 1.0f - (float)cv::countNonZero(SmallLastMat) / SmallLastMat.rows / SmallLastMat.cols;
+
+	double PSNR_Value = PSNR(SmallFirstMat, SmallLastMat);
+	//double PSNR_BlackFirst = PSNR
+	endT = clock();
+
+	if (IsShowForDebug)
+	{
+		imshow("First", SmallFirstMat);
+		imshow("Last", SmallLastMat);
+
+		cout << "PSNR: " << PSNR_Value << endl;
+		cout << "Zero1 Count: " << ZerosCount1 << endl;
+		cout << "Zero2 Count: " << ZerosCount2 << endl;
+		cout << "晃動判斷時間: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
+	}
+
+	// PSNR 回傳
+	if (PSNR_Value > 11 && (ZerosCount1 < 0.96f && ZerosCount2 < 0.96f))
 		return true;
 	return false;
 }
@@ -425,21 +457,51 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 // Netowrk 相關的 Function
 QVector<cv::Mat> RawDataManager::GenerateNetworkData()
 {
+	// 這邊要先確保他會大於 0
+	assert(ImageResultArray.size() > 0);
+
 	QVector<cv::Mat> InputData;
-	/*int ColTimes = ImageResultArray[0].rows / NetworkCutRow;
-	for (int i = 0; i <ImageResultArray.size(); i++)
-	{
+	int ColTimes = ImageResultArray[0].rows / NetworkCutRow;
+	for (int i = 1; i <ImageResultArray.size() - 1; i++)
 		for (int j = 0; j < ColTimes; j++)
 		{
+			// 宣告
 			cv::Mat InputMat(cv::Size(NetworkCutCol, NetworkCutRow), CV_8UC3);
 			vector<cv::Mat> channelsData;
+
+			// 拆成 BGR Channel
 			cv::split(InputMat, channelsData);
-			cout << "Split Size:" << channelsData.size() << endl;
-			//ImageResultArray[i](cv::Rect(0, j * NetworkCutRow, NetworkCutCol, NetworkCutRow));
+
+			// B G R 塞值進去
+			channelsData[0] = ImageResultArray[i - 1](cv::Rect(0, j * NetworkCutRow, NetworkCutCol, NetworkCutRow));
+			channelsData[1] = ImageResultArray[i + 0](cv::Rect(0, j * NetworkCutRow, NetworkCutCol, NetworkCutRow));
+			channelsData[2] = ImageResultArray[i + 1](cv::Rect(0, j * NetworkCutRow, NetworkCutCol, NetworkCutRow));
+
+			// 這邊是
+			cv::merge(channelsData, InputMat);
+			InputData.push_back(InputMat);
 		}
-		break;
-	}*/
+	// Debug 圖片測試
+	//cv::imshow("TestImage", InputData[0]);
+	//cv::waitKey(0);
 	return InputData;
+}
+void RawDataManager::SetPredictData(QVector<cv::Mat> PredictArray)
+{
+	int ColTimes = ImageResultArray[0].rows / NetworkCutRow;
+
+	// 這邊要確保結果是剛剛好的 (也就是 5 張合成一張完整圖的話，要確保傳進來的結果大小是 5 的倍數)
+	// 然後還要大於 0
+	assert((PredictArray.size() % ColTimes == 0) && (PredictArray.size() > 0));
+
+	CombineResultArray.clear();
+	for (int i = 0; i < PredictArray.size(); i += ColTimes)
+	{
+		cv::Mat result = cv::Mat(cv::Size(ImageResultArray[0].cols, ImageResultArray[0].rows), CV_8UC3);
+		for (int j = 0; j < ColTimes; j++)
+			PredictArray[i + j].copyTo(result(cv::Rect(0, j * NetworkCutRow, NetworkCutCol, NetworkCutRow)));
+		CombineResultArray.push_back(result);
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

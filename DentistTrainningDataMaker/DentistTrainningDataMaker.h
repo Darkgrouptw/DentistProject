@@ -34,6 +34,9 @@ private:
 	int ScanIndex = 0;
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 
+	// 一次送多少
+	int GPUBatchSize = 30;
+
 private slots:
 	void LoadSTL();
 	void ScanData();
@@ -49,7 +52,7 @@ private slots:
 	void ScanBLEDevice();
 	void ConnectBLEDeivce();
 
-	// OCT 相關
+	// OCT 相關(主要)
 	void ChooseSaveLocaton();
 	void SaveWithTime_ChangeEvent(int);				// UI 是否勾選(儲存加上時間)
 	void AutoSaveWhileScan_ChangeEvent(int);		// UI 是否勾選(掃描自動儲存)
@@ -58,8 +61,9 @@ private slots:
 	// OCT 測試
 	void ReadRawDataToImage();						// 轉圖 & 儲存
 	void ReadRawDataForBorderTest();				// 邊界測試 & 不儲存
-	void ReadRawDataForShakeTest();					// 偵測是否有晃動
 	void BeepSoundTest();							// 測試掃描時會使用的 Beep Sound
+	void ReadRawDataForShakeTest();					// 偵測是否有晃動
+	void SegNetTest();								// 測試網路的結果
 
 	// 顯示部分的事件
 	void ScanNumSlider_Change(int);

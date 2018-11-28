@@ -5,9 +5,9 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 {
 	ui.setupUi(this);
 
+	#pragma region 事件連結
 	// 事件連結
 	connect(ui.actionLoadSTL,				SIGNAL(triggered()),			this,	SLOT(LoadSTL()));
-	//connect(ui.TestFullScan,				SIGNAL(triggered()),			this,	SLOT(ScanData()));
 
 	// 顯示事件
 	connect(ui.RenderTriangle_CheckBox,		SIGNAL(clicked()),				this,	SLOT(SetRenderTriangleBool()));
@@ -20,20 +20,22 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	connect(ui.BtnScanBLEDevice,			SIGNAL(clicked()),				this,	SLOT(ScanBLEDevice()));
 	connect(ui.BtnConnectBLEDevice,			SIGNAL(clicked()),				this,	SLOT(ConnectBLEDeivce()));
 	
-	// OCT 相關
-	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
-	connect(ui.EasyBorderDetect,			SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
+	// OCT 相關(主要)
 	connect(ui.SaveLocationBtn,				SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 	connect(ui.SaveWithTime_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
 	connect(ui.AutoScanWhileScan_CheckBox,	SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.ScanButton,					SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
+
+	// OCT 測試
+	connect(ui.RawDataToImage,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
+	connect(ui.EasyBorderDetect,			SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
 	connect(ui.BeepSoundTestButton,			SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
 	connect(ui.ShakeTestButton,				SIGNAL(clicked()),				this,	SLOT(ReadRawDataForShakeTest()));
+	connect(ui.SegNetTestButton,			SIGNAL(clicked()),				this,	SLOT(SegNetTest()));
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,				SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
-
-	// 其他
+	#pragma endregion
 	#pragma region 傳 UI 指標進去
 	// 藍芽的部分
 	QVector<QObject*>		objList;
@@ -54,7 +56,6 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	#pragma endregion
 	#pragma region 初始化參數
 	QString SaveLocation_Temp;
-
 	QDate date = QDate::currentDate();
 	
 	QString currentDateStr = date.toString("yyyy.MM.dd");
@@ -70,6 +71,13 @@ DentistTrainningDataMaker::DentistTrainningDataMaker(QWidget *parent)
 	// 創建資料夾
 	QDir().mkpath(SaveLocation_Temp);
 	ui.SaveLocationText->setText(SaveLocation_Temp);
+
+	// SegNet
+	segNetModel.Load(
+		"./SegNetModel/segnet_inference.prototxt",				// prototxt
+		"./SegNetModel/Models_iter_10000.caffemodel"			// caffemodel
+	);
+	segNetModel.ReshapeToMultiBatch(GPUBatchSize);
 	#pragma endregion
 }
 
@@ -133,7 +141,7 @@ void DentistTrainningDataMaker::ConnectBLEDeivce()
 	rawManager.bleManager.Connect(ui.BLEDeviceList->currentIndex());
 }
 
-// OCT 相關
+// OCT 相關(主要)
 void DentistTrainningDataMaker::ChooseSaveLocaton()
 {
 	QString OCT_SaveLocation = QFileDialog::getExistingDirectory(this, "Save OCT Data Location", ui.SaveLocationText->text() + "/../", QFileDialog::DontUseNativeDialog);
@@ -302,7 +310,38 @@ void DentistTrainningDataMaker::BeepSoundTest()
 {
 	cout << "\a";
 }
+void DentistTrainningDataMaker::SegNetTest()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.TranformToIMG(false);
+		QVector<Mat> Data = rawManager.GenerateNetworkData();
 
+		// 預測
+		vector<Mat> PredictArray = segNetModel.Predict(Data.toStdVector());
+		for (int i = 0; i < PredictArray.size(); i++)
+			PredictArray[i] = segNetModel.Visualization(PredictArray[i]);
+
+		// 傳回去顯示
+		QVector<Mat> qPredictArray = QVector<Mat>::fromStdVector(PredictArray);
+		rawManager.SetPredictData(qPredictArray);
+
+		// UI 更改
+		ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
+	}
+}
 
 // 顯示部分的事件
 void DentistTrainningDataMaker::ScanNumSlider_Change(int value)

@@ -692,8 +692,6 @@ TRcuda::TRcuda(void)
 	// init function
 	InitCUDA();
 }
-
-
 TRcuda::~TRcuda(void)
 {
 	if (VolumeData != NULL)
@@ -957,7 +955,7 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 {
 	clock_t t1, t2, t3, t4;
 	cudaError gpuError;
-	int blockDimX = 512, gridDimX = 8, debugNum = 20, debugPos = 249 * 250 * 2048 + 1014;
+	int blockDimX = 512, gridDimX = 4, debugNum = 20, debugPos = 249 * 250 * 2048 + 1014;
 
 	t1 = clock();
 	t3 = t1;
@@ -1278,7 +1276,11 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	t2 = clock();
 	//std::cout << "Pull Data done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	t4 = clock();
+
+
 	std::cout << "RawToPointCloud Total t: " << (t4 - t3) / (double)(CLOCKS_PER_SEC) << " s\n";
+
+
 }
 
 void TRcuda::Test()

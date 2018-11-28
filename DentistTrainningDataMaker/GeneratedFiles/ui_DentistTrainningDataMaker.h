@@ -20,6 +20,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QTabWidget>
@@ -63,6 +64,7 @@ public:
     QPushButton *ScanButton;
     QPushButton *BeepSoundTestButton;
     QPushButton *ShakeTestButton;
+    QPushButton *SegNetTestButton;
     QGroupBox *ScanResult;
     QLabel *ImageResult;
     QLabel *FinalResult;
@@ -74,6 +76,8 @@ public:
     QLabel *ScanNum_Value;
     QLabel *NetworkResult;
     QLabel *NetworkResultText;
+    QWidget *StateWidget;
+    QProgressBar *progressBar;
     QToolBar *mainToolBar;
 
     void setupUi(QMainWindow *DentistTrainningDataMakerClass)
@@ -181,6 +185,9 @@ public:
         ShakeTestButton = new QPushButton(Tab_OCT);
         ShakeTestButton->setObjectName(QStringLiteral("ShakeTestButton"));
         ShakeTestButton->setGeometry(QRect(560, 140, 131, 23));
+        SegNetTestButton = new QPushButton(Tab_OCT);
+        SegNetTestButton->setObjectName(QStringLiteral("SegNetTestButton"));
+        SegNetTestButton->setGeometry(QRect(560, 170, 131, 23));
         tabWidget->addTab(Tab_OCT, QString());
         ScanResult = new QGroupBox(centralWidget);
         ScanResult->setObjectName(QStringLiteral("ScanResult"));
@@ -226,6 +233,19 @@ public:
         NetworkResultText = new QLabel(ScanResult);
         NetworkResultText->setObjectName(QStringLiteral("NetworkResultText"));
         NetworkResultText->setGeometry(QRect(10, 180, 111, 16));
+        StateWidget = new QWidget(centralWidget);
+        StateWidget->setObjectName(QStringLiteral("StateWidget"));
+        StateWidget->setGeometry(QRect(0, 750, 341, 131));
+        StateWidget->setStyleSheet(QStringLiteral("background:rgba(21, 79, 255, 150)"));
+        progressBar = new QProgressBar(StateWidget);
+        progressBar->setObjectName(QStringLiteral("progressBar"));
+        progressBar->setGeometry(QRect(0, 100, 341, 21));
+        QFont font1;
+        font1.setFamily(QStringLiteral("Adobe Arabic"));
+        font1.setPointSize(24);
+        progressBar->setFont(font1);
+        progressBar->setStyleSheet(QStringLiteral("color : white;"));
+        progressBar->setValue(24);
         DentistTrainningDataMakerClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistTrainningDataMakerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -271,6 +291,7 @@ public:
         ScanButton->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\216\203    \346\217\217", nullptr));
         BeepSoundTestButton->setText(QApplication::translate("DentistTrainningDataMakerClass", "Beep Sound \346\270\254\350\251\246", nullptr));
         ShakeTestButton->setText(QApplication::translate("DentistTrainningDataMakerClass", "\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
+        SegNetTestButton->setText(QApplication::translate("DentistTrainningDataMakerClass", "SegNet \351\240\220\346\270\254", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistTrainningDataMakerClass", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
         ScanResult->setTitle(QApplication::translate("DentistTrainningDataMakerClass", "\346\216\203\346\217\217\347\265\220\346\236\234", nullptr));
         ImageResult->setText(QString());
