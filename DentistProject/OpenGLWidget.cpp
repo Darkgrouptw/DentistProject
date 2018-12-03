@@ -30,6 +30,7 @@ void OpenGLWidget::paintGL()
 	glLoadIdentity();
 
 	DrawGround();
+	DrawPointCloud();
 	DrawSTL();
 }
 
@@ -292,7 +293,17 @@ void OpenGLWidget::SetRenderPointCloudBool(bool RenderBool)
 	RenderPointCloud_bool = RenderBool;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// 其他元件的 Function
+//////////////////////////////////////////////////////////////////////////
+void OpenGLWidget::SetRawDataManager(RawDataManager* raw)
+{
+	this->rawManager = raw;
+}
+
+//////////////////////////////////////////////////////////////////////////
 // 初始化
+//////////////////////////////////////////////////////////////////////////
 void OpenGLWidget::InitProgram()
 {
 	program = new QOpenGLShaderProgram();
@@ -383,6 +394,26 @@ void OpenGLWidget::DrawGround()
 	}
 	#pragma endregion
 	glEnd();
+}
+void OpenGLWidget::DrawPointCloud()
+{
+	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
+	{
+		glPointSize(5);
+		glBegin(GL_POINTS);
+		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
+		{
+			glColor4f(0, 0, 0, 1);
+			for (int j = 0; j < rawManager->PointCloudArray[i].size(); j++)
+			{
+				QVector3D point = rawManager->PointCloudArray[i][j];
+				glVertex3f(point.x(), point.y(), point.z());
+			}
+			break;
+
+		}
+		glEnd();
+	}
 }
 void OpenGLWidget::DrawSTL()
 {

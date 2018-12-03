@@ -28,6 +28,30 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Source Files\Display">
+      <UniqueIdentifier>{432bf2b2-ed5e-426d-8f7a-59cc4c47027f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Display">
+      <UniqueIdentifier>{6d0bacbd-37b9-47a5-918b-117197976385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\RawDataManger">
+      <UniqueIdentifier>{e2dd3fe8-35dc-4301-ba16-b3c0d37f0b71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RawDataManager">
+      <UniqueIdentifier>{6e056c52-db8f-4553-8529-cdebdb4de1f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cuda">
+      <UniqueIdentifier>{190c0b00-8144-4525-a081-7adbf543a916}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{695d24c1-5dc5-4176-9c95-9842a19d59a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\SegNet Model">
+      <UniqueIdentifier>{d917be3c-1ea6-4672-9655-20f127dd79d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SegNet">
+      <UniqueIdentifier>{b7539f38-f167-4a76-af6c-27fec25a070a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,6 +59,21 @@
     </ClCompile>
     <ClCompile Include="DentistProject.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLWidget.cpp">
+      <Filter>Source Files\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="RawDataManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="BluetoothManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="SegNetModel.cpp">
+      <Filter>Source Files\SegNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -51,5 +90,41 @@
     <QtRcc Include="DentistProject.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OpenGLWidget.h">
+      <Filter>Header Files\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="RawDataManager.h">
+      <Filter>Header Files\RawDataManger</Filter>
+    </ClInclude>
+    <ClInclude Include="TRcuda.cuh">
+      <Filter>Cuda</Filter>
+    </ClInclude>
+    <ClInclude Include="DataManager.h">
+      <Filter>Header Files\RawDataManger</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDefine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothManager.h">
+      <Filter>Header Files\RawDataManger</Filter>
+    </ClInclude>
+    <ClInclude Include="SegNetModel.h">
+      <Filter>Header Files\SegNet Model</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="TRcuda.cu">
+      <Filter>Cuda</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Release\DentistProject\Shaders\Model.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProject\Shaders\Model.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

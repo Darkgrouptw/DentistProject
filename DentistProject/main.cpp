@@ -1,4 +1,4 @@
-#include "DentistProject.h"
+﻿#include "DentistProject.h"
 #include <QtWidgets/QApplication>
 
 int main(int argc, char *argv[])

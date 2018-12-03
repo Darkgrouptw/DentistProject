@@ -13,9 +13,10 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 2);
-	ImageResult = (QLabel*)UIPointer[0];
-	FinalResult = (QLabel*)UIPointer[1];
+	assert(UIPointer.size() == 3);
+	ImageResult			= (QLabel*)UIPointer[0];
+	NetworkResult		= (QLabel*)UIPointer[1];
+	FinalResult			= (QLabel*)UIPointer[2];
 }
 void RawDataManager::ShowImageIndex(int index)
 {
@@ -23,6 +24,9 @@ void RawDataManager::ShowImageIndex(int index)
 	{
 		QImage Pixmap_ImageResult = Mat2QImage(ImageResultArray[index - 60], CV_32F);
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
+
+		QImage Pixmap_NetworkResult = Mat2QImage(FastBorderResultArray[index - 60], CV_8UC3);
+		NetworkResult->setPixmap(QPixmap::fromImage(Pixmap_NetworkResult));
 
 		// 如果有東西的話才顯示 Network 預測的結果
 		if (CombineResultArray.size() > 0)
@@ -71,7 +75,7 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 	RawDataProperty *tmpRDP = &DManager.rawDP;
 	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
-void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
+void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave_RawData)
 {
 	#pragma region 初始化裝置
 	OCT64::OCT64::Init(
@@ -104,7 +108,7 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 		LV_65,								// ?
 		SampleCount,						// 2048
 		OCT_DataLen,						// 資料長度
-		NeedSave,							// 這個好像是要步要 output
+		NeedSave_RawData,							// 這個好像是要步要 output
 		SaveFileName_C,						// 儲存位置
 		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息
@@ -332,34 +336,40 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave)
 	std::cout << "full_scan_time:" << full_scan_time << "s" << std::endl;
 	std::cout << "all_time:" << all_time << "s" << std::endl;*/
 }
-void RawDataManager::TranformToIMG(bool NeedSave = false)
+void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 {
 	// 如果跑出結果是全黑的，那有可能是顯卡記憶體不夠的問題
 	ImageResultArray.clear();
 	SmoothResultArray.clear();
+	FastBorderResultArray.clear();
 	CombineResultArray.clear();
 
-	// bool DoFastLabel = true;
+	// Point Cloud 相關
+	PointCloudArray.clear();
 
 	//////////////////////////////////////////////////////////////////////////
 	// 這邊底下是舊的 Code
 	// 不是我寫的 QAQ
 	//////////////////////////////////////////////////////////////////////////
 	// 取 60 ~ 200
-	// for (int x = 0; x < theTRcuda.VolumeSize_X; x++) 
+	// for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
+	QVector<QVector3D> CurrentPointCloud;
 	for (int x = 60; x <= 200; x++)
 	{
 		// Mat
-		cv::Mat ImageResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		cv::Mat SmoothResult = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+		cv::Mat ImageResult			= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+		cv::Mat SmoothResult		= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+		cv::Mat FastBorderResult	= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
 
 		// 原本的變數
 		int tmpIdx;
 		int midIdx;
 		float idt, idtSmooth, idtmax = 0, idtmin = 9999;
 		int posZ;
+		float ratio = 1; // 這邊好像是放大倍率
 
 		// Map 參數
+		#pragma region 轉換成圖片
 		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
 		{
 			// 這個 For 迴圈是算每一個結果
@@ -378,11 +388,43 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 			}
 
 			// 這個迴圈是去算
-			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
+			// tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
 		}
+		#pragma endregion
+		#pragma region 快速找出 Contour & 點雲
+		// 對應的 ID (Mapping Matrix) 的
+		int Mapidx;
+
+		// 這邊是將 Contour & 結果，合再一起
+		// 先複製一份
+		FastBorderResult = ImageResult.clone();
+		FastBorderResult.convertTo(FastBorderResult, CV_8U, 255);
+		cv::cvtColor(FastBorderResult.clone(), FastBorderResult, cv::COLOR_GRAY2BGR);
+		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		{
+			tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z;
+			Mapidx = ((row * theTRcuda.sample_Y * theTRcuda.VolumeSize_X) + x) * theTRcuda.sample_X;
+			if (theTRcuda.PointType[tmpIdx + 3] == 1 && theTRcuda.PointType[tmpIdx + 1] != 0)
+			{
+				posZ = theTRcuda.PointType[tmpIdx + 1];
+				cv::Point contourPoint(posZ, row);
+
+				// 轉換成 3D 座標
+				QVector3D pointData(
+					DManager.MappingMatrix[Mapidx * 2 + 1] * ratio + 0.2,
+					DManager.MappingMatrix[Mapidx * 2] * ratio,
+					theTRcuda.PointType[tmpIdx + 1] * DManager.zRatio / theTRcuda.VolumeSize_Z * ratio
+				);
+				CurrentPointCloud.push_back(pointData);
+
+				// 畫出來
+				cv::circle(FastBorderResult, contourPoint, 1, cv::Scalar(0, 255, 255), CV_FILLED);
+			}
+		}
+		#pragma endregion
 
 		// 使否只要顯示
-		if (NeedSave)
+		if (NeedSave_Image)
 		{
 			// 原圖
 			cv::Mat TempImage;
@@ -394,13 +436,16 @@ void RawDataManager::TranformToIMG(bool NeedSave = false)
 			cv::imwrite("Images/OCTImages/smooth_v2/" + std::to_string(x) + ".png", TempImage);
 
 			// Combine 結果圖
-			//cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", ConbineTest);
+			cv::imwrite("Images/OCTImages/fastborder_v2/" + std::to_string(x) + ".png", FastBorderResult);
 		}
 
 		// 暫存到陣列李
 		ImageResultArray.push_back(ImageResult);
 		SmoothResultArray.push_back(SmoothResult);
+		FastBorderResultArray.push_back(FastBorderResult);
 	}
+	// 加入 Point Cloud 的陣列
+	PointCloudArray.push_back(CurrentPointCloud);
 	cout << "轉成圖片完成!!" << endl;
 }
 bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
@@ -425,7 +470,7 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 	cv::threshold(FirstImage(cv::Rect(0, 0, 500, 250)), SmallFirstMat, 20, 255, cv::THRESH_BINARY);
 	cv::threshold(LastImage(cv::Rect(0, 0, 500, 250)), SmallLastMat, 20, 255, cv::THRESH_BINARY);
 
-	cv::Size size(SmallFirstMat.cols / 10, SmallFirstMat.rows / 10);
+	cv::Size size(SmallFirstMat.cols / 4, SmallFirstMat.rows / 4);
 	cv::resize(SmallFirstMat, SmallFirstMat, size);
 	cv::resize(SmallLastMat, SmallLastMat, size);
 
@@ -448,10 +493,42 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 		cout << "晃動判斷時間: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
 	}
 
-	// PSNR 回傳
-	if (PSNR_Value > 11 && (ZerosCount1 < 0.96f && ZerosCount2 < 0.96f))
+	// PSNR && 有效區域要大於某一個值
+	if (PSNR_Value > OCT_PSNR_Threshold &&
+		(ZerosCount1 < OCT_UsefulData_Threshold && ZerosCount2 < OCT_UsefulData_Threshold))
 		return true;
 	return false;
+}
+void RawDataManager::WriteRawDataToFile(QString DirLocation)
+{
+	for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
+	{
+		// 開啟檔案
+		QFile file(DirLocation + "/" + QString::number(x) + ".txt");
+		assert(file.open(QIODevice::WriteOnly));
+
+		QTextStream ts(&file);
+
+		// Map 參數
+		for (int row = 0; row < theTRcuda.VolumeSize_Y; row++)
+		{
+			// 這個 For 迴圈是算每一個結果
+			// 也就是去算深度底下，1024 個結果
+			for (int col = 1; col < theTRcuda.VolumeSize_Z; col++)
+			{
+				int tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
+				ts << theTRcuda.VolumeDataAvg[tmpIdx] << "\t";
+			}
+			ts << "\n";
+		}
+		file.close();
+
+		// 輸出進度
+		if (x > 0)
+			cout << "\r";
+		cout << "輸出進度:" << (x + 1) << " / " << theTRcuda.VolumeSize_X;
+	}
+	cout << endl << "完成!!" << endl;
 }
 
 // Netowrk 相關的 Function

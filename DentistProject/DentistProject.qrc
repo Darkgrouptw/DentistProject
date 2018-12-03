@@ -1,5 +1,4 @@
 <RCC>
-    <qresource prefix="/DentistProject">
-        <file>Resources/Images/WhiteBG.png</file>
+    <qresource prefix="DentistProject">
     </qresource>
 </RCC>

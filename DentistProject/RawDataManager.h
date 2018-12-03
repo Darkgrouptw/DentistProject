@@ -8,6 +8,10 @@
 
 #include <cmath>
 #include <vector>
+
+#include <QFile>
+#include <QIODevice>
+#include <QTextStream>
 #include <QVector>
 #include <QVector3D>
 #include <QDataStream>
@@ -20,13 +24,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-// 這邊是為了要讓邊界 Smooth 一點
-/*struct IndexMapInfo
-{
-	int index;			// 位置資訊
-	int ZValue;			// Z 的深度值是多少
-};*/
 
 class RawDataManager
 {
@@ -52,12 +49,22 @@ public:
 	void ScanDataFromDevice(QString, bool);										// 輸入儲存路徑 和 要步要儲存，來轉點雲
 	void TranformToIMG(bool);													// 轉換成圖檔，轉點雲
 	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
+	void WriteRawDataToFile(QString);											// 將 Raw Data 轉成檔案
 
+	//////////////////////////////////////////////////////////////////////////
 	// Netowrk 相關的 Function
+	//////////////////////////////////////////////////////////////////////////
 	QVector<cv::Mat>	GenerateNetworkData();									// 這邊是產生要預測的資料
 	void				SetPredictData(QVector<cv::Mat>);						// 設定 網路預測出來的資料
 
+	//////////////////////////////////////////////////////////////////////////
+	// 點雲資料
+	//////////////////////////////////////////////////////////////////////////
+	QVector<QVector<QVector3D>> PointCloudArray;								// 每次掃描都會把結果船進去
+
+	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
+	//////////////////////////////////////////////////////////////////////////
 	BluetoothManager	bleManager;
 
 private:
@@ -75,12 +82,8 @@ private:
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
 	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
-
-	//////////////////////////////////////////////////////////////////////////
-	// 點雲資料
-	//////////////////////////////////////////////////////////////////////////
-	QVector<QVector<QVector3D>> PointCloudArray;								// 每次掃描都會把結果船進去
-
+	const float			OCT_UsefulData_Threshold = 0.9f;						// 有效區域
+	const float			OCT_PSNR_Threshold = 11;								// PSNR 要大於這個值
 
 	//////////////////////////////////////////////////////////////////////////
 	// 網路
@@ -91,15 +94,17 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
 	//////////////////////////////////////////////////////////////////////////
-	QVector<cv::Mat>	ImageResultArray;										// 原圖						(SegNet 使用)
-	QVector<cv::Mat>	SmoothResultArray;										// Smooth 過後的結果		(PSNR 判斷手晃使用)
-	QVector<cv::Mat>	CombineResultArray;										// 判斷完的結果圖			(顯示使用)
+	QVector<cv::Mat>	ImageResultArray;										// 原圖								(SegNet 使用)
+	QVector<cv::Mat>	SmoothResultArray;										// Smooth 過後的結果				(PSNR 判斷手晃使用)
+	QVector<cv::Mat>	FastBorderResultArray;									// 這邊是快速抓取邊界的 Result		(東元那時候使用的，有經過學長 GPU 加速)
+	QVector<cv::Mat>	CombineResultArray;										// 判斷完的結果圖					(顯示使用)
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer
 	//////////////////////////////////////////////////////////////////////////
-	QLabel*				ImageResult;
-	QLabel*				FinalResult;
+	QLabel*				ImageResult;											// 外部的原圖 UI Pointer
+	QLabel*				NetworkResult;											// 同上，但目前是沒有用
+	QLabel*				FinalResult;											// 最後找出來的結果圖
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
