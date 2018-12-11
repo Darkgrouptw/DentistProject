@@ -307,9 +307,9 @@ public:
         ScanButton->setText(QApplication::translate("DentistProjectClass", "\346\216\203    \346\217\217", nullptr));
         AutoScanImageWhileScan_CheckBox->setText(QApplication::translate("DentistProjectClass", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\345\275\261\345\203\217\347\265\220\346\236\234", nullptr));
         OCTTestingBox->setTitle(QApplication::translate("DentistProjectClass", "OCT \346\270\254\350\251\246\347\233\270\351\227\234 (\351\200\262\351\232\216)", nullptr));
-        RawDataToImage->setText(QApplication::translate("DentistProjectClass", "Raw Data \350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", nullptr));
+        RawDataToImage->setText(QApplication::translate("DentistProjectClass", "\350\274\270\345\207\272\345\234\226 (Raw Data)", nullptr));
         EasyBorderDetect->setText(QApplication::translate("DentistProjectClass", "\347\260\241\346\230\223\351\202\212\347\225\214\346\270\254\350\251\246", nullptr));
-        RawDataCheck->setText(QApplication::translate("DentistProjectClass", "\350\274\270\345\207\272 Raw Data \346\270\254\350\251\246", nullptr));
+        RawDataCheck->setText(QApplication::translate("DentistProjectClass", "\350\274\270\345\207\272\350\263\207\346\226\231 (Raw Data)", nullptr));
         ShakeTestButton->setText(QApplication::translate("DentistProjectClass", "\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
         SegNetTestButton->setText(QApplication::translate("DentistProjectClass", "SegNet \351\240\220\346\270\254", nullptr));
         BeepSoundTestButton->setText(QApplication::translate("DentistProjectClass", "Beep Sound \346\270\254\350\251\246", nullptr));

@@ -384,7 +384,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Raw Data 轉成圖輸出</string>
+        <string>輸出圖 (Raw Data)</string>
        </property>
       </widget>
       <widget class="QPushButton" name="EasyBorderDetect">
@@ -410,7 +410,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>輸出 Raw Data 測試</string>
+        <string>輸出資料 (Raw Data)</string>
        </property>
       </widget>
       <widget class="QPushButton" name="ShakeTestButton">

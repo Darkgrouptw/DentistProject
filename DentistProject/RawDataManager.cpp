@@ -517,7 +517,8 @@ void RawDataManager::WriteRawDataToFile(QString DirLocation)
 			for (int col = 1; col < theTRcuda.VolumeSize_Z; col++)
 			{
 				int tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
-				ts << theTRcuda.VolumeDataAvg[tmpIdx] << "\t";
+				//ts << theTRcuda.VolumeDataAvg[tmpIdx] << "\t";
+				ts << theTRcuda.VolumeData[tmpIdx] << "\t";
 			}
 			ts << "\n";
 		}

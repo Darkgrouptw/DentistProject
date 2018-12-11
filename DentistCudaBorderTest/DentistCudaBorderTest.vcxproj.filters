@@ -32,5 +32,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CudaBorder.cuh">
+      <Filter>Cuda</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CudaBorder.cu">
+      <Filter>Cuda</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

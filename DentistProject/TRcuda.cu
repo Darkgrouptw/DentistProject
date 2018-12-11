@@ -668,7 +668,7 @@ __global__ static void gpuFrequencyAdjust(int* in, float* out, int size_Z, int d
 TRcuda::TRcuda(void)
 {
 	// variable init
-	avergeBlock = 5;//3 
+	avergeBlock = 3;//3 
 	peakGap = 0.1f;//0.1//0.3
 	energyGap = 4.1f; //6.0//4.1 4.4f
 
