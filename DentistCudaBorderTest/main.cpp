@@ -72,10 +72,9 @@ int main(int argc, char *argv[])
 {
 	// 讀取檔案
 	//ReadFile("D:/Dentist/Data/ScanData/2018.11.28/1_raw/60.txt");
-	//ReadFile("D:/Dentist/Data/ScanData/2018.11.28/3_raw/60.txt");
-	//ReadFile("D:/Dentist/Data/ScanData/2018.10.18/20181016_Incisor_rawdata/120.txt");
-	//ReadFile("C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProject/Images/OCTImages/rawdata_v2/60.txt");
-	//ReadFile("C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProject/Images/OCTImages/rawdata_v2/120.txt");
+	//ReadFile("D:/Dentist/Data/ScanData/2018.11.28/3_raw/180.txt");
+	//ReadFile("C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProject/Images/OCTImages/rawdata_v2/160.txt");
+	ReadFile("C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProject/Images/OCTImages/rawdata_v2/150.txt");
 
 	// 抓出邊界 
 	cuda.Init(sizeY, sizeZ);

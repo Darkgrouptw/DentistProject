@@ -20,7 +20,7 @@ __global__ static void NormalizaDataGPU(float* DataArray, float maxValue, int si
 
 	DataArray[id] /= maxValue;
 }
-__global__ static void findMaxAndMinPeak(float* DataArray, uchar* PointType, int rows, int cols, float MinGapPeakThreshold,  float MaxPeakThreshold)
+__global__ static void findMaxAndMinPeak(float* DataArray, uchar* PointType, int rows, int cols,  float MaxPeakThreshold)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
 	if (id >= rows * cols)				// 超出範圍
@@ -38,8 +38,9 @@ __global__ static void findMaxAndMinPeak(float* DataArray, uchar* PointType, int
 	if (DiffLeft > 0 && DiffRight > 0
 		&& DataArray[id] > MaxPeakThreshold)
 		PointType[id] = 1;
-	else if (DiffLeft < 0 && DiffRight < 0
-		&& ((-DiffLeft > MinGapPeakThreshold) || (-DiffRight > MinGapPeakThreshold)))
+	else if (DiffLeft < 0 && DiffRight < 0)
+	//else if (DiffLeft < 0 && DiffRight < 0
+	//	&& ((-DiffLeft > MinGapPeakThreshold) || (-DiffRight > MinGapPeakThreshold)))
 		PointType[id] = 2;
 }
 __global__ static void ParseMaxMinPeak(uchar* PointType, int rows, int cols, int startIndex)
@@ -136,7 +137,7 @@ __global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType,
 	//printf("%d\n", id);
 	for (int i = 0; i < cols; i++)
 	{
-		if (!IsFindMin && PointType[i + offsetIndex] == 2)
+		if (PointType[i + offsetIndex] == 2)
 		{
 			IsFindMin = true;
 			MinData = DataArray[i + offsetIndex];
@@ -155,35 +156,34 @@ __global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType,
 		PointType_1D[id] = -1;
 
 }
-__global__ static void StablizePointType(int * PointType_1D, int* OutputType_1D, int rows, int chooseSize)
+__global__ static void ConnectPointsStatus(int * PointType_1D, int* ConnectStatus, int rows, int ConnectRadius)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
-	if (id >= rows)									// 判斷是否超出大小
+	if (id >= rows)												// 判斷是否超出大小
 		return;
 
-	// 由於雜點會有很多 Noise 要去雜訊用的
-	int range = chooseSize / 2;
-	int count = 0;
-	int TotalHeight = 0;
-	for (int i = -range; i <= range; i++)
+	// 代表這個點沒有有效的點
+	if (PointType_1D[id] == -1)
+		return;
+
+	// 如果是有效的點，就繼續往下追 
+	int finalPos = min(id + ConnectRadius, rows);			// 截止條件
+	for (int i = id + 1; i < finalPos; i++)
 	{
-		if (0 > i + id || id + i >= rows)			// 超出邊界
-			continue;
-		else if (PointType_1D[id + i] == -1)		// 沒有資訊
-			continue;
-		else if (abs(PointType_1D[id + i] - PointType_1D[id]) > 30)		// 差距太大
-			continue;
-		else
+		if (PointType_1D[i] != -1)
 		{
-			TotalHeight += PointType_1D[id + i];
-			count++;
+			int diffX = PointType_1D[id] - PointType_1D[i];
+			int diffY = i - id;
+			int Radius = diffX * diffX + diffY * diffY;
+
+			// 0 沒有用到喔
+			if (Radius < ConnectRadius * ConnectRadius)
+			{
+				int index = ConnectRadius * id + i - id;
+				ConnectStatus[index] = Radius;
+			}
 		}
 	}
-
-	if (count >= range - 1)
-		OutputType_1D[id] = TotalHeight / count;
-	else
-		OutputType_1D[id] = -1;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -222,11 +222,13 @@ void CudaBorder::GetBorderFromCuda(float** DataArray)
 	cudaMemset(GPU_PointType, 0, sizeof(uchar) * rows * cols);
 	#pragma endregion
 	#pragma region 抓取最大值 每個除以最大值
-	float maxValue = GetMaxValue(GPU_DataArray,  rows * cols);
+	float maxValue;
+	GetMinMaxValue(GPU_DataArray, maxValue, rows * cols);
 	NormalizeData(GPU_DataArray, maxValue, rows * cols);
+	CheckCudaError();
 
 	// 找最大最小值
-	findMaxAndMinPeak << < NumBlocks, NumThreads >> > (GPU_DataArray, GPU_PointType, rows, cols, MinGapPeakThreshold, MaxPeakThreshold);
+	findMaxAndMinPeak << < NumBlocks, NumThreads >> > (GPU_DataArray, GPU_PointType, rows, cols, MaxPeakThreshold);
 	CheckCudaError();
 
 	// Parse 一些連續最小值
@@ -234,29 +236,37 @@ void CudaBorder::GetBorderFromCuda(float** DataArray)
 	CheckCudaError();
 
 	// 抓出一維陣列
-	int *GPU_PointType_1D, *GPU_tempPointType_1D;
+	int *GPU_PointType_1D;
 	cudaMalloc(&GPU_PointType_1D, sizeof(int) * rows);
-	cudaMalloc(&GPU_tempPointType_1D, sizeof(int) * rows);
-	PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_DataArray, GPU_PointType, GPU_tempPointType_1D, rows, cols, 0.03f);
+	PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_DataArray, GPU_PointType, GPU_PointType_1D, rows, cols, GoThroughThreshold);
 	CheckCudaError();
 
-	StablizePointType << <NumBlocks_small, NumThreads_small >> > (GPU_tempPointType_1D, GPU_PointType_1D, rows, StablizeSize);
+	// 連結點
+	int *GPU_Connect_Status;
+	cudaMalloc(&GPU_Connect_Status, sizeof(int) * rows * ConnectRadius);
+	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * rows * ConnectRadius);
+	ConnectPointsStatus << <NumBlocks_small, NumThreads_small >> > (GPU_PointType_1D, GPU_Connect_Status, rows, ConnectRadius);
 	CheckCudaError();
 
 	// 把資料傳回 CPU
+	int *Connect_Status = new int[rows * ConnectRadius];
 	cudaMemcpy(PointType, GPU_PointType, sizeof(uchar) * rows * cols, cudaMemcpyDeviceToHost);
 	cudaMemcpy(PointType_1D, GPU_PointType_1D, sizeof(int) * rows, cudaMemcpyDeviceToHost);
-	//cudaMemcpy(PointType_1D, GPU_tempPointType_1D, sizeof(int) * rows, cudaMemcpyDeviceToHost);
+	cudaMemcpy(Connect_Status, GPU_Connect_Status, sizeof(int) * rows * ConnectRadius, cudaMemcpyDeviceToHost);
+
+	GetLargeLine(Connect_Status);
 	#pragma endregion
 	#pragma region Free Memory
 	cudaFree(GPU_DataArray);
 	cudaFree(GPU_PointType);
 	cudaFree(GPU_PointType_1D);
-	cudaFree(GPU_tempPointType_1D);
+	cudaFree(GPU_Connect_Status);
+
+	delete Connect_Status;
 	#pragma endregion
 	#pragma region 結束時間
 	time = clock() - time;
-	cout << "找最大值: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	cout << "找邊界: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#pragma endregion
 }
 QImage CudaBorder::SaveDataToImage(float** DataArray)
@@ -326,7 +336,7 @@ QImage CudaBorder::SaveDataToImage(float** DataArray)
 	return img;
 }
 
-float CudaBorder::GetMaxValue(float* GPU_begin, int size)
+void CudaBorder::GetMinMaxValue(float* GPU_begin, float& max, int size)
 {
 	thrust::device_vector<float> d_vec(GPU_begin, GPU_begin + size);
 	thrust::device_vector<float>::iterator iter = thrust::max_element(thrust::device, d_vec.begin(), d_vec.end());
@@ -334,15 +344,118 @@ float CudaBorder::GetMaxValue(float* GPU_begin, int size)
 	unsigned int position = iter - d_vec.begin();
 	float max_val = *iter;
 
-	CheckCudaError();
-
+	// 給最大值
 	cout << "最大值是: " << max_val << " 在位置: " << position << endl;
-	return max_val;
+	max = max_val;
 }
 void CudaBorder::NormalizeData(float *GPU_DataArray, float maxValue, int size)
 {
 	NormalizaDataGPU << <NumBlocks, NumThreads >> > (GPU_DataArray, maxValue, size);
 	CheckCudaError();
+}
+void CudaBorder::GetLargeLine(int *Connect_Status)
+{
+	// 每個 10 段下去 Sample
+	int RowGap = rows / 10;
+	vector<vector<int>> StatusVector;
+	for (int i = 0; i < rows; i+= RowGap)
+	{
+		int begin = i;
+		int end = i;
+
+		if (PointType_1D[i] == -1)
+			continue;
+
+		// 往上找 & 先加上自己
+		vector<int> Connect;
+		Connect.push_back(i);
+
+		int FindIndex = i;
+		bool IsFind = true;
+		while(IsFind && FindIndex > 0)
+		{
+			int minIndex = -1;
+			int tempValue = ConnectRadius * ConnectRadius;
+			for (int k = 1; k < ConnectRadius; k++)
+			{
+				int index = ConnectRadius * (FindIndex - k) + k;
+				if (FindIndex - k >= 0 && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+				{
+					tempValue = Connect_Status[index];
+					minIndex = k;
+				}
+			}
+
+			if (minIndex != -1)
+			{
+				FindIndex = FindIndex - minIndex;
+				Connect.push_back(FindIndex);
+				IsFind = true;
+			}
+			else
+				IsFind = false;
+		}
+
+		// 往下找
+		FindIndex = i;
+		while (IsFind && FindIndex < rows - 1)
+		{
+			int minIndex = -1;
+			int tempValue = ConnectRadius * ConnectRadius;
+			for (int k = 1; k < ConnectRadius; k++)
+			{
+				int index = ConnectRadius * FindIndex + k;
+				if (FindIndex + k < rows && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+				{
+					tempValue = Connect_Status[index];
+					minIndex = k;
+				}
+			}
+
+			if (minIndex != -1)
+			{
+				FindIndex = FindIndex + minIndex;
+				Connect.push_back(FindIndex);
+				IsFind = true;
+			}
+			else
+				IsFind = false;
+		} 
+
+		if (Connect.size() > 1)
+		{
+			// 由小排到大
+			sort(Connect.begin(), Connect.end());
+			StatusVector.push_back(Connect);
+		}
+	}
+
+	// 排序之後取最大
+	sort(StatusVector.begin(), StatusVector.end(), SortByVectorSize);
+
+	// 把其他雜點刪掉 & 理論上應該要大於 0
+	assert(StatusVector.size() > 0);
+	vector<int> LineVector = StatusVector[0];
+	int index = 0;
+	for (int i = 0; i < rows; i++)
+	{
+		if (LineVector[index] != i)
+			PointType_1D[i] = -1;
+		else if (LineVector[index] == i)
+		{
+			index++;
+			if (index >= LineVector.size())
+			{
+				for (int j = i + 1; j < rows; j++)
+					PointType_1D[j] = -1;
+				break;
+			}
+		}
+	}
+}
+bool CudaBorder::SortByVectorSize(vector<int> left, vector<int> right)
+{
+	return right.size() < left.size();
 }
 
 //////////////////////////////////////////////////////////////////////////
