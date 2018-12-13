@@ -345,31 +345,26 @@ Mat CudaBorder::SaveDataToImage(float** DataArray, bool SaveBorder = false)
 	Mat img(rows, cols, CV_8U, UintDataArray);
 	cvtColor(img, img, CV_GRAY2BGR);
 
-	
-	// Debug 所有的 peak
-	//for (int i = 0; i < rows * cols; i++)
-	//{
-	//	int rowIndex = i / cols;
-	//	int colIndex = i % cols;
-	//
-	//	QColor color(0, 0, 0);
-	//	/*if (PointType[i] == 1)
-	//		color = QColor(255, 255, 0);
-	//	else */
-	//	if (PointType[i] == 2)
-	//	{
-	//		color = QColor(255, 255, 255);
-	//		img.setPixelColor(colIndex, rowIndex, color);
-	//	}
-	//
-	//}
-	// 這邊是最後抓出來的邊界
-	/*cv::Vec3b color(255, 255, 0);
-	for (int i = 0; i < rows; i++)
-		if (PointType_1D[i] != -1)
-			img.at<cv::Vec3b>(i, PointType_1D[i]) = color;*/
 	if (SaveBorder)
 	{
+		// Debug 所有的 peak
+		//for (int i = 0; i < rows * cols; i++)
+		//{
+		//	int rowIndex = i / cols;
+		//	int colIndex = i % cols;
+		//
+		//	QColor color(0, 0, 0);
+		//	/*if (PointType[i] == 1)
+		//		color = QColor(255, 255, 0);
+		//	else */
+		//	if (PointType[i] == 2)
+		//	{
+		//		color = QColor(255, 255, 255);
+		//		img.setPixelColor(colIndex, rowIndex, color);
+		//	}
+		//
+		//}
+		assert(PointType_1D != NULL);
 		for (int i = 0; i < rows; i++)
 			if (PointType_1D[i] != -1)
 			{

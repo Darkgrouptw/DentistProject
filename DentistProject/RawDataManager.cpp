@@ -23,16 +23,16 @@ void RawDataManager::ShowImageIndex(int index)
 {
 	if (60 <= index && index <= 200 && ImageResultArray.size() > 0)
 	{
-		QImage Pixmap_ImageResult = QImageResultArray[index - 60];
+		QImage Pixmap_ImageResult = QImageResultArray[index];
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 
 		//QImage Pixmap_NetworkResult = Mat2QImage(FastBorderResultArray[index - 60], CV_8UC3);
 		//NetworkResult->setPixmap(QPixmap::fromImage(Pixmap_NetworkResult));
 
 		// 如果有東西的話才顯示 Network 預測的結果
-		if (CombineResultArray.size() > 0)
+		if (QCombineResultArray.size() > 0)
 		{
-			QImage Pixmap_FinalResult = QCombineResultArray[index - 60];
+			QImage Pixmap_FinalResult = QCombineResultArray[index];
 			FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
 		}
 	}
@@ -377,9 +377,9 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 	QVector<QVector3D> CurrentPointCloud;
 
 	// 取 60 ~ 200
-	// for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
 	int TheCudaSize = 64000000;
-	for (int x = 60; x <= 200; x++)
+	//for (int x = 60; x <= 200; x++)
+	for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
 	{
 		// Mat
 		cv::Mat ImageResult;		// = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
@@ -407,15 +407,14 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 		if (NeedSave_Image)
 		{
 			// 原圖
-			cv::imwrite("Images/OCTImages/origin_v2/" + std::to_string(x) + ".png", ImageResult);
+			cv::imwrite("Images/OCTImages/origin_v2/" + to_string(x) + ".png", ImageResult);
 
 			// Smooth 影像
-			cv::imwrite("Images/OCTImages/smooth_v2/" + std::to_string(x) + ".png", SmoothResult);
+			cv::imwrite("Images/OCTImages/smooth_v2/" + to_string(x) + ".png", SmoothResult);
 
 			// Combine 結果圖
-			cv::imwrite("Images/OCTImages/combine_v2/" + std::to_string(x) + ".png", CombineResult);
+			cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResult);
 		}
-		else
 
 		// 暫存到陣列裡 (Mat)
 		ImageResultArray.push_back(ImageResult);
@@ -426,6 +425,22 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 		QImageResultArray.push_back(QImageResult);
 		QSmoothResultArray.push_back(QSmoothResult);
 		QCombineResultArray.push_back(QCombineResult);
+	}
+
+
+	// 這邊是測試橫向的部分
+	for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
+	{
+		Mat reverseImg(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8UC3);
+		for (int y = 0; y < theTRcuda.VolumeSize_Y; y++)
+		{
+			for (int z = 0; z < theTRcuda.VolumeSize_Z; z++)
+			{
+				Vec3b color = ImageResultArray[y].at<Vec3b>(x, z);
+				reverseImg.at<Vec3b>(y, z) = color;
+			}
+		}
+		imwrite("Images/OCTImages/reverse_v2/" + to_string(x) + ".png", reverseImg);
 	}
 
 	// 加入 Point Cloud 的陣列
