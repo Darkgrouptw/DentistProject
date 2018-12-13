@@ -4,6 +4,7 @@
 */
 #include "DataManager.h"
 #include "TRCuda.cuh"
+#include "CudaBorder.cuh"
 #include "BluetoothManager.h"
 
 #include <cmath>
@@ -71,6 +72,7 @@ private:
 	// 以前的資料
 	DataManager			DManager;
 	TRcuda				theTRcuda;
+	CudaBorder			cudaBorder;
 
 	//////////////////////////////////////////////////////////////////////////
 	// OCT
@@ -94,10 +96,17 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
 	//////////////////////////////////////////////////////////////////////////
-	QVector<cv::Mat>	ImageResultArray;										// 原圖								(SegNet 使用)
-	QVector<cv::Mat>	SmoothResultArray;										// Smooth 過後的結果				(PSNR 判斷手晃使用)
-	QVector<cv::Mat>	FastBorderResultArray;									// 這邊是快速抓取邊界的 Result		(東元那時候使用的，有經過學長 GPU 加速)
-	QVector<cv::Mat>	CombineResultArray;										// 判斷完的結果圖					(顯示使用)
+	QVector<Mat>	ImageResultArray;											// 原圖								(SegNet 使用)
+	QVector<Mat>	SmoothResultArray;											// Smooth 過後的結果				(PSNR 判斷手晃使用)
+	QVector<Mat>	CombineResultArray;											// 判斷完的結果圖					(顯示使用)
+
+	//////////////////////////////////////////////////////////////////////////
+	// 顯示部分
+	//////////////////////////////////////////////////////////////////////////
+	QVector<QImage> QImageResultArray;											// 同上(顯示)
+	QVector<QImage> QSmoothResultArray;											// 同上(顯示)
+	QVector<QImage> QCombineResultArray;										// 同上(顯示)
+	
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer

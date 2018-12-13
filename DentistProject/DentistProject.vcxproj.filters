@@ -113,9 +113,15 @@
     <ClInclude Include="SegNetModel.h">
       <Filter>Header Files\SegNet Model</Filter>
     </ClInclude>
+    <ClInclude Include="CudaBorder.cuh">
+      <Filter>Cuda</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="TRcuda.cu">
+      <Filter>Cuda</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CudaBorder.cu">
       <Filter>Cuda</Filter>
     </CudaCompile>
   </ItemGroup>

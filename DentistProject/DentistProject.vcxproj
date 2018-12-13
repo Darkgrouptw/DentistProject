@@ -143,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BluetoothManager.h" />
+    <ClInclude Include="CudaBorder.cuh" />
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="GlobalDefine.h" />
     <ClInclude Include="OpenGLWidget.h" />
@@ -151,6 +152,7 @@
     <ClInclude Include="TRcuda.cuh" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="CudaBorder.cu" />
     <CudaCompile Include="TRcuda.cu" />
   </ItemGroup>
   <ItemGroup>

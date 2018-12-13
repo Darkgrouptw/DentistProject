@@ -42,7 +42,7 @@ public:
 	float* SingleData;
 	float* VolumeDataAvg;
 	float* RawDataScanP;
-	int* PointType;
+	//int* PointType;
 
 	int VolumeSize_X;
 	int VolumeSize_Y;

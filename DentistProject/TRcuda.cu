@@ -688,7 +688,7 @@ TRcuda::TRcuda(void)
 	SingleData = NULL;
 	VolumeDataAvg = NULL;
 	RawDataScanP = NULL;
-	PointType = NULL;
+	//PointType = NULL;
 
 	// init function
 	InitCUDA();
@@ -699,8 +699,8 @@ TRcuda::~TRcuda(void)
 		free(VolumeData);
 	if (VolumeDataAvg != NULL)
 		free(VolumeDataAvg);
-	if (PointType != NULL)
-		free(PointType);
+	/*if (PointType != NULL)
+		free(PointType);*/
 	if (SingleData != NULL)
 		free(SingleData);
 }
@@ -1196,60 +1196,60 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	gpuError = cudaMemcpy(VolumeDataAvg, gpuAvergeData, sizeof(float) * floatDataSize, cudaMemcpyDeviceToHost);
 
 	// Sum Thresh
-	t1 = clock();
+	//t1 = clock();
 
-	gpuSumThresh << <gridDimX, blockDimX >> >(gpuAvergeData, floatDataSize, size_Z, depthFRange, depthBRange);
-	gpuError = cudaDeviceSynchronize();
+	//gpuSumThresh << <gridDimX, blockDimX >> >(gpuAvergeData, floatDataSize, size_Z, depthFRange, depthBRange);
+	//gpuError = cudaDeviceSynchronize();
 
-	t2 = clock();
+	//t2 = clock();
 	//std::cout << "gpuSumThresh done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	
 	// Peak Detect
-	t1 = clock();
-	int* gpuPointType;
-	gpuError = cudaMalloc((void**)&gpuPointType, sizeof(int) *floatDataSize);
+	//t1 = clock();
+	//int* gpuPointType;
+	//gpuError = cudaMalloc((void**)&gpuPointType, sizeof(int) *floatDataSize);
 
-	gpuPeakDetect << <gridDimX, blockDimX >> >(gpuAvergeData, gpuPointType, floatDataSize, size_Z, peakGap, energyGap, depthFRange, depthBRange);
-	gpuError = cudaDeviceSynchronize();
+	//gpuPeakDetect << <gridDimX, blockDimX >> >(gpuAvergeData, gpuPointType, floatDataSize, size_Z, peakGap, energyGap, depthFRange, depthBRange);
+	//gpuError = cudaDeviceSynchronize();
 
-	cudaFree(gpuAvergeData);
-	t2 = clock();
+	//cudaFree(gpuAvergeData);
+	//t2 = clock();
 	//std::cout << "Peak Detect done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// Min Peak
-	t1 = clock();
-	int* gpuMinPeak;
-	gpuError = cudaMalloc((void**)&gpuMinPeak, sizeof(int) *size_X);
+	//t1 = clock();
+	//int* gpuMinPeak;
+	//gpuError = cudaMalloc((void**)&gpuMinPeak, sizeof(int) *size_X);
 
-	gpuFindMinPeak << <gridDimX, blockDimX >> >(gpuPointType, gpuMinPeak, size_X, size_Y, size_Z);
-	gpuError = cudaDeviceSynchronize();
+	//gpuFindMinPeak << <gridDimX, blockDimX >> >(gpuPointType, gpuMinPeak, size_X, size_Y, size_Z);
+	//gpuError = cudaDeviceSynchronize();
 
-	gpuFindMinPeakOne << <gridDimX, blockDimX >> >(gpuMinPeak, size_X);
-	gpuError = cudaDeviceSynchronize();
+	//gpuFindMinPeakOne << <gridDimX, blockDimX >> >(gpuMinPeak, size_X);
+	//gpuError = cudaDeviceSynchronize();
 
-	int tmpMinPeak = size_Z;
-	gpuError = cudaMemcpy(&tmpMinPeak, gpuMinPeak, sizeof(int) * 1, cudaMemcpyDeviceToHost);
-	cudaFree(gpuMinPeak);
+	//int tmpMinPeak = size_Z;
+	//gpuError = cudaMemcpy(&tmpMinPeak, gpuMinPeak, sizeof(int) * 1, cudaMemcpyDeviceToHost);
+	//cudaFree(gpuMinPeak);
 
 	// Set MinPeak
-	gpuSetMinPeak << <gridDimX, blockDimX >> >(gpuPointType, floatDataSize, size_X, size_Y, size_Z, tmpMinPeak, boardNRange);
-	gpuError = cudaDeviceSynchronize();
-	t2 = clock();
+	//gpuSetMinPeak << <gridDimX, blockDimX >> >(gpuPointType, floatDataSize, size_X, size_Y, size_Z, tmpMinPeak, boardNRange);
+	//gpuError = cudaDeviceSynchronize();
+	//t2 = clock();
 	//std::cout << "Min Peak done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	// Board Detect
-	t1 = clock();
-	for (int i = 0; i < 40; i++) // i < max(size_X, size_Y) * 2
-	{
+	//t1 = clock();
+	//for (int i = 0; i < 40; i++) // i < max(size_X, size_Y) * 2
+	/*{
 		gpuBoardDetect << <gridDimX, blockDimX >> >(gpuPointType, floatDataSize, size_X, size_Y, size_Z, depthFRange, depthBRange, boardNRange);
 		gpuError = cudaDeviceSynchronize();
-	}
+	}*/
 
-	t2 = clock();
+	//t2 = clock();
 	//std::cout << "Board Detect done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	//Test Mapping Time
-	t1 = clock();
+	/*t1 = clock();
 	int* gpuMappingT;
 	gpuError = cudaMalloc((void**)&gpuMappingT, sizeof(int) *floatDataSize);
 
@@ -1257,31 +1257,28 @@ void TRcuda::RawToPointCloud(char* rawData, int data_Size, int size_Y, int size_
 	gpuError = cudaDeviceSynchronize();
 	cudaFree(gpuMappingT);
 
-	t2 = clock();
+	t2 = clock();*/
 	//std::cout << "Mapping done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 
 	//*/
 	//pull data from gpu to cpu
-	t1 = clock();
+	/*t1 = clock();
 	if (PointType != NULL)
 		free(PointType);
 	PointType = (int*)malloc(sizeof(int) * floatDataSize);
-	gpuError = cudaMemcpy(PointType, gpuPointType, sizeof(int) * floatDataSize, cudaMemcpyDeviceToHost);
+	gpuError = cudaMemcpy(PointType, gpuPointType, sizeof(int) * floatDataSize, cudaMemcpyDeviceToHost);*/
 
-	cudaFree(gpuPointType);
+	//cudaFree(gpuPointType);
 
 	VolumeSize_X = size_X;
 	VolumeSize_Y = size_Y;
 	VolumeSize_Z = size_Z;
 	std::cout << "X: " << size_X << " Y: " << size_Y << " Z: " << size_Z << "\n";
-	t2 = clock();
+	//t2 = clock();
 	//std::cout << "Pull Data done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s\n";
 	t4 = clock();
 
-
 	std::cout << "RawToPointCloud Total t: " << (t4 - t3) / (double)(CLOCKS_PER_SEC) << " s\n";
-
-
 }
 
 void TRcuda::Test()

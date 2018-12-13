@@ -12,6 +12,24 @@ CudaBorder::~CudaBorder()
 //////////////////////////////////////////////////////////////////////////
 // GPU
 //////////////////////////////////////////////////////////////////////////
+__global__ static void MappingDataGPU(float* TheCudaData, float* OutputArray, int rows, int cols, int x)
+{
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= rows * cols)								// 超出範圍
+		return;
+	
+	// 位移 Index
+	int rowIndex = id / cols;
+	int colIndex = id % cols;
+	if (colIndex == 0)									// FFT 雜訊
+		return;
+
+	// 資料轉換
+	//tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
+	int tmpIdx = ((x * rows) + rowIndex) * cols + colIndex;
+	int picIdx = rowIndex * cols + colIndex;
+	OutputArray[picIdx] = TheCudaData[tmpIdx];
+}
 __global__ static void NormalizaDataGPU(float* DataArray, float maxValue, int size)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
@@ -134,7 +152,6 @@ __global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType,
 	bool IsFindBorder = false;						// 是否找到邊界 (找到底端之後，要開始找邊界)
 	float MinData;
 	int offsetIndex = id * cols;
-	//printf("%d\n", id);
 	for (int i = 0; i < cols; i++)
 	{
 		if (PointType[i + offsetIndex] == 2)
@@ -201,6 +218,32 @@ void CudaBorder::Init(int rows, int cols)
 	SaveDelete(PointType_1D);
 	PointType_1D = new int[rows];
 }
+void CudaBorder::MappingData(float* TheCudaData, int TheCudaDataSize, float** OutputArray, int x)
+{
+	#pragma region 初始化資料，並且上 GPU
+	// The Cuda 的資料
+	float* GPU_TheCudaData;
+	cudaMalloc(&GPU_TheCudaData, sizeof(float)* TheCudaDataSize);
+	cudaMemcpy(GPU_TheCudaData, TheCudaData, sizeof(float) * TheCudaDataSize, cudaMemcpyHostToDevice);
+	CheckCudaError();
+
+	// 最後要 Output 的資料
+	float *GPU_OutputArray;
+	cudaMalloc(&GPU_OutputArray, sizeof(float) * rows* cols);
+	CheckCudaError();
+	#pragma endregion
+	#pragma region Mapping Data
+	MappingDataGPU << <NumBlocks, NumThreads >> > (GPU_TheCudaData, GPU_OutputArray, rows, cols, x);
+	CheckCudaError();
+
+	cudaMemcpy(&OutputArray[0][0], GPU_OutputArray, sizeof(float) * rows * cols, cudaMemcpyDeviceToHost);
+	CheckCudaError();
+	#pragma endregion
+	#pragma region 刪除資料
+	cudaFree(GPU_TheCudaData);
+	cudaFree(GPU_OutputArray);
+	#pragma endregion
+}
 void CudaBorder::GetBorderFromCuda(float** DataArray)
 {
 	#pragma region 前置判斷
@@ -208,8 +251,8 @@ void CudaBorder::GetBorderFromCuda(float** DataArray)
 	assert(PointType_1D != NULL && PointType != NULL && rows != 0 && cols != 0);
 	#pragma endregion
 	#pragma region 開始時間
-	clock_t time;
-	time = clock();
+	//clock_t time;
+	//time = clock();
 	#pragma endregion
 	#pragma region GPU Init
 	float *GPU_DataArray;
@@ -223,7 +266,7 @@ void CudaBorder::GetBorderFromCuda(float** DataArray)
 	#pragma endregion
 	#pragma region 抓取最大值 每個除以最大值
 	float maxValue;
-	GetMinMaxValue(GPU_DataArray, maxValue, rows * cols);
+	GetMinMaxValue(&DataArray[0][0], maxValue, rows * cols);
 	NormalizeData(GPU_DataArray, maxValue, rows * cols);
 	CheckCudaError();
 
@@ -265,11 +308,11 @@ void CudaBorder::GetBorderFromCuda(float** DataArray)
 	delete Connect_Status;
 	#pragma endregion
 	#pragma region 結束時間
-	time = clock() - time;
-	cout << "找邊界: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	//time = clock() - time;
+	//cout << "找邊界: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#pragma endregion
 }
-QImage CudaBorder::SaveDataToImage(float** DataArray)
+Mat CudaBorder::SaveDataToImage(float** DataArray, bool SaveBorder = false)
 {
 	#pragma region 前置判斷
 	// 要先初始化
@@ -298,15 +341,17 @@ QImage CudaBorder::SaveDataToImage(float** DataArray)
 	memset(UintDataArray, 0, sizeof(unsigned char) * rows * cols);
 	cudaMemcpy(UintDataArray, GPU_UintDataArray, sizeof(unsigned char) * rows * cols, cudaMemcpyDeviceToHost);
 
-	// 轉換到 QImage
-	QImage img(UintDataArray, cols, rows, QImage::Format_Grayscale8);
-	img = img.convertToFormat(QImage::Format_RGB888);
+	// 轉換到 Mat
+	Mat img(rows, cols, CV_8U, UintDataArray);
+	cvtColor(img, img, CV_GRAY2BGR);
+
+	
 	// Debug 所有的 peak
 	//for (int i = 0; i < rows * cols; i++)
 	//{
 	//	int rowIndex = i / cols;
 	//	int colIndex = i % cols;
-
+	//
 	//	QColor color(0, 0, 0);
 	//	/*if (PointType[i] == 1)
 	//		color = QColor(255, 255, 0);
@@ -316,36 +361,42 @@ QImage CudaBorder::SaveDataToImage(float** DataArray)
 	//		color = QColor(255, 255, 255);
 	//		img.setPixelColor(colIndex, rowIndex, color);
 	//	}
-
+	//
 	//}
 	// 這邊是最後抓出來的邊界
-	QColor color(255, 255, 0);
+	/*cv::Vec3b color(255, 255, 0);
 	for (int i = 0; i < rows; i++)
 		if (PointType_1D[i] != -1)
-			img.setPixelColor(PointType_1D[i], i, color);
+			img.at<cv::Vec3b>(i, PointType_1D[i]) = color;*/
+	if (SaveBorder)
+	{
+		for (int i = 0; i < rows; i++)
+			if (PointType_1D[i] != -1)
+			{
+				Point contourPoint(PointType_1D[i], i);
+				circle(img, contourPoint, 2, Scalar(0, 255, 255), CV_FILLED);
+			}
+	}
 	delete UintDataArray;
 	cudaFree(GPU_UintDataArray);
+	cudaFree(GPU_DataArray);
 
 	// 判斷有無錯誤
 	CheckCudaError();
 	#pragma endregion
 	#pragma region 結束時間
-	time = clock() - time;
-	cout << "轉換圖片時間: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	//time = clock() - time;
+	//cout << "轉換圖片時間: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#pragma endregion
 	return img;
 }
 
-void CudaBorder::GetMinMaxValue(float* GPU_begin, float& max, int size)
+void CudaBorder::GetMinMaxValue(float* begin, float& max, int size)
 {
-	thrust::device_vector<float> d_vec(GPU_begin, GPU_begin + size);
-	thrust::device_vector<float>::iterator iter = thrust::max_element(thrust::device, d_vec.begin(), d_vec.end());
-
-	unsigned int position = iter - d_vec.begin();
+	float* iter = max_element(begin, begin + size);
+	unsigned int position = iter - begin;
 	float max_val = *iter;
-
-	// 給最大值
-	cout << "最大值是: " << max_val << " 在位置: " << position << endl;
+	//cout << "最大值是: " << max_val << " 在位置: " << position << endl;
 	max = max_val;
 }
 void CudaBorder::NormalizeData(float *GPU_DataArray, float maxValue, int size)
