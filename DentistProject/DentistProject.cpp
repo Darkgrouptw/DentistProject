@@ -79,11 +79,11 @@ DentistProject::DentistProject(QWidget *parent)
 	ui.SaveLocationText->setText(SaveLocation_Temp);
 
 	// SegNet
-	segNetModel.Load(
-		"./SegNetModel/segnet_inference.prototxt",				// prototxt
-		"./SegNetModel/Models_iter_10000.caffemodel"			// caffemodel
-	);
-	segNetModel.ReshapeToMultiBatch(GPUBatchSize);
+	//segNetModel.Load(
+	//	"./SegNetModel/segnet_inference.prototxt",				// prototxt
+	//	"./SegNetModel/Models_iter_10000.caffemodel"			// caffemodel
+	//);
+	//segNetModel.ReshapeToMultiBatch(GPUBatchSize);
 	#pragma endregion
 }
 
@@ -332,20 +332,20 @@ void DentistProject::SegNetTest()
 		QVector<Mat> Data = rawManager.GenerateNetworkData();
 
 		// 預測
-		vector<Mat> PredictArray = segNetModel.Predict(Data.toStdVector());
-		for (int i = 0; i < PredictArray.size(); i++)
-			PredictArray[i] = segNetModel.Visualization(PredictArray[i]);
+		//vector<Mat> PredictArray = segNetModel.Predict(Data.toStdVector());
+		//for (int i = 0; i < PredictArray.size(); i++)
+		//	PredictArray[i] = segNetModel.Visualization(PredictArray[i]);
 
-		// 傳回去顯示
-		QVector<Mat> qPredictArray = QVector<Mat>::fromStdVector(PredictArray);
-		for (int i = 0; i < qPredictArray.size(); i+=5)
-		{
-			for (int j = 0; j < 5; j++)
-			{
-				QString Loc = "D:/aaaaaa/" + QString::number(i / 5 + 60) + "_" + QString::number(j) + ".png";
-				imwrite(Loc.toStdString(), qPredictArray[i]);
-			}
-		}
+		//// 傳回去顯示
+		//QVector<Mat> qPredictArray = QVector<Mat>::fromStdVector(PredictArray);
+		//for (int i = 0; i < qPredictArray.size(); i+=5)
+		//{
+		//	for (int j = 0; j < 5; j++)
+		//	{
+		//		QString Loc = "D:/aaaaaa/" + QString::number(i / 5 + 60) + "_" + QString::number(j) + ".png";
+		//		imwrite(Loc.toStdString(), qPredictArray[i]);
+		//	}
+		//}
 		//rawManager.SetPredictData(qPredictArray);
 
 		// UI 更改

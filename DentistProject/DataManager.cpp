@@ -20,7 +20,7 @@ DataManager::DataManager(void)
 }
 DataManager::~DataManager(void)
 {
-	delete[]MappingMatrix;
+	delete[] MappingMatrix;
 }
 
 //////////////////////////////////////////////////////////////////////////

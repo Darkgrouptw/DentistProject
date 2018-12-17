@@ -28,7 +28,7 @@ private:
 
 	// 其他元件
 	RawDataManager	rawManager;								// 所有跟裝置有關的 (藍芽、OCT)
-	SegNetModel		segNetModel;							// SegNet Model
+	//SegNetModel		segNetModel;							// SegNet Model
 
 	// 儲存時，如果不溝時間，會以 Index 儲存
 	int ScanIndex = 0;
