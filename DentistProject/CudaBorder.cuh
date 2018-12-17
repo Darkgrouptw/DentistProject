@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <vector>
 #include <ctime>
 #include <algorithm>
 
@@ -17,10 +18,9 @@ public:
 	CudaBorder();
 	~CudaBorder();
 
-	void Init(int, int);													// 初始化
-	void MappingData(float*, int, float**, int);							// 將資料從 TheCuda 那邊轉出來 (轉出一個 float**)
-	void GetBorderFromCuda(float **);										// 抓出邊界，最後面要回傳出邊界()
-	Mat SaveDataToImage(float**, bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
+	void Init(int, int, int);												// 初始化
+	void GetBorderFromCuda(float *);										// 抓出邊界，最後面要回傳出邊界()
+	vector<Mat> RawDataToMatArray(float*, bool);							// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
 
 	//////////////////////////////////////////////////////////////////////////
 	// 外部存取資料
@@ -32,6 +32,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 相關變數
 	//////////////////////////////////////////////////////////////////////////
+	int size = 0;															// 有幾張
 	int rows = 0;															// height
 	int cols = 0;															// width
 
@@ -52,8 +53,8 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 參數設定 設定
 	//////////////////////////////////////////////////////////////////////////
-	const int NumBlocks = 512;
-	const int NumThreads = 512;
+	const int NumBlocks = 250 * 250;
+	const int NumThreads = 1024;											// 聽說最多限制在 1024
 	const int NumBlocks_small = 16;
 	const int NumThreads_small = 16;
 	const float MaxPeakThreshold = 0.7f;									// 要高於這個值

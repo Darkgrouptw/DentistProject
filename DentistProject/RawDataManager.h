@@ -96,18 +96,17 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
 	//////////////////////////////////////////////////////////////////////////
-	QVector<Mat>	ImageResultArray;											// 原圖								(SegNet 使用)
-	QVector<Mat>	SmoothResultArray;											// Smooth 過後的結果				(PSNR 判斷手晃使用)
-	QVector<Mat>	CombineResultArray;											// 判斷完的結果圖					(顯示使用)
+	QVector<Mat>		ImageResultArray;										// 原圖								(SegNet 使用)
+	QVector<Mat>		SmoothResultArray;										// Smooth 過後的結果				(邊界判斷使用)
+	QVector<Mat>		CombineResultArray;										// 判斷完的結果圖					(顯示使用)
 
 	//////////////////////////////////////////////////////////////////////////
 	// 顯示部分
 	//////////////////////////////////////////////////////////////////////////
-	QVector<QImage> QImageResultArray;											// 同上(顯示)
-	QVector<QImage> QSmoothResultArray;											// 同上(顯示)
-	QVector<QImage> QCombineResultArray;										// 同上(顯示)
+	QVector<QImage>		QImageResultArray;										// 同上(顯示)
+	QVector<QImage>		QSmoothResultArray;										// 同上(顯示)
+	QVector<QImage>		QCombineResultArray;									// 同上(顯示)
 	
-
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer
 	//////////////////////////////////////////////////////////////////////////

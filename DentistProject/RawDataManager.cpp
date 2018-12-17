@@ -4,7 +4,7 @@ RawDataManager::RawDataManager()
 {
 	cout << "OpenCV Version: " << CV_VERSION << endl;
 	DManager.ReadCalibrationData();
-	cudaBorder.Init(250, 1024);
+	cudaBorder.Init(250, 250, 1024);
 }
 RawDataManager::~RawDataManager()
 {
@@ -21,7 +21,7 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 }
 void RawDataManager::ShowImageIndex(int index)
 {
-	if (60 <= index && index <= 200 && ImageResultArray.size() > 0)
+	if (60 <= index && index <= 200 && QImageResultArray.size() > 0)
 	{
 		QImage Pixmap_ImageResult = QImageResultArray[index];
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
@@ -354,82 +354,108 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 	QCombineResultArray.clear();
 
 	// Point Cloud 相關
-	PointCloudArray.clear();
+	//PointCloudArray.clear();
 	#pragma endregion
-	#pragma region Init 二維陣列 (將資料傳到 CudaBorder 裡面)
-	float *_OCTData = new float[theTRcuda.VolumeSize_Y * theTRcuda.VolumeSize_Z];
-	float** OCTData = new float*[theTRcuda.VolumeSize_Y];
-	memset(_OCTData, 0, sizeof(float) * theTRcuda.VolumeSize_Y * theTRcuda.VolumeSize_Z);
+	#pragma region Init GPU 陣列(將資料傳到 CudaBorder 裡面)
+	int TheCudaDataSize = 250 * 250 * 1024;
 
-	float *_OCTDataAvg = new float[theTRcuda.VolumeSize_Y * theTRcuda.VolumeSize_Z];
-	float** OCTDataAvg = new float*[theTRcuda.VolumeSize_Y];
-	memset(_OCTDataAvg, 0, sizeof(float) * theTRcuda.VolumeSize_Y * theTRcuda.VolumeSize_Z);
+	// 這邊理論上，不應該再轉一次，應該直接從讀取那邊讀完，就拿資料
+	// 但因為實測 TheCudaDataSize 大小的資料複製只需要 0.0077 秒
+	// 所以就把 Code 寫漂亮一點，介面寫乾淨
+	// 不要在 public call 來 call 去
+	float *GPU_VolumeData;
+	float *GPU_VolumeDataAvg;
 
-	// 將資料放進去
-	for (int i = 0; i < theTRcuda.VolumeSize_Y; i++)
-	{
-		OCTData[i]		= &_OCTData[i * theTRcuda.VolumeSize_Z];
-		OCTDataAvg[i]	= &_OCTDataAvg[i * theTRcuda.VolumeSize_Z];
-	}
+	// 產生 GPU
+	cudaMalloc(&GPU_VolumeData, sizeof(float)* TheCudaDataSize);
+	cudaMalloc(&GPU_VolumeDataAvg, sizeof(float)* TheCudaDataSize);
 	#pragma endregion
 	#pragma region 抓取資訊塞到圖裡面
 	// 暫存點雲
 	QVector<QVector3D> CurrentPointCloud;
+	vector<Mat> TempMatArray;
 
-	// 取 60 ~ 200
-	int TheCudaSize = 64000000;
-	//for (int x = 60; x <= 200; x++)
+	// 轉換到 Vector 中
+	TempMatArray = cudaBorder.RawDataToMatArray(theTRcuda.VolumeData, false);
+	ImageResultArray = QVector<Mat>::fromStdVector(TempMatArray);
+
+	TempMatArray = cudaBorder.RawDataToMatArray(theTRcuda.VolumeDataAvg, false);
+	SmoothResultArray = QVector<Mat>::fromStdVector(TempMatArray);
+
 	for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
 	{
-		// Mat
-		cv::Mat ImageResult;		// = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		cv::Mat SmoothResult;		//= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-		cv::Mat CombineResult;		//= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+		QImage tempQImage = Mat2QImage(ImageResultArray[x], CV_8UC3);
+		QImageResultArray.push_back(tempQImage);
 
-		// QImage
-		QImage QImageResult;
-		QImage QSmoothResult;
-		QImage QCombineResult;
-
-		// 先 Mapping 資料
-		cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaSize, OCTData, x);
-		ImageResult = cudaBorder.SaveDataToImage(OCTData, false);
-		QImageResult = Mat2QImage(ImageResult, CV_8UC3);
-
-		cudaBorder.MappingData(theTRcuda.VolumeDataAvg, TheCudaSize, OCTDataAvg, x);
-		SmoothResult = cudaBorder.SaveDataToImage(OCTDataAvg, false);
-		QSmoothResult = Mat2QImage(SmoothResult, CV_8UC3);
-
-		cudaBorder.GetBorderFromCuda(OCTDataAvg);
-		CombineResult = cudaBorder.SaveDataToImage(OCTDataAvg, true);
-		QCombineResult = Mat2QImage(CombineResult, CV_8UC3);
+		tempQImage = Mat2QImage(SmoothResultArray[x], CV_8UC3);
+		QSmoothResultArray.push_back(tempQImage);
 
 		if (NeedSave_Image)
 		{
 			// 原圖
-			cv::imwrite("Images/OCTImages/origin_v2/" + to_string(x) + ".png", ImageResult);
+			cv::imwrite("Images/OCTImages/origin_v2/" + to_string(x) + ".png", ImageResultArray[x]);
 
 			// Smooth 影像
-			cv::imwrite("Images/OCTImages/smooth_v2/" + to_string(x) + ".png", SmoothResult);
+			cv::imwrite("Images/OCTImages/smooth_v2/" + to_string(x) + ".png", SmoothResultArray[x]);
 
 			// Combine 結果圖
 			cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResult);
 		}
-
-		// 暫存到陣列裡 (Mat)
-		ImageResultArray.push_back(ImageResult);
-		SmoothResultArray.push_back(SmoothResult);
-		CombineResultArray.push_back(CombineResult);
-		
-		// 暫存到陣列裡 (QImage)
-		QImageResultArray.push_back(QImageResult);
-		QSmoothResultArray.push_back(QSmoothResult);
-		QCombineResultArray.push_back(QCombineResult);
 	}
+	//cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaDataSize, GPU_VolumeData);
+	//cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaSize, TempMatArray);
+	//for (int x = 60; x <= 200; x++)
+	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
+	//{
+	//	// Mat
+	//	cv::Mat ImageResult;		// = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+	//	cv::Mat SmoothResult;		//= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+	//	cv::Mat CombineResult;		//= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
+
+	//	// QImage
+	//	QImage QImageResult;
+	//	QImage QSmoothResult;
+	//	QImage QCombineResult;
+
+	//	// 先 Mapping 資料
+	//	cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaSize, OCTData, x);
+	//	ImageResult = cudaBorder.SaveDataToImage(OCTData, false);
+	//	QImageResult = Mat2QImage(ImageResult, CV_8UC3);
+
+	//	cudaBorder.MappingData(theTRcuda.VolumeDataAvg, TheCudaSize, OCTDataAvg, x);
+	//	SmoothResult = cudaBorder.SaveDataToImage(OCTDataAvg, false);
+	//	QSmoothResult = Mat2QImage(SmoothResult, CV_8UC3);
+
+	//	cudaBorder.GetBorderFromCuda(OCTDataAvg);
+	//	CombineResult = cudaBorder.SaveDataToImage(OCTDataAvg, true);
+	//	QCombineResult = Mat2QImage(CombineResult, CV_8UC3);
+
+	//	if (NeedSave_Image)
+	//	{
+	//		// 原圖
+	//		cv::imwrite("Images/OCTImages/origin_v2/" + to_string(x) + ".png", ImageResult);
+
+	//		// Smooth 影像
+	//		cv::imwrite("Images/OCTImages/smooth_v2/" + to_string(x) + ".png", SmoothResult);
+
+	//		// Combine 結果圖
+	//		cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResult);
+	//	}
+
+	//	// 暫存到陣列裡 (Mat)
+	//	ImageResultArray.push_back(ImageResult);
+	//	SmoothResultArray.push_back(SmoothResult);
+	//	CombineResultArray.push_back(CombineResult);
+	//	
+	//	// 暫存到陣列裡 (QImage)
+	//	QImageResultArray.push_back(QImageResult);
+	//	QSmoothResultArray.push_back(QSmoothResult);
+	//	QCombineResultArray.push_back(QCombineResult);
+	//}
 
 
 	// 這邊是測試橫向的部分
-	for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
+	/*for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
 	{
 		Mat reverseImg(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_8UC3);
 		for (int y = 0; y < theTRcuda.VolumeSize_Y; y++)
@@ -441,16 +467,14 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 			}
 		}
 		imwrite("Images/OCTImages/reverse_v2/" + to_string(x) + ".png", reverseImg);
-	}
+	}*/
 
 	// 加入 Point Cloud 的陣列
 	PointCloudArray.push_back(CurrentPointCloud);
 	#pragma endregion
-	#pragma region 刪除 Array
-	delete _OCTData;
-	delete OCTData;
-	delete _OCTDataAvg;
-	delete OCTDataAvg;
+	#pragma region 刪除 GPU Array
+	cudaFree(GPU_VolumeData);
+	cudaFree(GPU_VolumeDataAvg);
 	#pragma endregion
 	#pragma region 結束時間
 	endT = clock();

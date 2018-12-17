@@ -12,24 +12,6 @@ CudaBorder::~CudaBorder()
 //////////////////////////////////////////////////////////////////////////
 // GPU
 //////////////////////////////////////////////////////////////////////////
-__global__ static void MappingDataGPU(float* TheCudaData, float* OutputArray, int rows, int cols, int x)
-{
-	int id = blockIdx.x * blockDim.x + threadIdx.x;
-	if (id >= rows * cols)								// 超出範圍
-		return;
-	
-	// 位移 Index
-	int rowIndex = id / cols;
-	int colIndex = id % cols;
-	if (colIndex == 0)									// FFT 雜訊
-		return;
-
-	// 資料轉換
-	//tmpIdx = ((x * theTRcuda.VolumeSize_Y) + row) * theTRcuda.VolumeSize_Z + col;
-	int tmpIdx = ((x * rows) + rowIndex) * cols + colIndex;
-	int picIdx = rowIndex * cols + colIndex;
-	OutputArray[picIdx] = TheCudaData[tmpIdx];
-}
 __global__ static void NormalizaDataGPU(float* DataArray, float maxValue, int size)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
@@ -128,10 +110,10 @@ __global__ static void ParseMaxMinPeak(uchar* PointType, int rows, int cols, int
 	if (lastMinID != -1)
 		PointType[id * cols + lastMinID] = 0;
 }
-__global__ static void TransforToImage(float* DataArray, uchar* OutArray, int rows, int cols)
+__global__ static void TransforToImage(float* DataArray, uchar* OutArray, int size, int rows, int cols)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
-	if (id >= rows * cols)				// 判斷是否超出大小
+	if (id >= size * rows * cols)				// 判斷是否超出大小
 		return;
 
 	float data = ((DataArray[id] / (float)3.509173f) - (float)(3.39f / 3.509173f)) * 255;
@@ -206,45 +188,23 @@ __global__ static void ConnectPointsStatus(int * PointType_1D, int* ConnectStatu
 //////////////////////////////////////////////////////////////////////////
 // CPU
 //////////////////////////////////////////////////////////////////////////
-void CudaBorder::Init(int rows, int cols)
+void CudaBorder::Init(int size, int rows, int cols)
 {
 	// 給值
+	this->size = size;
 	this->rows = rows;
 	this->cols = cols;
 
 	// 初始化
 	SaveDelete(PointType);
-	PointType = new uchar[rows * cols];
+	PointType = new uchar[size * rows * cols];
+	memset(PointType, 0, sizeof(uchar) * size * rows * cols);
 	SaveDelete(PointType_1D);
-	PointType_1D = new int[rows];
+	PointType_1D = new int[size * rows];
+	memset(PointType_1D, 0, sizeof(int) * size * rows);
 }
-void CudaBorder::MappingData(float* TheCudaData, int TheCudaDataSize, float** OutputArray, int x)
-{
-	#pragma region 初始化資料，並且上 GPU
-	// The Cuda 的資料
-	float* GPU_TheCudaData;
-	cudaMalloc(&GPU_TheCudaData, sizeof(float)* TheCudaDataSize);
-	cudaMemcpy(GPU_TheCudaData, TheCudaData, sizeof(float) * TheCudaDataSize, cudaMemcpyHostToDevice);
-	CheckCudaError();
 
-	// 最後要 Output 的資料
-	float *GPU_OutputArray;
-	cudaMalloc(&GPU_OutputArray, sizeof(float) * rows* cols);
-	CheckCudaError();
-	#pragma endregion
-	#pragma region Mapping Data
-	MappingDataGPU << <NumBlocks, NumThreads >> > (GPU_TheCudaData, GPU_OutputArray, rows, cols, x);
-	CheckCudaError();
-
-	cudaMemcpy(&OutputArray[0][0], GPU_OutputArray, sizeof(float) * rows * cols, cudaMemcpyDeviceToHost);
-	CheckCudaError();
-	#pragma endregion
-	#pragma region 刪除資料
-	cudaFree(GPU_TheCudaData);
-	cudaFree(GPU_OutputArray);
-	#pragma endregion
-}
-void CudaBorder::GetBorderFromCuda(float** DataArray)
+void CudaBorder::GetBorderFromCuda(float* VolumeData_1D)
 {
 	#pragma region 前置判斷
 	// 要先初始化
@@ -255,95 +215,104 @@ void CudaBorder::GetBorderFromCuda(float** DataArray)
 	//time = clock();
 	#pragma endregion
 	#pragma region GPU Init
-	float *GPU_DataArray;
-	cudaMalloc(&GPU_DataArray, sizeof(float) * rows * cols);
-	cudaMemcpy(GPU_DataArray, &DataArray[0][0], sizeof(float) * rows * cols, cudaMemcpyHostToDevice);
+	//float *GPU_DataArray;
+	//cudaMalloc(&GPU_DataArray, sizeof(float) * rows * cols);
+	//cudaMemcpy(GPU_DataArray, &DataArray[0][0], sizeof(float) * rows * cols, cudaMemcpyHostToDevice);
 
-	// 點的型別
-	uchar* GPU_PointType;
-	cudaMalloc(&GPU_PointType, sizeof(uchar) * rows * cols);
-	cudaMemset(GPU_PointType, 0, sizeof(uchar) * rows * cols);
-	#pragma endregion
-	#pragma region 抓取最大值 每個除以最大值
-	float maxValue;
-	GetMinMaxValue(&DataArray[0][0], maxValue, rows * cols);
-	NormalizeData(GPU_DataArray, maxValue, rows * cols);
-	CheckCudaError();
+	//// 點的型別
+	//uchar* GPU_PointType;
+	//cudaMalloc(&GPU_PointType, sizeof(uchar) * rows * cols);
+	//cudaMemset(GPU_PointType, 0, sizeof(uchar) * rows * cols);
+	//#pragma endregion
+	//#pragma region 抓取最大值 每個除以最大值
+	//float maxValue;
+	//GetMinMaxValue(&DataArray[0][0], maxValue, rows * cols);
+	//NormalizeData(GPU_DataArray, maxValue, rows * cols);
+	//CheckCudaError();
 
-	// 找最大最小值
-	findMaxAndMinPeak << < NumBlocks, NumThreads >> > (GPU_DataArray, GPU_PointType, rows, cols, MaxPeakThreshold);
-	CheckCudaError();
+	//// 找最大最小值
+	//findMaxAndMinPeak << < NumBlocks, NumThreads >> > (GPU_DataArray, GPU_PointType, rows, cols, MaxPeakThreshold);
+	//CheckCudaError();
 
-	// Parse 一些連續最小值
-	ParseMaxMinPeak << < NumBlocks_small, NumThreads_small >> > (GPU_PointType, rows, cols, StartIndex);
-	CheckCudaError();
+	//// Parse 一些連續最小值
+	//ParseMaxMinPeak << < NumBlocks_small, NumThreads_small >> > (GPU_PointType, rows, cols, StartIndex);
+	//CheckCudaError();
 
-	// 抓出一維陣列
-	int *GPU_PointType_1D;
-	cudaMalloc(&GPU_PointType_1D, sizeof(int) * rows);
-	PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_DataArray, GPU_PointType, GPU_PointType_1D, rows, cols, GoThroughThreshold);
-	CheckCudaError();
+	//// 抓出一維陣列
+	//int *GPU_PointType_1D;
+	//cudaMalloc(&GPU_PointType_1D, sizeof(int) * rows);
+	//PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_DataArray, GPU_PointType, GPU_PointType_1D, rows, cols, GoThroughThreshold);
+	//CheckCudaError();
 
-	// 連結點
-	int *GPU_Connect_Status;
-	cudaMalloc(&GPU_Connect_Status, sizeof(int) * rows * ConnectRadius);
-	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * rows * ConnectRadius);
-	ConnectPointsStatus << <NumBlocks_small, NumThreads_small >> > (GPU_PointType_1D, GPU_Connect_Status, rows, ConnectRadius);
-	CheckCudaError();
+	//// 連結點
+	//int *GPU_Connect_Status;
+	//cudaMalloc(&GPU_Connect_Status, sizeof(int) * rows * ConnectRadius);
+	//cudaMemset(GPU_Connect_Status, 0, sizeof(int) * rows * ConnectRadius);
+	//ConnectPointsStatus << <NumBlocks_small, NumThreads_small >> > (GPU_PointType_1D, GPU_Connect_Status, rows, ConnectRadius);
+	//CheckCudaError();
 
-	// 把資料傳回 CPU
-	int *Connect_Status = new int[rows * ConnectRadius];
-	cudaMemcpy(PointType, GPU_PointType, sizeof(uchar) * rows * cols, cudaMemcpyDeviceToHost);
-	cudaMemcpy(PointType_1D, GPU_PointType_1D, sizeof(int) * rows, cudaMemcpyDeviceToHost);
-	cudaMemcpy(Connect_Status, GPU_Connect_Status, sizeof(int) * rows * ConnectRadius, cudaMemcpyDeviceToHost);
+	//// 把資料傳回 CPU
+	//int *Connect_Status = new int[rows * ConnectRadius];
+	//cudaMemcpy(PointType, GPU_PointType, sizeof(uchar) * rows * cols, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(PointType_1D, GPU_PointType_1D, sizeof(int) * rows, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(Connect_Status, GPU_Connect_Status, sizeof(int) * rows * ConnectRadius, cudaMemcpyDeviceToHost);
 
-	GetLargeLine(Connect_Status);
+	//GetLargeLine(Connect_Status);
 	#pragma endregion
 	#pragma region Free Memory
-	cudaFree(GPU_DataArray);
+	/*cudaFree(GPU_DataArray);
 	cudaFree(GPU_PointType);
 	cudaFree(GPU_PointType_1D);
 	cudaFree(GPU_Connect_Status);
 
-	delete Connect_Status;
+	delete Connect_Status;*/
 	#pragma endregion
 	#pragma region 結束時間
 	//time = clock() - time;
 	//cout << "找邊界: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#pragma endregion
 }
-Mat CudaBorder::SaveDataToImage(float** DataArray, bool SaveBorder = false)
+vector<Mat> CudaBorder::RawDataToMatArray(float* VolumeData_1D, bool SaveBorder = false)
 {
 	#pragma region 前置判斷
 	// 要先初始化
-	assert(PointType_1D != NULL && PointType != NULL  && rows != 0 && cols != 0);
+	assert(PointType_1D != NULL && PointType != NULL && size != 0 && rows != 0 && cols != 0);
 	#pragma endregion
 	#pragma region 開始時間
-	//clock_t time;
-	//time = clock();
+	clock_t time;
+	time = clock();
 	#pragma endregion
 	#pragma region 透過	GPU 平行轉值
 	// 原 Data Array
-	float* GPU_DataArray;
-	cudaMalloc(&GPU_DataArray, sizeof(float) * rows * cols);
-	cudaMemcpy(GPU_DataArray, &DataArray[0][0], sizeof(float) * rows * cols, cudaMemcpyHostToDevice);
+	float* GPU_VolumeData_1D;
+	cudaMalloc(&GPU_VolumeData_1D, sizeof(float) * size * rows * cols);
+	cudaMemcpy(GPU_VolumeData_1D, VolumeData_1D, sizeof(float) * size * rows * cols, cudaMemcpyHostToDevice);
 
 	// Output Uint Array
+	// 圖片的資料
 	uchar *GPU_UintDataArray, *UintDataArray;
-	cudaMalloc(&GPU_UintDataArray, sizeof(uchar) * rows * cols);
+	cudaMalloc(&GPU_UintDataArray, sizeof(uchar) * size * rows * cols);
 
 	// 開始轉圖片
-	TransforToImage << <NumBlocks, NumThreads >> > (GPU_DataArray, GPU_UintDataArray, rows, cols);
+	TransforToImage << <NumBlocks, NumThreads >> > (GPU_VolumeData_1D, GPU_UintDataArray, size, rows, cols);
 	CheckCudaError();
 
 	// 轉成 CPU
-	UintDataArray = new unsigned char[rows * cols];
-	memset(UintDataArray, 0, sizeof(unsigned char) * rows * cols);
-	cudaMemcpy(UintDataArray, GPU_UintDataArray, sizeof(unsigned char) * rows * cols, cudaMemcpyDeviceToHost);
+	UintDataArray = new unsigned char[size * rows * cols];
+	memset(UintDataArray, 0, sizeof(unsigned char) * size * rows * cols);
+	cudaMemcpy(UintDataArray, GPU_UintDataArray, sizeof(unsigned char) * size * rows * cols, cudaMemcpyDeviceToHost);
 
 	// 轉換到 Mat
-	Mat img(rows, cols, CV_8U, UintDataArray);
-	cvtColor(img, img, CV_GRAY2BGR);
+	vector<Mat> ImgArray;
+	for (int i = 0; i < size; i++)
+	{
+		// 根據 Offset 拿圖片
+		Mat img(rows, cols, CV_8U, UintDataArray + i * rows * cols);
+		cvtColor(img.clone(), img, CV_GRAY2BGR);
+
+		// 丟進堆疊
+		ImgArray.push_back(img);
+	}
 
 	if (SaveBorder)
 	{
@@ -364,17 +333,17 @@ Mat CudaBorder::SaveDataToImage(float** DataArray, bool SaveBorder = false)
 		//	}
 		//
 		//}
-		assert(PointType_1D != NULL);
+		/*assert(PointType_1D != NULL);
 		for (int i = 0; i < rows; i++)
 			if (PointType_1D[i] != -1)
 			{
 				Point contourPoint(PointType_1D[i], i);
 				circle(img, contourPoint, 2, Scalar(0, 255, 255), CV_FILLED);
-			}
+			}*/
 	}
-	delete UintDataArray;
+	delete[] UintDataArray;
 	cudaFree(GPU_UintDataArray);
-	cudaFree(GPU_DataArray);
+	cudaFree(GPU_VolumeData_1D);
 
 	// 判斷有無錯誤
 	CheckCudaError();
@@ -383,7 +352,7 @@ Mat CudaBorder::SaveDataToImage(float** DataArray, bool SaveBorder = false)
 	//time = clock() - time;
 	//cout << "轉換圖片時間: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#pragma endregion
-	return img;
+	return ImgArray;
 }
 
 void CudaBorder::GetMinMaxValue(float* begin, float& max, int size)
@@ -520,5 +489,5 @@ void CudaBorder::CheckCudaError()
 void CudaBorder::SaveDelete(void* pointer)
 {
 	if (pointer != NULL)
-		delete pointer;
+		delete[] pointer;
 }
