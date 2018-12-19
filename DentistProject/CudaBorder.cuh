@@ -40,7 +40,6 @@ private:
 	// 處理相關
 	//////////////////////////////////////////////////////////////////////////
 	void GetMinMaxValue(float *, float&, int);								// 抓取最大最小值 (為了做 Normalize)
-	void NormalizeData(float *, float, int);								// 根據最大值，去壓縮資料大小
 	void GetLargeLine(int *);												// 取出最大條的線，並刪除其他雜點
 	static bool SortByVectorSize(vector<int>, vector<int>);		// 排序
 
@@ -55,9 +54,9 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	const int NumBlocks = 250 * 250;
 	const int NumThreads = 1024;											// 聽說最多限制在 1024
-	const int NumBlocks_small = 16;
-	const int NumThreads_small = 16;
-	const float MaxPeakThreshold = 0.7f;									// 要高於這個值
+	const int NumBlocks_small = 250;
+	const int NumThreads_small = 250;
+	const float MaxPeakThreshold = 0.68f;									// 要高於這個值
 	//const float MinGapPeakThreshold = 0.01f;								// 間隔要超過這個差距
 	const float GoThroughThreshold = 0.08f;									// 要多少在走過去
 	const int StartIndex = 10;												// 從這裡開始找有效的資料

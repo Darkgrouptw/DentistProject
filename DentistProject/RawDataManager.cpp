@@ -382,6 +382,10 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 	TempMatArray = cudaBorder.RawDataToMatArray(theTRcuda.VolumeDataAvg, false);
 	SmoothResultArray = QVector<Mat>::fromStdVector(TempMatArray);
 
+	cudaBorder.GetBorderFromCuda(theTRcuda.VolumeDataAvg);
+	TempMatArray = cudaBorder.RawDataToMatArray(theTRcuda.VolumeData, true);
+	CombineResultArray = QVector<Mat>::fromStdVector(TempMatArray);
+
 	for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
 	{
 		QImage tempQImage = Mat2QImage(ImageResultArray[x], CV_8UC3);
@@ -389,6 +393,9 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 
 		tempQImage = Mat2QImage(SmoothResultArray[x], CV_8UC3);
 		QSmoothResultArray.push_back(tempQImage);
+
+		tempQImage = Mat2QImage(CombineResultArray[x], CV_8UC3);
+		QCombineResultArray.push_back(tempQImage);
 
 		if (NeedSave_Image)
 		{
@@ -399,7 +406,7 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 			cv::imwrite("Images/OCTImages/smooth_v2/" + to_string(x) + ".png", SmoothResultArray[x]);
 
 			// Combine 結果圖
-			cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResult);
+			cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResultArray[x]);
 		}
 	}
 	//cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaDataSize, GPU_VolumeData);
