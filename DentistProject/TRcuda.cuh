@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <time.h>
+#include <cassert>
 
 #include <cuda_runtime.h>
 #include <cufft.h>

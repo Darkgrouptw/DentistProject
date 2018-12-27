@@ -399,7 +399,8 @@ void OpenGLWidget::DrawPointCloud()
 {
 	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
 	{
-		glPointSize(5);
+		float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 10;
+		glPointSize(pointSize);
 		glBegin(GL_POINTS);
 		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
 		{

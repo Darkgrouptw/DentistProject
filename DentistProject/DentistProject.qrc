@@ -1,4 +1,5 @@
 <RCC>
-    <qresource prefix="DentistProject">
-    </qresource>
+  <qresource prefix="DentistProject">
+    <file>Imgs/widget-hi.png</file>
+  </qresource>
 </RCC>

@@ -81,6 +81,7 @@ public:
     QLabel *NetworkResultText;
     QWidget *StateWidget;
     QProgressBar *progressBar;
+    QLabel *StateText;
     QToolBar *mainToolBar;
 
     void setupUi(QMainWindow *DentistProjectClass)
@@ -253,7 +254,8 @@ public:
         NetworkResultText->setGeometry(QRect(10, 180, 111, 16));
         StateWidget = new QWidget(centralWidget);
         StateWidget->setObjectName(QStringLiteral("StateWidget"));
-        StateWidget->setGeometry(QRect(0, 750, 341, 131));
+        StateWidget->setGeometry(QRect(10, 740, 341, 131));
+        StateWidget->setFont(font);
         StateWidget->setStyleSheet(QStringLiteral("background:rgba(21, 79, 255, 150)"));
         progressBar = new QProgressBar(StateWidget);
         progressBar->setObjectName(QStringLiteral("progressBar"));
@@ -264,6 +266,34 @@ public:
         progressBar->setFont(font1);
         progressBar->setStyleSheet(QStringLiteral("color : white;"));
         progressBar->setValue(24);
+        StateText = new QLabel(StateWidget);
+        StateText->setObjectName(QStringLiteral("StateText"));
+        StateText->setGeometry(QRect(30, 40, 221, 41));
+        QPalette palette;
+        QBrush brush(QColor(255, 255, 255, 255));
+        brush.setStyle(Qt::SolidPattern);
+        palette.setBrush(QPalette::Active, QPalette::WindowText, brush);
+        QBrush brush1(QColor(21, 79, 255, 150));
+        brush1.setStyle(Qt::SolidPattern);
+        palette.setBrush(QPalette::Active, QPalette::Button, brush1);
+        palette.setBrush(QPalette::Active, QPalette::Text, brush);
+        palette.setBrush(QPalette::Active, QPalette::ButtonText, brush);
+        palette.setBrush(QPalette::Active, QPalette::Base, brush1);
+        palette.setBrush(QPalette::Active, QPalette::Window, brush1);
+        palette.setBrush(QPalette::Inactive, QPalette::WindowText, brush);
+        palette.setBrush(QPalette::Inactive, QPalette::Button, brush1);
+        palette.setBrush(QPalette::Inactive, QPalette::Text, brush);
+        palette.setBrush(QPalette::Inactive, QPalette::ButtonText, brush);
+        palette.setBrush(QPalette::Inactive, QPalette::Base, brush1);
+        palette.setBrush(QPalette::Inactive, QPalette::Window, brush1);
+        palette.setBrush(QPalette::Disabled, QPalette::WindowText, brush);
+        palette.setBrush(QPalette::Disabled, QPalette::Button, brush1);
+        palette.setBrush(QPalette::Disabled, QPalette::Text, brush);
+        palette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush);
+        palette.setBrush(QPalette::Disabled, QPalette::Base, brush1);
+        palette.setBrush(QPalette::Disabled, QPalette::Window, brush1);
+        StateText->setPalette(palette);
+        StateText->setStyleSheet(QStringLiteral("color : white;"));
         DentistProjectClass->setCentralWidget(centralWidget);
         mainToolBar = new QToolBar(DentistProjectClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -324,6 +354,7 @@ public:
         ScanNum_Value->setText(QApplication::translate("DentistProjectClass", "60", nullptr));
         NetworkResult->setText(QString());
         NetworkResultText->setText(QApplication::translate("DentistProjectClass", "\347\266\262\350\267\257\345\210\244\346\226\267\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
+        StateText->setText(QApplication::translate("DentistProjectClass", "\347\213\200\346\205\213\346\226\207\345\255\227", nullptr));
     } // retranslateUi
 
 };

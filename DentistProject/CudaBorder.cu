@@ -114,7 +114,7 @@ __global__ static void ParseMaxMinPeak(uchar* PointType, int size, int rows, int
 	if (lastMinID != -1)
 		PointType[sizeIndex * rows * cols + rowIndex * cols + lastMinID] = 0;
 }
-__global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType, int* PointType_1D, int size, int rows, int cols, int startIndex,  float Threshold)
+__global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType, int* PointType_BestN, int size, int rows, int cols, int ChooseBestN, int startIndex,  float Threshold)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
 	if (id >= size * rows)							// 判斷是否超出大小
@@ -124,60 +124,94 @@ __global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType,
 	int sizeIndex = id / rows;
 	int rowIndex = id % rows;
 
-	bool IsFindMin = false;							// 是否找到底端
-	bool IsFindBorder = false;						// 是否找到邊界 (找到底端之後，要開始找邊界)
+	bool IsFindMin = false;											// 是否找到底端
 	float MinData;
 	int offsetIndex = sizeIndex * size * cols + rowIndex * cols;
+	int CurrentChooseN = 0;
+	float lastData = -1;
 	for (int i = startIndex; i < cols; i++)
 	{
 		if (PointType[i + offsetIndex] == 2)
 		{
+			// 如果前面已經有找到其他點的話
+			if (IsFindMin)
+			{
+				if (lastData != -1)
+				{
+					CurrentChooseN++;
+
+					// 代表已經找滿了
+					if (CurrentChooseN >= ChooseBestN)
+						break;
+				}
+				lastData = -1;
+			}
+
 			IsFindMin = true;
 			MinData = DataArray[i + offsetIndex];
 		}
-		else if (IsFindMin && DataArray[i + offsetIndex] - MinData > Threshold)
+		else if (
+			IsFindMin &&											// 要先找到最低點
+			DataArray[i + offsetIndex] - MinData > Threshold &&		// 接著找大於這個 Threshold
+			lastData == -1
+			)
 		{
-			IsFindBorder = true;
-			PointType_1D[sizeIndex * rows + rowIndex] = i;
-			break;
+			lastData = DataArray[i + offsetIndex] - MinData;
+			PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + CurrentChooseN] = i;
 		}
 	}
 
 	// 接這著要判斷是否找到邊界
 	// 如果沒有找到邊界，就回傳 -1
-	if (!IsFindBorder)
-		PointType_1D[sizeIndex * rows + rowIndex] = -1;
+	//if (!IsFindBorder)
+	for (int i = CurrentChooseN; i < ChooseBestN; i++)
+		PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + i] = -1;
 
 }
-__global__ static void ConnectPointsStatus(int * PointType_1D, int* ConnectStatus, int size, int rows, int ConnectRadius)
+__global__ static void ConnectPointsStatus(int* PointType_BestN, int* ConnectStatus, int size, int rows, int ChooseBestN, int ConnectRadius)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
-	if (id >= size * rows)									// 判斷是否超出大小
+	if (id >= size * rows * ChooseBestN)						// 判斷是否超出大小
 		return;
 
 	// 算 Index
-	int sizeIndex = id / rows;
-	int rowIndex = id % rows;
+	int sizeIndex = id / (rows * ChooseBestN);
+	int tempID = id % (rows * ChooseBestN);
+	int rowIndex = tempID / ChooseBestN;
+	int chooseIndex = tempID % ChooseBestN;
 
 	// 代表這個點沒有有效的點
-	if (PointType_1D[sizeIndex * rows + rowIndex] == -1)
+	if (PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + chooseIndex] == -1)
 		return;
 
 	// 如果是有效的點，就繼續往下追 
 	int finalPos = min(rowIndex + ConnectRadius, rows);		// 截止條件
 	for (int i = rowIndex + 1; i < finalPos; i++)
 	{
-		if (PointType_1D[i + sizeIndex * rows] != -1)
+		for (int j = 0; j < ChooseBestN; j++)
 		{
-			int diffX = PointType_1D[sizeIndex * rows + rowIndex] - PointType_1D[i];
-			int diffY = i - rowIndex;
-			int Radius = diffX * diffX + diffY * diffY;
-
-			// 0 沒有用到喔
-			if (Radius < ConnectRadius * ConnectRadius)
+			// 下一個點的位置 (第 i 個 row 的點)
+			// 然後的第 1 個點
+			if (PointType_BestN[sizeIndex * rows * ChooseBestN + i * ChooseBestN + j] != -1)
 			{
-				int index = ConnectRadius * rowIndex + i - rowIndex + sizeIndex * rows;
-				ConnectStatus[index] = Radius;
+				// 前面項為現在這個點
+				// 後面項為往下的點
+				int diffX =	PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN	+ chooseIndex] -
+							PointType_BestN[sizeIndex * rows * ChooseBestN + i * ChooseBestN		+ j];
+				int diffY = i - rowIndex;
+				int Radius = diffX * diffX + diffY * diffY;
+
+				// 0 沒有用到喔
+				if (Radius < ConnectRadius * ConnectRadius)
+				{
+					// 張數的位移 + Row 的位移 + 現在在 Top N 的點 + 半徑的位移 + 往下 Top N 的結果
+					int index = sizeIndex * rows * ChooseBestN * ConnectRadius * ChooseBestN +			// 張數
+								rowIndex * ChooseBestN * ConnectRadius * ChooseBestN +					// Row
+								chooseIndex * ConnectRadius * ChooseBestN +								// 現在在 Top N 
+								 (i - rowIndex) * ChooseBestN +											// 半徑
+								j;
+					ConnectStatus[index] = Radius;
+				}
 			}
 		}
 	}
@@ -214,6 +248,11 @@ void CudaBorder::Init(int size, int rows, int cols)
 	SaveDelete(PointType_1D);
 	PointType_1D = new int[size * rows];
 	memset(PointType_1D, 0, sizeof(int) * size * rows);
+
+	//PointType_BestN = new int[size * rows * ChooseBestN];
+	//memset(PointType_BestN, 0, sizeof(int) * size * rows * ChooseBestN);
+	//PointType_1D_2 = new int[size * rows];
+	//memset(PointType_1D, 0, sizeof(int) * size * rows);
 }
 void CudaBorder::GetBorderFromCuda(float* VolumeData_1D)
 {
@@ -250,33 +289,39 @@ void CudaBorder::GetBorderFromCuda(float* VolumeData_1D)
 	CheckCudaError();
 
 	// 抓出一維陣列
-	int *GPU_PointType_1D;
-	cudaMalloc(&GPU_PointType_1D, sizeof(int) * size * rows);
-	PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_VolumeData_1D, GPU_PointType, GPU_PointType_1D, size, rows, cols, StartIndex, GoThroughThreshold);
+	int *GPU_PointType_BestN, *PointType_BestN;
+	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
+	PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_VolumeData_1D, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
+	// 這個的大小 為 => 張數 * 250(rows) * 取幾個最大值(ChooseBestN個) * 每個最大值底下有 半徑個 (Raidus)  * 的下 N 排的幾個最大值(ChooseBestN) 
 	int *GPU_Connect_Status;
-	cudaMalloc(&GPU_Connect_Status, sizeof(int) * size * rows * ConnectRadius);
-	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * size * rows * ConnectRadius);
-	ConnectPointsStatus << <NumBlocks_small, NumThreads_small >> > (GPU_PointType_1D, GPU_Connect_Status, size, rows, ConnectRadius);
+	int ConnectStateSize = size * rows * ChooseBestN * ConnectRadius * ChooseBestN;
+	cudaMalloc(&GPU_Connect_Status, sizeof(int) * ConnectStateSize);
+	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * ConnectStateSize);
+	ConnectPointsStatus << <NumBlocks_small, NumThreads_small >> > (GPU_PointType_BestN, GPU_Connect_Status, size, rows, ChooseBestN, ConnectRadius);
 	CheckCudaError();
 
-	// 把資料傳回 CPU
-	int *Connect_Status = new int[size * rows * ConnectRadius];
-	cudaMemcpy(PointType,		GPU_PointType,		sizeof(uchar) * size * rows * cols,				cudaMemcpyDeviceToHost);
-	cudaMemcpy(PointType_1D,	GPU_PointType_1D,	sizeof(int) * size* rows,						cudaMemcpyDeviceToHost);
-	cudaMemcpy(Connect_Status,	GPU_Connect_Status, sizeof(int) * size * rows * ConnectRadius,		cudaMemcpyDeviceToHost);
 
-	GetLargeLine(Connect_Status);
+	// 把資料傳回 CPU
+	int *Connect_Status = new int[ConnectStateSize];
+	PointType_BestN = new int[size * rows * ChooseBestN];
+	cudaMemcpy(PointType,		GPU_PointType,		sizeof(uchar) * size * rows * cols,				cudaMemcpyDeviceToHost);
+	cudaMemcpy(Connect_Status,	GPU_Connect_Status, sizeof(int) * ConnectStateSize,					cudaMemcpyDeviceToHost);
+	cudaMemcpy(PointType_BestN, GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN,		cudaMemcpyDeviceToHost);
+	CheckCudaError();
+
+	GetLargeLine(PointType_BestN, Connect_Status);
 	#pragma endregion
 	#pragma region Free Memory
 	cudaFree(GPU_VolumeData_1D);
 	cudaFree(GPU_PointType);
-	cudaFree(GPU_PointType_1D);
+	cudaFree(GPU_PointType_BestN);
 	cudaFree(GPU_Connect_Status);
 
 	delete[] Connect_Status;
+	delete[] PointType_BestN;
 	#pragma endregion
 	#pragma region 結束時間
 	time = clock() - time;
@@ -290,19 +335,21 @@ vector<Mat> CudaBorder::RawDataToMatArray(float* VolumeData_1D, bool SaveBorder 
 	assert(PointType_1D != NULL && PointType != NULL && size != 0 && rows != 0 && cols != 0);
 	#pragma endregion
 	#pragma region 開始時間
-	clock_t time;
-	time = clock();
+	//clock_t time;
+	//time = clock();
 	#pragma endregion
-	#pragma region 透過	GPU 平行轉值
+	#pragma region 透過 GPU 平行轉值
 	// 原 Data Array
 	float* GPU_VolumeData_1D;
 	cudaMalloc(&GPU_VolumeData_1D, sizeof(float) * size * rows * cols);
 	cudaMemcpy(GPU_VolumeData_1D, VolumeData_1D, sizeof(float) * size * rows * cols, cudaMemcpyHostToDevice);
+	CheckCudaError();
 
 	// Output Uint Array
 	// 圖片的資料
 	uchar *GPU_UintDataArray, *UintDataArray;
 	cudaMalloc(&GPU_UintDataArray, sizeof(uchar) * size * rows * cols);
+	CheckCudaError();
 
 	// 開始轉圖片
 	TransforToImage << <NumBlocks, NumThreads >> > (GPU_VolumeData_1D, GPU_UintDataArray, size, rows, cols);
@@ -354,6 +401,23 @@ vector<Mat> CudaBorder::RawDataToMatArray(float* VolumeData_1D, bool SaveBorder 
 					circle(ImgArray[i], contourPoint, 2, Scalar(0, 255, 255), CV_FILLED);
 				}
 			}
+		/*Vec3b color[3];
+		color[0] = Vec3b(0, 255, 255);
+		color[1] = Vec3b(255, 255, 0);
+		color[2] = Vec3b(255, 255, 255);
+		for (int i = 0; i < size; i++)
+			for (int j = 0; j < rows; j++)
+			{
+				for (int k = 0; k < ChooseBestN; k++)
+				{
+					int index = i * rows * ChooseBestN + j * ChooseBestN + k;
+					if (PointType_BestN[index] != -1)
+					{
+						Point contourPoint(PointType_BestN[index], j);
+						circle(ImgArray[i], contourPoint, 2, color[k], CV_FILLED);
+					}
+				}
+			}*/
 	}
 	delete[] UintDataArray;
 	cudaFree(GPU_UintDataArray);
@@ -369,6 +433,9 @@ vector<Mat> CudaBorder::RawDataToMatArray(float* VolumeData_1D, bool SaveBorder 
 	return ImgArray;
 }
 
+//////////////////////////////////////////////////////////////////////////
+// 處理相關
+//////////////////////////////////////////////////////////////////////////
 void CudaBorder::GetMinMaxValue(float* begin, float& max, int size)
 {
 	clock_t time = clock();
@@ -378,102 +445,184 @@ void CudaBorder::GetMinMaxValue(float* begin, float& max, int size)
 	//cout << "最大值是: " << max_val << " 在位置: " << position << endl;
 	max = max_val;
 }
-void CudaBorder::GetLargeLine(int *Connect_Status)
+void CudaBorder::GetLargeLine(int *PointType_BestN, int *Connect_Status)
 {
+	clock_t time = clock();
+
+	// 選 N 個
+	#pragma omp parallel for //num_thread(4)
 	for (int i = 0; i < size; i++)
 	{
 		// 每個 10 段下去 Sample
 		int RowGap = rows / 10;
-		vector<vector<int>> StatusVector;
+		vector<vector<ConnectInfo>> StatusVector;
+		
 		for (int j = 0; j < rows; j += RowGap)
-		{
-			int begin = j;
-			int end = j;
-
-			if (PointType_1D[j + i * rows] == -1)
-				continue;
-
-			// 往上找 & 先加上自己
-			vector<int> Connect;
-			Connect.push_back(j);
-
-			int FindIndex = j;
-			bool IsFind = true;
-			while (IsFind && FindIndex > 0)
+			for (int chooseNIndex = 0; chooseNIndex < ChooseBestN; chooseNIndex++)
 			{
-				int minIndex = -1;
-				int tempValue = ConnectRadius * ConnectRadius;
-				for (int k = 1; k < ConnectRadius; k++)
+				int begin = j;
+				int end = j;
+
+				// 代表這個點沒有東西，所以略過
+				if (PointType_BestN[i * rows * ChooseBestN + j * ChooseBestN + chooseNIndex] == -1)
+					continue;
+
+				// 連接狀況
+				vector<ConnectInfo> Connect;
+
+				#pragma region 往上找
+				// 先加上自己
+				ConnectInfo info;
+				info.rowIndex = j;
+				info.chooseIndex = chooseNIndex;
+				Connect.push_back(info);
+
+				int FindIndex = j;
+				int FindChooseIndex = chooseNIndex;
+				bool IsFind = true;
+				while (IsFind && FindIndex > 0)
 				{
-					int index = ConnectRadius * (FindIndex - k) + k + i * rows * ConnectRadius;
-					if (FindIndex - k >= 0 && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+					int minMoveIndex = -1;
+					int minChooseIndex = -1;
+					int tempValue = ConnectRadius * ConnectRadius;
+					for (int k = 1; k < ConnectRadius; k++)
+						for (int nextChooseNIndex = 0; nextChooseNIndex < ChooseBestN; nextChooseNIndex++)
+						{
+							int index = i * rows * ChooseBestN * ConnectRadius * ChooseBestN +					// Size
+										(FindIndex - k) * ChooseBestN * ConnectRadius * ChooseBestN +			// Rows
+										nextChooseNIndex * ConnectRadius * ChooseBestN +						// 現在在的 Top N 的點 (這邊要注意，這邊應該要放的是 要找的那個點的 ChooseIndex)
+										k * ChooseBestN +														// 半徑
+										FindChooseIndex;
+							if (FindIndex - k >= 0 && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+							{
+								tempValue = Connect_Status[index];
+								minMoveIndex = k;
+								minChooseIndex = nextChooseNIndex;
+							}
+						}
+
+					// 判斷是否有找到，找到就繼續找
+					if (minMoveIndex != -1)
 					{
-						tempValue = Connect_Status[index];
-						minIndex = k;
+						// 更便位置
+						FindIndex = FindIndex - minMoveIndex;
+						FindChooseIndex = minChooseIndex;
+
+						// 丟進陣列
+						info.rowIndex = FindIndex;
+						info.chooseIndex = minChooseIndex;
+						Connect.push_back(info);
+
+						// 有找到
+						IsFind = true;
 					}
+					else
+						IsFind = false;
 				}
-
-				if (minIndex != -1)
+				#pragma endregion
+				#pragma region 往下找
+				FindIndex = j;
+				FindChooseIndex = chooseNIndex;
+				while (IsFind && FindIndex < rows - 1)
 				{
-					FindIndex = FindIndex - minIndex;
-					Connect.push_back(FindIndex);
-					IsFind = true;
-				}
-				else
-					IsFind = false;
-			}
+					int minMoveIndex = -1;
+					int minChooseIndex = -1;				
+					int tempValue = ConnectRadius * ConnectRadius;
+					for (int k = 1; k < ConnectRadius; k++)
+						for (int nextChooseNIndex = 0; nextChooseNIndex < ChooseBestN; nextChooseNIndex++)
+						{
+							int index = i * rows * ChooseBestN * ConnectRadius * ChooseBestN +					// Size
+										FindIndex * ChooseBestN * ConnectRadius * ChooseBestN +					// Rows
+										FindChooseIndex * ConnectRadius * ChooseBestN +							// 現在在的 Top N 的點
+										k * ChooseBestN +														// 半徑
+										nextChooseNIndex;
+							if (FindIndex + k < rows && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+							{
+								tempValue = Connect_Status[index];
+								minMoveIndex = k;
+								minChooseIndex = nextChooseNIndex;
+							}
+						}
 
-			// 往下找
-			FindIndex = j;
-			while (IsFind && FindIndex < rows - 1)
-			{
-				int minIndex = -1;
-				int tempValue = ConnectRadius * ConnectRadius;
-				for (int k = 1; k < ConnectRadius; k++)
-				{
-					int index = ConnectRadius * FindIndex + k + i * rows * ConnectRadius;
-					if (FindIndex + k < rows && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+					// 判斷是否有找到，找到就繼續找
+					if (minMoveIndex != -1)
 					{
-						tempValue = Connect_Status[index];
-						minIndex = k;
+						// 更便位置
+						FindIndex = FindIndex + minMoveIndex;
+						FindChooseIndex = minChooseIndex;
+
+						// 丟進陣列
+						info.rowIndex = FindIndex;
+						info.chooseIndex = minChooseIndex;
+						Connect.push_back(info);
+
+						// 有找到
+						IsFind = true;
 					}
+					else
+						IsFind = false;
 				}
-
-				if (minIndex != -1)
+				#pragma endregion
+			
+				// 判斷是否有連出東西，如果連出來的東西大於 1
+				if (Connect.size() > 1)
 				{
-					FindIndex = FindIndex + minIndex;
-					Connect.push_back(FindIndex);
-					IsFind = true;
+					// 由小排到大
+					sort(Connect.begin(), Connect.end(), SortByRows);
+					StatusVector.push_back(Connect);
 				}
-				else
-					IsFind = false;
 			}
-
-			if (Connect.size() > 1)
-			{
-				// 由小排到大
-				sort(Connect.begin(), Connect.end());
-				StatusVector.push_back(Connect);
-			}
-		}
+		
 
 		// 前面的幾個張數，可能會找不到點，所以跳過處理
 		if (StatusVector.size() == 0)
+		{
+			memset(&PointType_1D[i * rows], -1, sizeof(int) * rows);
 			continue;
+		}
 
 		// 排序之後取最大
 		sort(StatusVector.begin(), StatusVector.end(), SortByVectorSize);
 
-		// 把其他雜點刪掉
-		vector<int> LineVector = StatusVector[0];
-		int index = 0;
+		// 每個點續算變化率
+		vector<float> DiffRateVector;
+		for (int j = 0; j < StatusVector.size(); j++)
+		{
+			float diffRate = 0;
+			for (int k = 0; k < StatusVector[j].size() - 1; k++)
+			{
+				int	FirstYIndex = i * rows * ChooseBestN +							// 張
+								StatusVector[j][k].rowIndex * ChooseBestN +			// row
+								StatusVector[j][k].chooseIndex;						// ChooseIndex
+				int NextYIndex = i * rows * ChooseBestN +							// 張
+								StatusVector[j][k + 1].rowIndex * ChooseBestN +		// row
+								StatusVector[j][k + 1].chooseIndex;					// ChooseIndex
+				float Diff = sqrt((float)(PointType_BestN[NextYIndex] - PointType_BestN[FirstYIndex]) * (PointType_BestN[NextYIndex] - PointType_BestN[FirstYIndex]));
+				diffRate += Diff;
+			}
+			DiffRateVector.push_back(diffRate);
+		}
+
+		// 每一個結果去算變化量最大的
+		int DiffMaxIndex = distance(DiffRateVector.begin(), max_element(DiffRateVector.begin(), DiffRateVector.end()));
+
+		vector<ConnectInfo> LineVector = StatusVector[DiffMaxIndex];
+		int index = 0;				// LineVector Index
 		for (int j = 0; j < rows; j++)
 		{
-			if (LineVector[index] != i)
-				PointType_1D[j + i * rows] = -1;
-			else if (LineVector[index] == i)
+			int Type1D_Index = i * rows + j;
+			if (LineVector[index].rowIndex != j)
+				PointType_1D[Type1D_Index] = -1;
+			else if (LineVector[index].rowIndex == j)
 			{
+				int BestN_Index = i * rows * ChooseBestN +							// 張
+								LineVector[index].rowIndex * ChooseBestN +			// row
+								LineVector[index].chooseIndex;						// ChooseIndex
+
+				// 放進 PointType
+				PointType_1D[j + i * rows] = PointType_BestN[BestN_Index];
 				index++;
+
 				if (index >= LineVector.size())
 				{
 					for (int k = j + 1; k < rows; k++)
@@ -483,8 +632,15 @@ void CudaBorder::GetLargeLine(int *Connect_Status)
 			}
 		}
 	}
+
+	time = clock() - time;
+	cout << "連接呈現: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 }
-bool CudaBorder::SortByVectorSize(vector<int> left, vector<int> right)
+bool CudaBorder::SortByRows(ConnectInfo left, ConnectInfo right)
+{
+	return left.rowIndex < right.rowIndex;
+}
+bool CudaBorder::SortByVectorSize(vector<ConnectInfo> left, vector<ConnectInfo> right)
 {
 	return right.size() < left.size();
 }

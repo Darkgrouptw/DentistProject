@@ -409,58 +409,6 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 			cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResultArray[x]);
 		}
 	}
-	//cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaDataSize, GPU_VolumeData);
-	//cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaSize, TempMatArray);
-	//for (int x = 60; x <= 200; x++)
-	//for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
-	//{
-	//	// Mat
-	//	cv::Mat ImageResult;		// = cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-	//	cv::Mat SmoothResult;		//= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-	//	cv::Mat CombineResult;		//= cv::Mat(theTRcuda.VolumeSize_Y, theTRcuda.VolumeSize_Z, CV_32F, cv::Scalar(0, 0, 0));
-
-	//	// QImage
-	//	QImage QImageResult;
-	//	QImage QSmoothResult;
-	//	QImage QCombineResult;
-
-	//	// 先 Mapping 資料
-	//	cudaBorder.MappingData(theTRcuda.VolumeData, TheCudaSize, OCTData, x);
-	//	ImageResult = cudaBorder.SaveDataToImage(OCTData, false);
-	//	QImageResult = Mat2QImage(ImageResult, CV_8UC3);
-
-	//	cudaBorder.MappingData(theTRcuda.VolumeDataAvg, TheCudaSize, OCTDataAvg, x);
-	//	SmoothResult = cudaBorder.SaveDataToImage(OCTDataAvg, false);
-	//	QSmoothResult = Mat2QImage(SmoothResult, CV_8UC3);
-
-	//	cudaBorder.GetBorderFromCuda(OCTDataAvg);
-	//	CombineResult = cudaBorder.SaveDataToImage(OCTDataAvg, true);
-	//	QCombineResult = Mat2QImage(CombineResult, CV_8UC3);
-
-	//	if (NeedSave_Image)
-	//	{
-	//		// 原圖
-	//		cv::imwrite("Images/OCTImages/origin_v2/" + to_string(x) + ".png", ImageResult);
-
-	//		// Smooth 影像
-	//		cv::imwrite("Images/OCTImages/smooth_v2/" + to_string(x) + ".png", SmoothResult);
-
-	//		// Combine 結果圖
-	//		cv::imwrite("Images/OCTImages/combine_v2/" + to_string(x) + ".png", CombineResult);
-	//	}
-
-	//	// 暫存到陣列裡 (Mat)
-	//	ImageResultArray.push_back(ImageResult);
-	//	SmoothResultArray.push_back(SmoothResult);
-	//	CombineResultArray.push_back(CombineResult);
-	//	
-	//	// 暫存到陣列裡 (QImage)
-	//	QImageResultArray.push_back(QImageResult);
-	//	QSmoothResultArray.push_back(QSmoothResult);
-	//	QCombineResultArray.push_back(QCombineResult);
-	//}
-
-
 	// 這邊是測試橫向的部分
 	/*for (int x = 0; x < theTRcuda.VolumeSize_X; x++)
 	{
@@ -473,10 +421,35 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 				reverseImg.at<Vec3b>(y, z) = color;
 			}
 		}
+
+		for (int y = 0; y < theTRcuda.VolumeSize_Y; y ++ )
+			if (cudaBorder.PointType_1D[y * 250 + x] != -1)
+			{
+				Point contourPoint(cudaBorder.PointType_1D[y * 250 + x], y);
+				circle(reverseImg, contourPoint, 2, Scalar(0, 255, 255), CV_FILLED);
+			}
 		imwrite("Images/OCTImages/reverse_v2/" + to_string(x) + ".png", reverseImg);
 	}*/
 
 	// 加入 Point Cloud 的陣列
+	float ratio = 1;						// 這是放大的比率
+	for (int x = 60; x <= 200; x++)
+	{
+		for (int y = 0; y < 250; y++)
+		{
+			int index = x * 250 + y;
+			int Mapidx = ((y * theTRcuda.sample_Y * theTRcuda.VolumeSize_X) + x) * theTRcuda.sample_X;
+			int PCidx = ((x * theTRcuda.VolumeSize_Y) + y) * theTRcuda.VolumeSize_Z;
+			if (cudaBorder.PointType_1D[index] != -1)
+			{
+				QVector3D pointInSpace;
+				pointInSpace.setX(DManager.MappingMatrix[Mapidx * 2 + 1] * ratio + 0.2);
+				pointInSpace.setY(DManager.MappingMatrix[Mapidx * 2] * ratio);
+				pointInSpace.setZ(cudaBorder.PointType_1D[index] * DManager.zRatio / theTRcuda.VolumeSize_Z * ratio);
+				CurrentPointCloud.push_back(pointInSpace);
+			}
+		}
+	}
 	PointCloudArray.push_back(CurrentPointCloud);
 	#pragma endregion
 	#pragma region 刪除 GPU Array
@@ -505,6 +478,8 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 		QMessageBox::critical(main, codec->toUnicode("Function 錯誤"), codec->toUnicode("沒有資料可以執行!!"));
 		return false;
 	}
+	/*
+	舊的晃動方法
 	cv::Mat FirstImage = SmoothResultArray[124 - 60];
 	FirstImage.convertTo(FirstImage, CV_8U, 255);
 	cv::Mat LastImage = SmoothResultArray[125 - 60];
@@ -543,6 +518,77 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 	if (PSNR_Value > OCT_PSNR_Threshold &&
 		(ZerosCount1 < OCT_UsefulData_Threshold && ZerosCount2 < OCT_UsefulData_Threshold))
 		return true;
+	return false;*/
+
+	// 找 60 ~ 200 裡面有效的有沒有斷層
+	int total = 250;
+	int voteNum = 0;
+	int shakeCount = 0;
+
+	bool IsFindFirst = false;
+	// Reverse 的 0 ~ 250
+	for (int i = 0; i < 250; i++)
+	{
+		bool IsMove = false;
+		int left2Index = 123 * 250 + i;
+		int leftIndex = 124 * 250 + i;
+		int rightIndex = 125 * 250 + i;
+		int right2Index = 126 * 250 + i;
+
+		for (int j = 124; j >= 0; j--)
+		{
+			if (!IsFindFirst && cudaBorder.PointType_1D[j * 250 + i] != -1)
+			{
+				leftIndex = j * 250 + i;
+				IsFindFirst = true;
+			}
+			else if (IsFindFirst && cudaBorder.PointType_1D[j * 250 + i] != -1)
+			{
+				left2Index = j * 250 + i;
+				break;
+			}
+		}
+
+		IsFindFirst = false;
+		for (int j = 125; j < 250; j++)
+		{
+			if (!IsFindFirst && cudaBorder.PointType_1D[j] != -1)
+			{
+				rightIndex = j * 250 + i;
+				IsFindFirst = true;
+			}
+			else if (IsFindFirst && cudaBorder.PointType_1D[i] != -1)
+			{
+				right2Index = j * 250 + i;
+				break;
+			}
+		}
+		
+		int leftY = cudaBorder.PointType_1D[leftIndex];
+		int rightY = cudaBorder.PointType_1D[rightIndex];
+
+		//if (!IsMove)
+		//	voteNum++;
+
+		// 確認有效票數
+		if (cudaBorder.PointType_1D[left2Index] != -1 &&
+			cudaBorder.PointType_1D[leftIndex] != -1 &&
+			cudaBorder.PointType_1D[rightIndex] != -1 &&
+			cudaBorder.PointType_1D[right2Index] != -1)
+		{
+			voteNum++;
+
+			int DisLeft = cudaBorder.PointType_1D[leftIndex] - cudaBorder.PointType_1D[left2Index];
+			int DisRight = cudaBorder.PointType_1D[rightIndex] - cudaBorder.PointType_1D[right2Index];
+			int DisMid = cudaBorder.PointType_1D[rightIndex] - cudaBorder.PointType_1D[leftIndex];
+
+			if (abs(DisLeft) < 30 && abs(DisRight) < 30 && abs(DisMid) < 30)
+				shakeCount++;
+			cout << "投票 " << voteNum << "\t Diff Left: " << DisLeft << "\t Diff Mid: " << DisMid << "\t DiffRight3: " << DisRight << endl;
+		}
+
+	}
+	cout << "有效票數: " << shakeCount << " /  " << voteNum << endl;
 	return false;
 }
 void RawDataManager::WriteRawDataToFile(QString DirLocation)
