@@ -1,6 +1,6 @@
-#pragma once
+ï»¿#pragma once
 /*
-³oÃä¬OºŞ²z©Ò¦³¸Ë¸mªº class (¥]§t ÂÅªŞ¡BOCT)
+é€™é‚Šæ˜¯ç®¡ç†æ‰€æœ‰è£ç½®çš„ class (åŒ…å« è—èŠ½ã€OCT)
 */
 #include <iostream>
 #include <cassert>
@@ -21,14 +21,21 @@ public:
 	PointCloudInfo();
 	~PointCloudInfo();
 	
-	// ¤èªk
-	void ReadFromASC(QString);							// ÅªÀÉ®×
-	void SaveASC(QString);								// ­n¼g¥XÀÉ®× (²Ä¤@¦æ¬°¤E¶b ²Ä¤G¦æ¶}©l¬°ÂI¶³¸ê®Æ)
+	// æ–¹æ³•
+	void ReadFromASC(QString);							// è®€æª”æ¡ˆ
+	void SaveASC(QString);								// è¦å¯«å‡ºæª”æ¡ˆ (ç¬¬ä¸€è¡Œç‚ºä¹è»¸ ç¬¬äºŒè¡Œé–‹å§‹ç‚ºé»é›²è³‡æ–™)
 
 	//////////////////////////////////////////////////////////////////////////
-	// Àx¦sªº¸ê®Æ
+	// å„²å­˜çš„è³‡æ–™
 	//////////////////////////////////////////////////////////////////////////
-	QVector<QVector3D>	Points;							// ÂI (³oÃäªºÂI)
-	QQuaternion			Gyro;							// ªûÁ³»öªº¸ê°T
-	QMatrix4x4			TransforMatrix;					// ¹ï©ó²Ä¤@¤ùÂI¶³ªºÂà¦Ü¯x°}
+	QVector<QVector3D>	Points;							// é» (é€™é‚Šçš„é»)
+	QQuaternion			Gyro;							// é™€èºå„€çš„è³‡è¨Š
+	QMatrix4x4			TransforMatrix;					// å°æ–¼ç¬¬ä¸€ç‰‡é»é›²çš„è½‰è‡³çŸ©é™£
+	QVector3D			CenterPoint;					// ä¸­å¿ƒé»ï¼Œç”¨æ–¼ä»¥å¾Œå†åšç¸«åˆçš„æ™‚å€™ï¼Œå¯ä»¥æ ¹æ“šèˆ‡é€™å€‹é»çš„è·é›¢
+
+private:
+	//////////////////////////////////////////////////////////////////////////
+	// Helper Function
+	//////////////////////////////////////////////////////////////////////////
+	void				FindCenterPoint();				// æ‰¾ä¸­å¿ƒé»
 };

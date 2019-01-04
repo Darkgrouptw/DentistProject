@@ -856,8 +856,8 @@ void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *P
 			cout << "Use Super4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
 
-			cout << "Mat Mat" << endl;
-			cout << (*mat) << endl;
+			//cout << "Mat Mat" << endl;
+			//cout << (*mat) << endl;
 			
 			//for (int i = 0; i < 4; i++)
 			//	for (int j = 0; j < 4; j++)
