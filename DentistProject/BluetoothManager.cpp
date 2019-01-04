@@ -9,7 +9,7 @@ BluetoothManager::BluetoothManager()
 	device->RegisterCallback_DeviceDiscovered(		bind(&BluetoothManager::Callback_DeviceDiscovered,	this, placeholders::_1));								// Scan 到其他裝置的時候
 	device->RegisterCallback_EstablishLinkDone(		bind(&BluetoothManager::Callback_EstablishLinkDone,	this, std::placeholders::_1, std::placeholders::_2));	// 建立連線的判斷
 	device->RegisterCallback_TerminateLinkDone(		bind(&BluetoothManager::Callback_TerminateLinkDone, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));	//這個是中斷連線
-	device->RegisterCallback_QuaternionRotationChanged(bind(&BluetoothManager::Callback_QuaternionRotationChanged, this, std::placeholders::_1, std::placeholders::_2));				// 拿 Quaternion 的資料
+	device->RegisterCallback_QuaternionRotationChanged(std::bind(&BluetoothManager::Callback_QuaternionRotationChanged, this, std::placeholders::_1, std::placeholders::_2));
 
 	/*
 	這邊是沒有用到的 Callback 可能後面會用到
@@ -41,10 +41,10 @@ void BluetoothManager::SendUIPointer(QVector<QObject*> objList)
 {
 	// 確認是不是有多傳，忘了改的
 	assert(objList.size() == 4);
-	BLEStatus		= (QLabel*)		objList[0];
-	QuaternionText	= (QLabel*)		objList[1];
-	MainWindow		= (QMainWindow*) objList[2];
-	bleTextList		= (QComboBox*)	objList[3];
+	BLEStatus		= (QLabel*)			objList[0];
+	EularText		= (QLabel*)			objList[1];
+	MainWindow		= (QMainWindow*)	objList[2];
+	bleTextList		= (QComboBox*)		objList[3];
 }
 QStringList BluetoothManager::GetCOMPortsArray()
 {
@@ -100,6 +100,14 @@ bool BluetoothManager::IsInitialize()
 {
 	return device->IsInitialized();
 }
+void BluetoothManager::SetOffsetQuat()
+{
+	OffsetQuat = CurrentQuat;
+}
+QVector3D BluetoothManager::GetAngle()
+{
+	return QVector3D(AngleX, AngleY, AngleZ);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // 藍芽 & Callback
@@ -147,8 +155,15 @@ void BluetoothManager::Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*,
 	BLEStatus->setText(codec->toUnicode("藍芽狀態：傳輸資料中"));
 
 	// 旋轉結果
-	string Quaternion_Output = "Ｗ： " + to_string(quat[0]) + "\nＸ： " + to_string(quat[1]) + "\nＹ： " + to_string(quat[2]) + "\nＺ： " + to_string(quat[3]);
-	QuaternionText->setText(codec->toUnicode(Quaternion_Output.c_str()));
+	 CurrentQuat = QQuaternion(quat[0], quat[3], quat[2], quat[1]);
+	//CurrentQuat = QQuaternion(quat[0], quat[1], quat[2], quat[3]);
+	QQuaternion qtQuat = OffsetQuat.inverted() * CurrentQuat;
+	QVector3D EularAngle = qtQuat.toEulerAngles();
+	AngleX = EularAngle.x();
+	AngleY = EularAngle.y();
+	AngleZ = EularAngle.z();
+	string Eular_Output = "Ｘ： " + to_string(AngleX) + "\nＹ： " + to_string(AngleY) + "\nＺ： " + to_string(AngleZ);
+	EularText->setText(codec->toUnicode(Eular_Output.c_str()));
 }
 
 //////////////////////////////////////////////////////////////////////////

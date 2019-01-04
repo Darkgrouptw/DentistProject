@@ -4,7 +4,9 @@ DentistProject::DentistProject(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-
+	#pragma region Timer 設定
+	updateGLTimer = new QTimer(this);
+	#pragma endregion
 	#pragma region 事件連結
 	// 事件連結
 	connect(ui.actionLoadSTL,								SIGNAL(triggered()),			this,	SLOT(LoadSTL()));
@@ -19,7 +21,12 @@ DentistProject::DentistProject(QWidget *parent)
 	connect(ui.BtnConnectCOM,								SIGNAL(clicked()),				this,	SLOT(ConnectCOM()));
 	connect(ui.BtnScanBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ScanBLEDevice()));
 	connect(ui.BtnConnectBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDeivce()));
+	connect(ui.ResetRotationMode,							SIGNAL(clicked()),				this,	SLOT(SetRotationMode()));
+	connect(ui.GyroscopeResetToZero,						SIGNAL(clicked()),				this,	SLOT(GyroResetToZero()));
 	
+	// 藍芽測試
+	connect(ui.PointCloudAlignmentTestBtn,					SIGNAL(clicked()),				this,	SLOT(PointCloudAlignmentTest()));
+
 	// OCT 相關(主要)
 	connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 	connect(ui.SaveWithTime_CheckBox,						SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
@@ -35,15 +42,21 @@ DentistProject::DentistProject(QWidget *parent)
 	connect(ui.ShakeTestButton,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataForShakeTest()));
 	connect(ui.SegNetTestButton,							SIGNAL(clicked()),				this,	SLOT(SegNetTest()));
 
+	// 點雲 Render 相關
+	connect(ui.PrePCBtn,									SIGNAL(clicked()),				this,	SLOT(PrePointCloudClick()));
+	connect(ui.NextPCBtn,									SIGNAL(clicked()),				this,	SLOT(NextPointCloudClick()));
+
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
+	connect(updateGLTimer,									SIGNAL(timeout()),				this,	SLOT(DisplayPanelUpdate()));
+	updateGLTimer->start(1.0 / 60);
 	#pragma endregion
 	#pragma region 傳 UI 指標進去
 	// 藍芽的部分
 	QVector<QObject*>		objList;
 
 	objList.push_back(ui.BLEStatus);
-	objList.push_back(ui.QuaternionText);
+	objList.push_back(ui.EularText);
 	objList.push_back(this);
 	objList.push_back(ui.BLEDeviceList);
 	
@@ -145,6 +158,36 @@ void DentistProject::ScanBLEDevice()
 void DentistProject::ConnectBLEDeivce()
 {
 	rawManager.bleManager.Connect(ui.BLEDeviceList->currentIndex());
+}
+void DentistProject::SetRotationMode()
+{
+	if (ui.ResetRotationMode->text() == RotationModeOFF_String)
+	{
+		ui.DisplayPanel->SetRotationMode(true);
+		ui.ResetRotationMode->setText(RotationModeON_String);
+		ui.ResetRotationMode->setDefault(true);
+	}
+	else
+	{
+		ui.DisplayPanel->SetRotationMode(false);
+		ui.ResetRotationMode->setText(RotationModeOFF_String);
+		ui.ResetRotationMode->setDefault(false);
+	}
+}
+void DentistProject::GyroResetToZero()
+{
+	rawManager.bleManager.SetOffsetQuat();
+}
+
+// 藍芽測試
+void DentistProject::PointCloudAlignmentTest()
+{
+	QString PointCloudFileName = QFileDialog::getOpenFileName(this, "Read Point Cloud", "D:/Dentist/Data/ScanData/Old Data/Gyro Data/", "*.asc", nullptr, QFileDialog::DontUseNativeDialog);
+	if (PointCloudFileName != "")
+	{
+		rawManager.ReadPointCloudData(PointCloudFileName);
+		ui.DisplayPanel->update();
+	}
 }
 
 // OCT 相關(主要)
@@ -363,9 +406,27 @@ void DentistProject::SegNetTest()
 	}
 }
 
+// 點雲 Render 相關
+void DentistProject::PrePointCloudClick()
+{
+	int size = rawManager.PointCloudArray.size();
+	rawManager.SelectIndex = (rawManager.SelectIndex - 1 + size) % size;
+	ui.DisplayPanel->update();
+}
+void DentistProject::NextPointCloudClick()
+{
+	int size = rawManager.PointCloudArray.size();
+	rawManager.SelectIndex = (rawManager.SelectIndex + 1) % size;
+	ui.DisplayPanel->update();
+}
+
 // 顯示部分的事件
 void DentistProject::ScanNumSlider_Change(int value)
 {
 	rawManager.ShowImageIndex(value);
 	ui.ScanNum_Value->setText(QString::number(value));
+}
+void DentistProject::DisplayPanelUpdate()
+{
+	ui.DisplayPanel->update();
 }

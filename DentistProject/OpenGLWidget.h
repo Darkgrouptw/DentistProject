@@ -47,6 +47,7 @@ public:
 	void		SetRenderTriangleBool(bool);
 	void		SetRenderBorderBool(bool);
 	void		SetRenderPointCloudBool(bool);
+	void		SetRotationMode(bool);
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他元件的 Function
@@ -67,6 +68,7 @@ private:
 	void							DrawGround();
 	void							DrawPointCloud();
 	void							DrawSTL();
+	void							DrawResetRotation();
 
 	bool							RenderTriangle_bool = true;
 	bool							RenderBorder_bool = true;
@@ -130,6 +132,11 @@ private:
 	bool							IsLoaded = false;
 
 	//////////////////////////////////////////////////////////////////////////
+	// Reset Rotation Mode
+	//////////////////////////////////////////////////////////////////////////
+	bool							RotationMode = false;
+
+	//////////////////////////////////////////////////////////////////////////
 	// 這邊是點雲資訊
 	//////////////////////////////////////////////////////////////////////////
 	RawDataManager*					rawManager = NULL;
@@ -140,4 +147,3 @@ private:
 	QPoint							CurrentPoint;
 	#pragma endregion
 };
-

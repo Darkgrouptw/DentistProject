@@ -30,8 +30,15 @@ void OpenGLWidget::paintGL()
 	glLoadIdentity();
 
 	DrawGround();
-	DrawPointCloud();
-	DrawSTL();
+	
+
+	if (RotationMode)
+		DrawResetRotation();
+	else
+	{
+		DrawPointCloud();
+		DrawSTL();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -292,6 +299,11 @@ void OpenGLWidget::SetRenderPointCloudBool(bool RenderBool)
 {
 	RenderPointCloud_bool = RenderBool;
 }
+void OpenGLWidget::SetRotationMode(bool SetBool)
+{
+	RotationMode = SetBool;
+	this->update();
+}
 
 //////////////////////////////////////////////////////////////////////////
 // 其他元件的 Function
@@ -399,19 +411,17 @@ void OpenGLWidget::DrawPointCloud()
 {
 	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
 	{
-		float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 10;
+		float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 0.1f;
 		glPointSize(pointSize);
 		glBegin(GL_POINTS);
 		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
 		{
 			glColor4f(0, 0, 0, 1);
-			for (int j = 0; j < rawManager->PointCloudArray[i].size(); j++)
+			for (int j = 0; j < rawManager->PointCloudArray[i].Points.size(); j++)
 			{
-				QVector3D point = rawManager->PointCloudArray[i][j];
+				QVector3D point = rawManager->PointCloudArray[i].Points[j];
 				glVertex3f(point.x(), point.y(), point.z());
 			}
-			break;
-
 		}
 		glEnd();
 	}
@@ -509,4 +519,43 @@ void OpenGLWidget::DrawSTL()
 	//	glEnd();
 	//}
 	#pragma endregion
+}
+void OpenGLWidget::DrawResetRotation()
+{
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(0, 2, 0);
+
+	glLineWidth(10);
+
+	// 旋轉
+	QVector3D dir = rawManager->bleManager.GetAngle();
+	//cout << dir.x() << " " << dir.y() << " " << dir.z() << endl;
+	glRotatef(dir.x(), 1, 0, 0);
+	glRotatef(dir.y(), 0, 1, 0);
+	glRotatef(dir.z(), 0, 0, 1);
+
+	// X 
+	glColor4f(1, 0, 0, 1);
+	glBegin(GL_LINES);
+	glVertex3f(0, 0, 0);
+	glVertex3f(5, 0, 0);
+	glEnd();
+
+	// Y
+	glColor4f(1, 1, 0, 1);
+	glBegin(GL_LINES);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 5, 0);
+	glEnd();
+
+	// Z 
+	glColor4f(0, 1, 0, 1);
+	glBegin(GL_LINES);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 0, 5);
+	glEnd();
+
+	glLineWidth(1);
+	glPopMatrix();
 }

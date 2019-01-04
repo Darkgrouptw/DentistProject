@@ -8,11 +8,6 @@ DataManager::DataManager(void)
 	rawDP.size_Z = 2048; // 1376 1600
 	rawDP.sample = 1024;
 
-	dataQuaternion[0] = 0;
-	dataQuaternion[1] = 0;
-	dataQuaternion[2] = 0;
-	dataQuaternion[3] = 0;
-
 	Mapping_X = 250;
 	Mapping_Y = 250;
 	MappingMatrix = NULL;

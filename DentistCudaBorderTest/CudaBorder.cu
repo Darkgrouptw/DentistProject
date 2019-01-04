@@ -276,8 +276,7 @@ QImage CudaBorder::SaveDataToImage(float** DataArray)
 	assert(PointType_1D != NULL && PointType != NULL  && rows != 0 && cols != 0);
 	#pragma endregion
 	#pragma region 開始時間
-	//clock_t time;
-	//time = clock();
+	clock_t t = clock();
 	#pragma endregion
 	#pragma region 透過	GPU 平行轉值
 	// 原 Data Array
@@ -330,8 +329,8 @@ QImage CudaBorder::SaveDataToImage(float** DataArray)
 	CheckCudaError();
 	#pragma endregion
 	#pragma region 結束時間
-	time = clock() - time;
-	cout << "轉換圖片時間: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	t = clock() - t;
+	cout << "轉換圖片時間: " << ((float)t) / CLOCKS_PER_SEC << " sec" << endl;
 	#pragma endregion
 	return img;
 }

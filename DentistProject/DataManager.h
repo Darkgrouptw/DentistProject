@@ -24,7 +24,6 @@ public:
 	void ReadCalibrationData();
 	void Read_test_file();
 
-	float dataQuaternion[4];
 	int Mapping_X;
 	int Mapping_Y;
 	float* MappingMatrix;

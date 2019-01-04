@@ -10,6 +10,9 @@
 #include <cassert>
 #include <functional>
 
+#include <QtMath>
+#include <QVector3D>
+#include <QQuaternion>
 #include <QTextCodec>
 #include <QString>
 #include <QVector>
@@ -41,7 +44,8 @@ public:
 	void				Scan();
 	void				Connect(int);
 	bool				IsInitialize();
-
+	void				SetOffsetQuat();
+	QVector3D			GetAngle();
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -58,9 +62,16 @@ private:
 
 	// UI pointer
 	QLabel*				BLEStatus;
-	QLabel*				QuaternionText;
+	QLabel*				EularText;
 	QMainWindow*		MainWindow;
 	QComboBox*			bleTextList;
+
+	// 九軸相關
+	QQuaternion			CurrentQuat;
+	QQuaternion			OffsetQuat;
+	float				AngleX = 0;
+	float				AngleY = 0;
+	float				AngleZ = 0;
 
 	// Other
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");

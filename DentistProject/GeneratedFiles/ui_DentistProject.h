@@ -36,7 +36,7 @@ public:
     QAction *actionLoadSTL;
     QWidget *centralWidget;
     OpenGLWidget *DisplayPanel;
-    QGroupBox *RenderOptionsBox;
+    QGroupBox *RenderModelOptionsBox;
     QCheckBox *RenderBorder_CheckBox;
     QCheckBox *RenderTriangle_CheckBox;
     QCheckBox *RenderPointDot_CheckBox;
@@ -50,8 +50,13 @@ public:
     QComboBox *BLEDeviceList;
     QComboBox *COMList;
     QGroupBox *BLEDeviceInfoBox;
-    QLabel *QuaternionText;
+    QLabel *EularText;
     QLabel *BLEStatus;
+    QGroupBox *ResetRotationBox;
+    QPushButton *ResetRotationMode;
+    QPushButton *GyroscopeResetToZero;
+    QGroupBox *BLETestingBox;
+    QPushButton *PointCloudAlignmentTestBtn;
     QWidget *Tab_OCT;
     QGroupBox *OCTNormalSettingBox;
     QLineEdit *SaveLocationText;
@@ -68,6 +73,9 @@ public:
     QPushButton *ShakeTestButton;
     QPushButton *SegNetTestButton;
     QPushButton *BeepSoundTestButton;
+    QWidget *Tab_PointCloud;
+    QPushButton *PrePCBtn;
+    QPushButton *NextPCBtn;
     QGroupBox *ScanResult;
     QLabel *ImageResult;
     QLabel *FinalResult;
@@ -88,7 +96,7 @@ public:
     {
         if (DentistProjectClass->objectName().isEmpty())
             DentistProjectClass->setObjectName(QStringLiteral("DentistProjectClass"));
-        DentistProjectClass->resize(1600, 900);
+        DentistProjectClass->resize(1592, 900);
         actionLoadSTL = new QAction(DentistProjectClass);
         actionLoadSTL->setObjectName(QStringLiteral("actionLoadSTL"));
         centralWidget = new QWidget(DentistProjectClass);
@@ -96,18 +104,19 @@ public:
         DisplayPanel = new OpenGLWidget(centralWidget);
         DisplayPanel->setObjectName(QStringLiteral("DisplayPanel"));
         DisplayPanel->setGeometry(QRect(0, 0, 900, 900));
-        RenderOptionsBox = new QGroupBox(centralWidget);
-        RenderOptionsBox->setObjectName(QStringLiteral("RenderOptionsBox"));
-        RenderOptionsBox->setGeometry(QRect(1500, 10, 90, 211));
-        RenderBorder_CheckBox = new QCheckBox(RenderOptionsBox);
+        RenderModelOptionsBox = new QGroupBox(centralWidget);
+        RenderModelOptionsBox->setObjectName(QStringLiteral("RenderModelOptionsBox"));
+        RenderModelOptionsBox->setEnabled(false);
+        RenderModelOptionsBox->setGeometry(QRect(1500, 10, 90, 131));
+        RenderBorder_CheckBox = new QCheckBox(RenderModelOptionsBox);
         RenderBorder_CheckBox->setObjectName(QStringLiteral("RenderBorder_CheckBox"));
         RenderBorder_CheckBox->setGeometry(QRect(10, 60, 61, 21));
         RenderBorder_CheckBox->setChecked(true);
-        RenderTriangle_CheckBox = new QCheckBox(RenderOptionsBox);
+        RenderTriangle_CheckBox = new QCheckBox(RenderModelOptionsBox);
         RenderTriangle_CheckBox->setObjectName(QStringLiteral("RenderTriangle_CheckBox"));
         RenderTriangle_CheckBox->setGeometry(QRect(10, 30, 61, 21));
         RenderTriangle_CheckBox->setChecked(true);
-        RenderPointDot_CheckBox = new QCheckBox(RenderOptionsBox);
+        RenderPointDot_CheckBox = new QCheckBox(RenderModelOptionsBox);
         RenderPointDot_CheckBox->setObjectName(QStringLiteral("RenderPointDot_CheckBox"));
         RenderPointDot_CheckBox->setGeometry(QRect(10, 90, 61, 21));
         tabWidget = new QTabWidget(centralWidget);
@@ -123,7 +132,7 @@ public:
         BLEDeviceBox = new QGroupBox(Tab_Deivce);
         BLEDeviceBox->setObjectName(QStringLiteral("BLEDeviceBox"));
         BLEDeviceBox->setEnabled(true);
-        BLEDeviceBox->setGeometry(QRect(10, 10, 511, 101));
+        BLEDeviceBox->setGeometry(QRect(10, 10, 521, 101));
         BtnConnectCOM = new QPushButton(BLEDeviceBox);
         BtnConnectCOM->setObjectName(QStringLiteral("BtnConnectCOM"));
         BtnConnectCOM->setGeometry(QRect(410, 20, 91, 23));
@@ -144,17 +153,37 @@ public:
         COMList->setGeometry(QRect(10, 20, 291, 22));
         BLEDeviceInfoBox = new QGroupBox(Tab_Deivce);
         BLEDeviceInfoBox->setObjectName(QStringLiteral("BLEDeviceInfoBox"));
-        BLEDeviceInfoBox->setGeometry(QRect(20, 110, 181, 161));
-        QuaternionText = new QLabel(BLEDeviceInfoBox);
-        QuaternionText->setObjectName(QStringLiteral("QuaternionText"));
-        QuaternionText->setGeometry(QRect(10, 50, 121, 101));
+        BLEDeviceInfoBox->setGeometry(QRect(20, 120, 181, 151));
+        EularText = new QLabel(BLEDeviceInfoBox);
+        EularText->setObjectName(QStringLiteral("EularText"));
+        EularText->setGeometry(QRect(10, 60, 121, 61));
         QFont font;
         font.setPointSize(12);
-        QuaternionText->setFont(font);
+        EularText->setFont(font);
+        EularText->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
         BLEStatus = new QLabel(BLEDeviceInfoBox);
         BLEStatus->setObjectName(QStringLiteral("BLEStatus"));
         BLEStatus->setGeometry(QRect(10, 20, 161, 31));
         BLEStatus->setFont(font);
+        ResetRotationBox = new QGroupBox(Tab_Deivce);
+        ResetRotationBox->setObjectName(QStringLiteral("ResetRotationBox"));
+        ResetRotationBox->setGeometry(QRect(210, 130, 151, 141));
+        ResetRotationMode = new QPushButton(ResetRotationBox);
+        ResetRotationMode->setObjectName(QStringLiteral("ResetRotationMode"));
+        ResetRotationMode->setGeometry(QRect(10, 20, 131, 31));
+        ResetRotationMode->setAutoDefault(false);
+        ResetRotationMode->setFlat(false);
+        GyroscopeResetToZero = new QPushButton(ResetRotationBox);
+        GyroscopeResetToZero->setObjectName(QStringLiteral("GyroscopeResetToZero"));
+        GyroscopeResetToZero->setGeometry(QRect(10, 60, 131, 31));
+        GyroscopeResetToZero->setAutoDefault(false);
+        GyroscopeResetToZero->setFlat(false);
+        BLETestingBox = new QGroupBox(Tab_Deivce);
+        BLETestingBox->setObjectName(QStringLiteral("BLETestingBox"));
+        BLETestingBox->setGeometry(QRect(540, 10, 151, 271));
+        PointCloudAlignmentTestBtn = new QPushButton(BLETestingBox);
+        PointCloudAlignmentTestBtn->setObjectName(QStringLiteral("PointCloudAlignmentTestBtn"));
+        PointCloudAlignmentTestBtn->setGeometry(QRect(10, 20, 131, 23));
         tabWidget->addTab(Tab_Deivce, QString());
         Tab_OCT = new QWidget();
         Tab_OCT->setObjectName(QStringLiteral("Tab_OCT"));
@@ -208,6 +237,15 @@ public:
         BeepSoundTestButton->setObjectName(QStringLiteral("BeepSoundTestButton"));
         BeepSoundTestButton->setGeometry(QRect(10, 210, 131, 23));
         tabWidget->addTab(Tab_OCT, QString());
+        Tab_PointCloud = new QWidget();
+        Tab_PointCloud->setObjectName(QStringLiteral("Tab_PointCloud"));
+        PrePCBtn = new QPushButton(Tab_PointCloud);
+        PrePCBtn->setObjectName(QStringLiteral("PrePCBtn"));
+        PrePCBtn->setGeometry(QRect(10, 160, 201, 111));
+        NextPCBtn = new QPushButton(Tab_PointCloud);
+        NextPCBtn->setObjectName(QStringLiteral("NextPCBtn"));
+        NextPCBtn->setGeometry(QRect(230, 160, 201, 111));
+        tabWidget->addTab(Tab_PointCloud, QString());
         ScanResult = new QGroupBox(centralWidget);
         ScanResult->setObjectName(QStringLiteral("ScanResult"));
         ScanResult->setGeometry(QRect(910, 0, 581, 561));
@@ -303,7 +341,9 @@ public:
 
         retranslateUi(DentistProjectClass);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(2);
+        ResetRotationMode->setDefault(false);
+        GyroscopeResetToZero->setDefault(false);
 
 
         QMetaObject::connectSlotsByName(DentistProjectClass);
@@ -313,7 +353,7 @@ public:
     {
         DentistProjectClass->setWindowTitle(QApplication::translate("DentistProjectClass", "DentistProject", nullptr));
         actionLoadSTL->setText(QApplication::translate("DentistProjectClass", "1. \350\256\200\345\217\226 STL(From 3Shape)", nullptr));
-        RenderOptionsBox->setTitle(QApplication::translate("DentistProjectClass", "Render\351\201\270\351\240\205", nullptr));
+        RenderModelOptionsBox->setTitle(QApplication::translate("DentistProjectClass", "Render(\346\250\241\345\236\213)", nullptr));
         RenderBorder_CheckBox->setText(QApplication::translate("DentistProjectClass", "\347\225\253\351\202\212\347\225\214", nullptr));
         RenderTriangle_CheckBox->setText(QApplication::translate("DentistProjectClass", "\347\225\253\351\235\242", nullptr));
         RenderPointDot_CheckBox->setText(QApplication::translate("DentistProjectClass", "\347\225\253\351\273\236\351\233\262", nullptr));
@@ -323,11 +363,15 @@ public:
         BtnConnectBLEDevice->setText(QApplication::translate("DentistProjectClass", "\345\273\272\347\253\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
         BtnSearchCom->setText(QApplication::translate("DentistProjectClass", "\346\220\234\345\260\213 COM Port", nullptr));
         BLEDeviceInfoBox->setTitle(QApplication::translate("DentistProjectClass", "\350\227\215\350\212\275\350\263\207\350\250\212", nullptr));
-        QuaternionText->setText(QApplication::translate("DentistProjectClass", "\357\274\267\357\274\232 0\n"
-"\357\274\270\357\274\232 0\n"
+        EularText->setText(QApplication::translate("DentistProjectClass", "\357\274\270\357\274\232 0\n"
 "\357\274\271\357\274\232 0\n"
 "\357\274\272\357\274\232 0", nullptr));
         BLEStatus->setText(QApplication::translate("DentistProjectClass", "\350\227\215\350\212\275\347\213\200\346\205\213\357\274\232\346\234\252\351\200\243\346\216\245", nullptr));
+        ResetRotationBox->setTitle(QApplication::translate("DentistProjectClass", "Rotation \350\250\255\345\256\232\347\233\270\351\227\234", nullptr));
+        ResetRotationMode->setText(QApplication::translate("DentistProjectClass", "Rotation Mode (OFF)", nullptr));
+        GyroscopeResetToZero->setText(QApplication::translate("DentistProjectClass", "\344\271\235\350\273\270\346\255\270\351\233\266", nullptr));
+        BLETestingBox->setTitle(QApplication::translate("DentistProjectClass", "\350\227\215\350\212\275\346\270\254\350\251\246\347\233\270\351\227\234(\351\200\262\351\232\216)", nullptr));
+        PointCloudAlignmentTestBtn->setText(QApplication::translate("DentistProjectClass", "\344\271\235\350\273\270\351\273\236\351\233\262\346\213\274\346\216\245\346\270\254\350\251\246", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistProjectClass", "\350\227\215\350\212\275\350\243\235\347\275\256", nullptr));
         OCTNormalSettingBox->setTitle(QApplication::translate("DentistProjectClass", "\345\270\270\347\224\250\350\250\255\345\256\232", nullptr));
         SaveLocationLabel->setText(QApplication::translate("DentistProjectClass", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));
@@ -344,6 +388,9 @@ public:
         SegNetTestButton->setText(QApplication::translate("DentistProjectClass", "SegNet \351\240\220\346\270\254", nullptr));
         BeepSoundTestButton->setText(QApplication::translate("DentistProjectClass", "Beep Sound \346\270\254\350\251\246", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistProjectClass", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
+        PrePCBtn->setText(QApplication::translate("DentistProjectClass", "\344\270\212\344\270\200\347\211\207\351\273\236\351\233\262", nullptr));
+        NextPCBtn->setText(QApplication::translate("DentistProjectClass", "\344\270\213\344\270\200\347\211\207\351\273\236\351\233\262", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_PointCloud), QApplication::translate("DentistProjectClass", "\351\273\236\351\233\262\347\271\252\350\243\275\347\233\270\351\227\234", nullptr));
         ScanResult->setTitle(QApplication::translate("DentistProjectClass", "\346\216\203\346\217\217\347\265\220\346\236\234", nullptr));
         ImageResult->setText(QString());
         FinalResult->setText(QString());

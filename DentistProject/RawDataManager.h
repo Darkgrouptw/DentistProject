@@ -6,6 +6,12 @@
 #include "TRCuda.cuh"
 #include "CudaBorder.cuh"
 #include "BluetoothManager.h"
+#include "PointCloudInfo.h"
+
+#include "4pcs.h"
+#include "super4pcs/shared4pcs.h"
+#include "super4pcs/algorithms/super4pcs.h"
+#include "super4pcs/io/io.h"
 
 #include <cmath>
 #include <vector>
@@ -13,8 +19,6 @@
 #include <QFile>
 #include <QIODevice>
 #include <QTextStream>
-#include <QVector>
-#include <QVector3D>
 #include <QDataStream>
 #include <QLabel>
 #include <QByteArray>
@@ -25,6 +29,22 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
+struct TransformVisitor {
+	inline void operator() (
+		float fraction,
+		float best_LCP,
+		Eigen::Ref<GlobalRegistration::Match4PCSBase::MatrixType> /*transformation*/) {
+		printf("done: %d%c best: %f                  \r",
+			static_cast<int>(fraction * 100), '%', best_LCP);
+		fflush(stdout);
+	}
+	constexpr bool needsGlobalTransformation() const { return false; }
+};
+
+//struct PointCloudInfo {
+
+//};
 
 class RawDataManager
 {
@@ -37,6 +57,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void SendUIPointer(QVector<QObject*>);
 	void ShowImageIndex(int);
+
+	//////////////////////////////////////////////////////////////////////////
+	// 九軸 or 點雲 or Alignment 相關
+	//////////////////////////////////////////////////////////////////////////
+	void ReadPointCloudData(QString);
 
 	//////////////////////////////////////////////////////////////////////////
 	// OCT 相關的步驟
@@ -61,7 +86,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲資料
 	//////////////////////////////////////////////////////////////////////////
-	QVector<QVector<QVector3D>> PointCloudArray;								// 每次掃描都會把結果船進去
+	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
+	int					SelectIndex = 0;										// 目前選擇地的片數
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
@@ -84,8 +110,8 @@ private:
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
 	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
-	const float			OCT_UsefulData_Threshold = 0.9f;						// 有效區域
-	const float			OCT_PSNR_Threshold = 11;								// PSNR 要大於這個值
+	const int			OCT_Shake_Pixel_Threshold = 30;							// 如果晃動大於這個 Threshold 又代表有換動到
+	const float			OCT_Part_Threshold = 0.8f;								// 有效區域
 
 	//////////////////////////////////////////////////////////////////////////
 	// 網路
@@ -121,6 +147,8 @@ private:
 	QImage				Mat2QImage(cv::Mat const &, int);
 	string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
 	void				OCT_DataType_Transfrom(unsigned short *, int , char *);	// 這邊是因為他要轉到 char
+	vector<GlobalRegistration::Point3D>	ConvertQVector2Point3D(QVector<QVector3D>);	// 轉換
+	void				super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *, int);	// Alignment
 
 	QByteArray buffer;
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");

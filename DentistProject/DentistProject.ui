@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1600</width>
+    <width>1592</width>
     <height>900</height>
    </rect>
   </property>
@@ -24,17 +24,20 @@
      </rect>
     </property>
    </widget>
-   <widget class="QGroupBox" name="RenderOptionsBox">
+   <widget class="QGroupBox" name="RenderModelOptionsBox">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>1500</x>
       <y>10</y>
       <width>90</width>
-      <height>211</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="title">
-     <string>Render選項</string>
+     <string>Render(模型)</string>
     </property>
     <widget class="QCheckBox" name="RenderBorder_CheckBox">
      <property name="geometry">
@@ -98,7 +101,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -112,7 +115,7 @@
        <rect>
         <x>10</x>
         <y>10</y>
-        <width>511</width>
+        <width>521</width>
         <height>101</height>
        </rect>
       </property>
@@ -196,21 +199,21 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>110</y>
+        <y>120</y>
         <width>181</width>
-        <height>161</height>
+        <height>151</height>
        </rect>
       </property>
       <property name="title">
        <string>藍芽資訊</string>
       </property>
-      <widget class="QLabel" name="QuaternionText">
+      <widget class="QLabel" name="EularText">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>50</y>
+         <y>60</y>
          <width>121</width>
-         <height>101</height>
+         <height>61</height>
         </rect>
        </property>
        <property name="font">
@@ -219,10 +222,12 @@
         </font>
        </property>
        <property name="text">
-        <string>Ｗ： 0
-Ｘ： 0
+        <string>Ｘ： 0
 Ｙ： 0
 Ｚ： 0</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
        </property>
       </widget>
       <widget class="QLabel" name="BLEStatus">
@@ -241,6 +246,89 @@
        </property>
        <property name="text">
         <string>藍芽狀態：未連接</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="ResetRotationBox">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>130</y>
+        <width>151</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Rotation 設定相關</string>
+      </property>
+      <widget class="QPushButton" name="ResetRotationMode">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Rotation Mode (OFF)</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="GyroscopeResetToZero">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>60</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>九軸歸零</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="BLETestingBox">
+      <property name="geometry">
+       <rect>
+        <x>540</x>
+        <y>10</y>
+        <width>151</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>藍芽測試相關(進階)</string>
+      </property>
+      <widget class="QPushButton" name="PointCloudAlignmentTestBtn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>20</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>九軸點雲拼接測試</string>
        </property>
       </widget>
      </widget>
@@ -452,6 +540,37 @@
         <string>Beep Sound 測試</string>
        </property>
       </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="Tab_PointCloud">
+     <attribute name="title">
+      <string>點雲繪製相關</string>
+     </attribute>
+     <widget class="QPushButton" name="PrePCBtn">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>160</y>
+        <width>201</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>上一片點雲</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="NextPCBtn">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>160</y>
+        <width>201</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>下一片點雲</string>
+      </property>
      </widget>
     </widget>
    </widget>

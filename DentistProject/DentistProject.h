@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QtWidgets/QMainWindow>
 #include <QFileDialog>
+#include <QTimer>
 #include <QFile>
 #include <QDir>
 #include <QDate>
@@ -37,6 +38,11 @@ private:
 	// 一次送多少
 	int GPUBatchSize = 30;
 
+	// 其他設定
+	QTimer	*updateGLTimer;
+	QString	RotationModeON_String = "Rotation Mode (ON)";
+	QString RotationModeOFF_String = "Rotation Mode (OFF)";
+
 private slots:
 	void LoadSTL();
 	void ScanData();
@@ -51,6 +57,11 @@ private slots:
 	void ConnectCOM();
 	void ScanBLEDevice();
 	void ConnectBLEDeivce();
+	void SetRotationMode();								// Rotation 設定模式
+	void GyroResetToZero();								// 九軸歸零
+
+	// 藍芽測試
+	void PointCloudAlignmentTest();						// 測試點雲拼接的功能
 
 	// OCT 相關(主要)
 	void ChooseSaveLocaton();
@@ -66,6 +77,11 @@ private slots:
 	void BeepSoundTest();								// 測試掃描時會使用的 Beep Sound
 	void SegNetTest();									// 測試網路的結果
 
+	// 點雲 Render 相關
+	void PrePointCloudClick();							// 選擇上一片點雲
+	void NextPointCloudClick();							// 選擇下一片點雲
+
 	// 顯示部分的事件
-	void ScanNumSlider_Change(int);
+	void ScanNumSlider_Change(int);						// 這個是右邊視窗的顯示
+	void DisplayPanelUpdate();							// 這個是 GL 視窗的更新
 };

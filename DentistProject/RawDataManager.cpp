@@ -38,6 +38,23 @@ void RawDataManager::ShowImageIndex(int index)
 	}
 }
 
+// 九軸 or 點雲 or Alignment 相關
+void RawDataManager::ReadPointCloudData(QString FileName)
+{
+	PointCloudInfo info;
+	info.ReadFromASC(FileName);
+
+	// 這邊可能要把點
+	if (PointCloudArray.size() >= 1)
+	{
+		vector<GlobalRegistration::Point3D> pc1 = ConvertQVector2Point3D(PointCloudArray[0].Points);
+		vector<GlobalRegistration::Point3D> pc2 = ConvertQVector2Point3D(info.Points);
+		super4PCS_Align(&pc1, &pc2, 1);
+	}
+
+	PointCloudArray.push_back(info);
+}
+
 // OCT 相關的步驟
 void RawDataManager::ReadRawDataFromFile(QString FileName)
 {
@@ -450,7 +467,7 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 			}
 		}
 	}
-	PointCloudArray.push_back(CurrentPointCloud);
+	//PointCloudArray.push_back(CurrentPointCloud);
 	#pragma endregion
 	#pragma region 刪除 GPU Array
 	cudaFree(GPU_VolumeData);
@@ -582,13 +599,20 @@ bool RawDataManager::ShakeDetect(QMainWindow *main, bool IsShowForDebug)
 			int DisRight = cudaBorder.PointType_1D[rightIndex] - cudaBorder.PointType_1D[right2Index];
 			int DisMid = cudaBorder.PointType_1D[rightIndex] - cudaBorder.PointType_1D[leftIndex];
 
-			if (abs(DisLeft) < 30 && abs(DisRight) < 30 && abs(DisMid) < 30)
+			if (abs(DisLeft) < OCT_Shake_Pixel_Threshold && 
+				abs(DisRight) < OCT_Shake_Pixel_Threshold && 
+				abs(DisMid) < OCT_Shake_Pixel_Threshold)
 				shakeCount++;
-			cout << "投票 " << voteNum << "\t Diff Left: " << DisLeft << "\t Diff Mid: " << DisMid << "\t DiffRight3: " << DisRight << endl;
+			//cout << "投票 " << voteNum << "\t Diff Left: " << DisLeft << "\t Diff Mid: " << DisMid << "\t DiffRight3: " << DisRight << endl;
 		}
 
 	}
-	cout << "有效票數: " << shakeCount << " /  " << voteNum << endl;
+	if (voteNum > 0)
+	{
+		// 這邊是代表沒有晃動
+		if ((float)shakeCount / voteNum > OCT_Part_Threshold)
+			return true;
+	}
 	return false;
 }
 void RawDataManager::WriteRawDataToFile(QString DirLocation)
@@ -719,4 +743,151 @@ void RawDataManager::OCT_DataType_Transfrom(unsigned short *input, int inputlen,
 		output[outputlen_tmp] = tmp_short;
 		outputlen_tmp++;
 	}
+}
+vector<GlobalRegistration::Point3D> RawDataManager::ConvertQVector2Point3D(QVector<QVector3D> PointArray)
+{
+	vector<GlobalRegistration::Point3D> pc;
+	for (int i = 0; i < PointArray.size(); i++)
+	{
+		GlobalRegistration::Point3D point3D;
+		QVector3D currentP = PointArray[i];
+		point3D.x() = currentP.x();
+		point3D.y() = currentP.y();
+		point3D.z() = currentP.z();
+		pc.push_back(point3D);
+	}
+	return pc;
+}
+void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *PC1, std::vector<GlobalRegistration::Point3D> *PC2, int max_time_seconds)
+{
+	clock_t t1, t2;
+	t1 = clock();
+
+	// Delta (see the paper).
+	double delta = 0.1;
+
+	// Estimated overlap (see the paper).
+	double overlap = 0.40;
+
+	// Threshold of the computed overlap for termination. 1.0 means don't terminate
+	// before the end.
+	double thr = 0.35;
+
+	// Maximum norm of RGB values between corresponded points. 1e9 means don't use.
+	double max_color = 150;
+
+	// Number of sampled points in both files. The 4PCS allows a very aggressive
+	// sampling.
+	int n_points = 500;
+
+	// Maximum angle (degrees) between corresponded normals.
+	double norm_diff = 20;
+
+	// Maximum allowed computation time.
+	//max_time_seconds = 1;//500
+
+	bool use_super4pcs = true;
+
+	// maximum per-dimension angle, check return value to detect invalid cases
+	double max_angle = 20;
+
+	//==========//
+
+	//vector<Point3D> set1, set2;
+	vector<cv::Point2f> tex_coords1, tex_coords2;
+	vector<cv::Point3f> normals1, normals2;
+	vector<tripple> tris1, tris2;
+	vector<std::string> mtls1, mtls2;
+
+	IOManager iomananger;
+
+
+	// super4pcs matcher
+	GlobalRegistration::Match4PCSOptions options;
+
+
+	//cv::Mat mat_rot = cv::Mat::eye(3, 3, CV_64F);
+	GlobalRegistration::Match4PCSBase::MatrixType *mat;
+	mat = new GlobalRegistration::Match4PCSBase::MatrixType;
+
+
+	bool overlapOk = options.configureOverlap(overlap, 0.35f);
+	if (!overlapOk) {
+		std::cerr << "Invalid overlap configuration. ABORT" << std::endl;
+		/// TODO Add proper error codes
+
+	}
+
+	//overlap = options.getOverlapEstimation();
+	options.sample_size = n_points;
+	options.max_normal_difference = norm_diff;
+	options.max_color_distance = max_color;
+	options.max_time_seconds = max_time_seconds;
+	options.delta = delta;
+	options.max_angle = max_angle;
+
+	GlobalRegistration::Match4PCSOptions::Scalar Estimation;
+
+	Estimation = options.getOverlapEstimation();
+	std::cout << "getOverlapEstimation:" << Estimation << std::endl;
+	//// Match and return the score (estimated overlap or the LCP).  
+	typename GlobalRegistration::Point3D::Scalar score = 0;
+	int v;
+
+	constexpr GlobalRegistration::Utils::LogLevel loglvl = GlobalRegistration::Utils::Verbose;
+	//cv::Mat mat_rot(*mat);
+
+	//template <typename Visitor>
+	using TrVisitorType = typename std::conditional <loglvl == GlobalRegistration::Utils::NoLog,
+		GlobalRegistration::Match4PCSBase::DummyTransformVisitor,
+		TransformVisitor>::type;
+	
+	GlobalRegistration::Utils::Logger logger(loglvl);
+
+	QMatrix4x4 matrix;
+	matrix.setToIdentity();
+
+	try {
+
+		if (use_super4pcs) {
+			GlobalRegistration::MatchSuper4PCS *matcher;
+			matcher = new GlobalRegistration::MatchSuper4PCS(options, logger);
+
+			cout << "Use Super4PCS" << endl;
+			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
+
+			cout << "Mat Mat" << endl;
+			cout << (*mat) << endl;
+			
+			//for (int i = 0; i < 4; i++)
+			//	for (int j = 0; j < 4; j++)
+			//		matrix(i, j) = (*mat)(i, j);
+			//qDebug() << matrix << endl;
+
+			cout << std::endl;
+			cout << "score_in:" << score << std::endl;
+		}
+		else {
+			GlobalRegistration::Match4PCS *matcher;
+			matcher = new GlobalRegistration::Match4PCS(options, logger);
+			std::cout << "Use old 4PCS" << std::endl;
+			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
+			std::cout << "score_in:" << score << std::endl;
+		}
+	}
+	catch (const std::exception& e) {
+		cout << "[Error]: " << e.what() << '\n';
+		cout << "Aborting with code -2 ..." << endl;
+		return;
+	}
+	catch (...) {
+		std::cout << "[Unknown Error]: Aborting with code -3 ..." << std::endl;
+		return;
+	}
+	t2 = clock();
+	//qDebug() << "Match done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s  ";
+	//final_score = score;
+	cout << "Score: " << score << endl;
+	//cerr << score << endl;
+	
 }
