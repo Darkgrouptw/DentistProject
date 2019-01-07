@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistDLLTest", "DentistDL
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistCudaBorderTest", "DentistCudaBorderTest\DentistCudaBorderTest.vcxproj", "{9C16DB4A-8794-4969-9CC8-5435DB6F522B}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DentistRawDataReader", "DentistRawDataReader\DentistRawDataReader.vcxproj", "{E461DCD5-B3E5-4939-ABCA-AC7501DFB8B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -27,6 +29,10 @@ Global
 		{9C16DB4A-8794-4969-9CC8-5435DB6F522B}.Debug|x64.Build.0 = Debug|x64
 		{9C16DB4A-8794-4969-9CC8-5435DB6F522B}.Release|x64.ActiveCfg = Release|x64
 		{9C16DB4A-8794-4969-9CC8-5435DB6F522B}.Release|x64.Build.0 = Release|x64
+		{E461DCD5-B3E5-4939-ABCA-AC7501DFB8B0}.Debug|x64.ActiveCfg = Debug|x64
+		{E461DCD5-B3E5-4939-ABCA-AC7501DFB8B0}.Debug|x64.Build.0 = Debug|x64
+		{E461DCD5-B3E5-4939-ABCA-AC7501DFB8B0}.Release|x64.ActiveCfg = Release|x64
+		{E461DCD5-B3E5-4939-ABCA-AC7501DFB8B0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -72,11 +72,11 @@
     <ClCompile Include="SegNetModel.cpp">
       <Filter>Source Files\SegNet</Filter>
     </ClCompile>
-    <ClCompile Include="PointCloudInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PointCloudInfo.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -120,7 +120,7 @@
       <Filter>Cuda</Filter>
     </ClInclude>
     <ClInclude Include="PointCloudInfo.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\RawDataManger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

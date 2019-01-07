@@ -74,6 +74,7 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 	//cout << "Size : " << bufferSize << endl;
 
 	QDataStream qData(&inputFile);
+	QByteArray buffer; 
 	buffer.clear();
 	buffer.resize(bufferSize);
 	qData.readRawData(buffer.data(), bufferSize);
@@ -93,6 +94,39 @@ void RawDataManager::ReadRawDataFromFile(QString FileName)
 	RawDataProperty *tmpRDP = &DManager.rawDP;
 	theTRcuda.RawToPointCloud(buffer.data(), buffer.size(), tmpRDP->size_Y, tmpRDP->size_Z, 1);
 }
+void RawDataManager::ReadRawDataFromFileV2(QString FileName)
+{
+	clock_t startT, endT;
+	startT = clock();
+
+	QFile inputFile(FileName);
+	if (!inputFile.open(QIODevice::ReadOnly))
+	{
+		cout << "Raw Data 讀取錯誤" << endl;
+		return;
+	}
+	else
+		cout << "讀取 Raw Data: " << FileName.toLocal8Bit().constData() << endl;
+
+	int bufferSize = inputFile.size() / sizeof(quint8);
+	//cout << "Size : " << bufferSize << endl;
+
+	QDataStream qData(&inputFile);
+	QByteArray buffer;
+	buffer.clear();
+	buffer.resize(bufferSize);
+	qData.readRawData(buffer.data(), bufferSize);
+
+	inputFile.close();
+	endT = clock();
+
+	cout << "ReadRawData done t: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
+
+
+	char* data = buffer.data();
+	cout << data[0] << endl;
+}
+
 void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave_RawData)
 {
 	#pragma region 初始化裝置
@@ -104,6 +138,9 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave_RawD
 	#pragma region 開 Port
 	SerialPort port(gcnew System::String(OCTDevicePort.c_str()), 9600);
 	port.Open();
+
+	// 開慢軸
+	port.RtsEnable = true;
 
 	// 如果沒有開成功，或是搶 Port 會報錯
 	if (!port.IsOpen)
@@ -131,7 +168,6 @@ void RawDataManager::ScanDataFromDevice(QString SaveFileName, bool NeedSave_RawD
 		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息
 	);
-	port.RtsEnable = true;
 	// cout << "OCT StartCap Error String: " << MarshalString(ErrorString) << endl;
 	// StartCap(deviceID, tmp_Handle, LV_65, SampRec, tmp_ByteLen, Savedata, SaveName, tmp_ErrorBoolean, ErrorString, ErrorString_len_in, tmp_ErrorString_len_out);
 

@@ -290,15 +290,16 @@ void DentistProject::ReadRawDataToImage()
 	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
-		rawManager.ReadRawDataFromFile(RawFileName);
-		rawManager.TranformToIMG(true);
+		// rawManager.ReadRawDataFromFile(RawFileName);
+		rawManager.ReadRawDataFromFileV2(RawFileName);
+		//rawManager.TranformToIMG(true);
 
 		// UI 更改
-		ui.ScanNumSlider->setEnabled(true);
+		/*ui.ScanNumSlider->setEnabled(true);
 		if (ui.ScanNumSlider->value() == 60)
 			ScanNumSlider_Change(60);
 		else
-			ui.ScanNumSlider->setValue(60);
+			ui.ScanNumSlider->setValue(60);*/
 	}
 	else
 	{

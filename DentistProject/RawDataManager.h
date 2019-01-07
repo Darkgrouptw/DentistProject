@@ -71,7 +71,8 @@ public:
 	// ReadRawDataFromFile	=> 讀檔，然後把資料存起來
 	// ScanDataFromDevice	=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
-	void ReadRawDataFromFile(QString);
+	void ReadRawDataFromFile(QString);											// 讀 Raw Data
+	void ReadRawDataFromFileV2(QString);										// 有修改的過後的 Raw Data Reader
 	void ScanDataFromDevice(QString, bool);										// 輸入儲存路徑 和 要步要儲存，來轉點雲
 	void TranformToIMG(bool);													// 轉換成圖檔，轉點雲
 	bool ShakeDetect(QMainWindow*, bool);										// 偵測有無晃動
@@ -150,7 +151,7 @@ private:
 	vector<GlobalRegistration::Point3D>	ConvertQVector2Point3D(QVector<QVector3D>);	// 轉換
 	void				super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *, int);	// Alignment
 
-	QByteArray buffer;
+	
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 };
 
