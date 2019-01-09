@@ -50,9 +50,9 @@ int main(int argc, char *argv[])
 	inputFile.close();
 	#pragma endregion
 	#pragma region 開始做轉換
-	// 讀資料
+	// 讀資料 (後面的參數是東元那邊測試出來的 )
 	TRCudaV2 cudaV2;
-	cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048);
+	cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
 	#pragma endregion
 	#pragma region 測試 Part
 	// 檔案測試
@@ -62,15 +62,12 @@ int main(int argc, char *argv[])
 
 	QTextStream ss(&testFile);
 	// 讀檔 正掃
-	for (int i = 0; i < 2048; i++)
-	{
+	for (int i = 0; i < 4096; i++)
 		content += QString::number(cudaV2.OCTData[i]) + "\n";
-	}
 	// 讀檔 反掃
 	/*for (int i = 2048 * 250 * 3; i < 2048 * 250 * 3 + 4096; i++)
-	{
 		content += QString::number(cudaV2.OCTData[i]) + "\n";
-	}*/
+	*/
 
 	// 確保轉換完 ushort 後，還有資料
 	/*for (int i = bufferSize / 2 - 1024; i < bufferSize / 2; i++)

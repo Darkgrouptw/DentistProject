@@ -102,7 +102,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EigenUtility.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="TRCudaV2.cu" />
