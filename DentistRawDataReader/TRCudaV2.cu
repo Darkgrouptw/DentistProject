@@ -283,6 +283,206 @@ __global__ static void NormalizeData(float* ShiftData, float MaxValue, float Min
 
 	ShiftData[id] = (ShiftData[id] - MinValue) / (MaxValue - MinValue);
 }
+
+// 邊界部分
+__global__ static void findMaxAndMinPeak(float* DataArray, uchar* PointType, int size, int rows, int cols, float MaxPeakThreshold)
+{
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= rows * cols * size)				// 超出範圍
+		return;
+
+	// width 判斷 1 ~ (width - 1)
+	int colID = id % cols;
+	if (1 >= colID || colID == (cols - 1))
+		return;
+
+	// 接著要去比周圍
+	// 峰值判斷 (要比兩邊高，且峰值要高於某一個值，且左 或右差值，只有一端能高於這個值)
+	float DiffLeft = DataArray[id] - DataArray[id - 1];
+	float DiffRight = DataArray[id] - DataArray[id + 1];
+	if (DiffLeft > 0 && DiffRight > 0
+		&& DataArray[id] > MaxPeakThreshold)
+		PointType[id] = 1;
+	else if (DiffLeft < 0 && DiffRight < 0)
+		//else if (DiffLeft < 0 && DiffRight < 0
+		//	&& ((-DiffLeft > MinGapPeakThreshold) || (-DiffRight > MinGapPeakThreshold)))
+		PointType[id] = 2;
+}
+__global__ static void ParseMaxMinPeak(uchar* PointType, int size, int rows, int cols, int startIndex)
+{
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= size * rows)						// 超出範圍
+		return;
+
+	// 算 Index
+	int sizeIndex = id / rows;
+	int rowIndex = id % rows;
+
+	// 然後這邊要去 Skip 所有的 Min
+	int lastMinID = -1;
+	bool FindMax = false;
+
+	// 為了要抓出 最大(有效)的 區間
+	int Useful_Start = -1;
+	int Useful_End = -1;
+	int Useful_PeakCount = -1, tempPeakCount = 0;
+
+	// 刪除多餘 min Peak
+	for (int i = 0; i < startIndex; i++)
+	{
+		int currentID = sizeIndex * rows * cols + rowIndex * cols + i;
+		PointType[currentID] = 0;
+	}
+	for (int i = startIndex; i < cols; i++)
+	{
+		int currentID = sizeIndex * rows * cols + rowIndex * cols + i;
+		if (lastMinID == -1)			// 判斷是不適剛開始 or 找到 Max
+		{
+			// 要先去抓出第一個 Min
+			if (PointType[currentID] == 2)
+				lastMinID = i;
+			else if (PointType[currentID] == 1)
+				PointType[currentID] = 0;				// 這邊代表沒有遇到峰值，應該是雜訊了
+		}
+		else
+		{
+			// 已經抓到 min 了之後，要去濾掉其他的 min
+			if (PointType[currentID] == 1)
+			{
+				// 抓到 Max
+				FindMax = true;
+				tempPeakCount++;
+			}
+			else if (FindMax && PointType[currentID] == 2)
+			{
+				// 抓到 Max 之後，又找到一個 Min
+				if (Useful_PeakCount < tempPeakCount)
+				{
+					Useful_PeakCount = tempPeakCount;
+					Useful_Start = lastMinID;
+					Useful_End = i;
+				}
+				FindMax = false;
+				tempPeakCount = 0;
+				lastMinID = -1;
+			}
+			else if (!FindMax && PointType[currentID] == 2)
+			{
+				// 沒抓到 Max 只抓到 Min
+				PointType[sizeIndex * rows * cols + rowIndex * cols + lastMinID] = 0;
+				lastMinID = i;
+			}
+		}
+	}
+
+	// 跑到最後結束，要再去判斷最後一個是否是多餘的 Min
+	if (lastMinID != -1)
+		PointType[sizeIndex * rows * cols + rowIndex * cols + lastMinID] = 0;
+}
+__global__ static void PickBestChoiceToArray(float* DataArray, uchar* PointType, int* PointType_BestN, int size, int rows, int cols, int ChooseBestN, int startIndex, float Threshold)
+{
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= size * rows)							// 判斷是否超出大小
+		return;
+
+	// 算 Index
+	int sizeIndex = id / rows;
+	int rowIndex = id % rows;
+
+	bool IsFindMin = false;											// 是否找到底端
+	float MinData;
+	int offsetIndex = sizeIndex * size * cols + rowIndex * cols;
+	int CurrentChooseN = 0;
+	float lastData = -1;
+	for (int i = startIndex; i < cols; i++)
+	{
+		if (PointType[i + offsetIndex] == 2)
+		{
+			// 如果前面已經有找到其他點的話
+			if (IsFindMin)
+			{
+				if (lastData != -1)
+				{
+					CurrentChooseN++;
+
+					// 代表已經找滿了
+					if (CurrentChooseN >= ChooseBestN)
+						break;
+				}
+				lastData = -1;
+			}
+
+			IsFindMin = true;
+			MinData = DataArray[i + offsetIndex];
+		}
+		else if (
+			IsFindMin &&											// 要先找到最低點
+			DataArray[i + offsetIndex] - MinData > Threshold &&		// 接著找大於這個 Threshold
+			lastData == -1
+			)
+		{
+			lastData = DataArray[i + offsetIndex] - MinData;
+			PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + CurrentChooseN] = i;
+		}
+	}
+
+	// 接這著要判斷是否找到邊界
+	// 如果沒有找到邊界，就回傳 -1
+	//if (!IsFindBorder)
+	for (int i = CurrentChooseN; i < ChooseBestN; i++)
+		PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + i] = -1;
+
+}
+__global__ static void ConnectPointsStatus(int* PointType_BestN, int* ConnectStatus, int size, int rows, int ChooseBestN, int ConnectRadius)
+{
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= size * rows * ChooseBestN)						// 判斷是否超出大小
+		return;
+
+	// 算 Index
+	int sizeIndex = id / (rows * ChooseBestN);
+	int tempID = id % (rows * ChooseBestN);
+	int rowIndex = tempID / ChooseBestN;
+	int chooseIndex = tempID % ChooseBestN;
+
+	// 代表這個點沒有有效的點
+	if (PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + chooseIndex] == -1)
+		return;
+
+	// 如果是有效的點，就繼續往下追 
+	int finalPos = min(rowIndex + ConnectRadius, rows);		// 截止條件
+	for (int i = rowIndex + 1; i < finalPos; i++)
+	{
+		for (int j = 0; j < ChooseBestN; j++)
+		{
+			// 下一個點的位置 (第 i 個 row 的點)
+			// 然後的第 1 個點
+			if (PointType_BestN[sizeIndex * rows * ChooseBestN + i * ChooseBestN + j] != -1)
+			{
+				// 前面項為現在這個點
+				// 後面項為往下的點
+				int diffX = PointType_BestN[sizeIndex * rows * ChooseBestN + rowIndex * ChooseBestN + chooseIndex] -
+					PointType_BestN[sizeIndex * rows * ChooseBestN + i * ChooseBestN + j];
+				int diffY = i - rowIndex;
+				int Radius = diffX * diffX + diffY * diffY;
+
+				// 0 沒有用到喔
+				if (Radius < ConnectRadius * ConnectRadius)
+				{
+					// 張數的位移 + Row 的位移 + 現在在 Top N 的點 + 半徑的位移 + 往下 Top N 的結果
+					int index = sizeIndex * rows * ChooseBestN * ConnectRadius * ChooseBestN +			// 張數
+						rowIndex * ChooseBestN * ConnectRadius * ChooseBestN +					// Row
+						chooseIndex * ConnectRadius * ChooseBestN +								// 現在在 Top N 
+						(i - rowIndex) * ChooseBestN +											// 半徑
+						j;
+					ConnectStatus[index] = Radius;
+				}
+			}
+		}
+	}
+}
+
+// 轉成圖片
 __global__ static void TransforToImage(float* VolumeData_Normalized, uchar* ImageArray, int SizeX, int SizeY, int FinalSizeZ)
 {
 	// 這邊是將原本的資料，轉換完圖片
@@ -310,6 +510,11 @@ __global__ static void TransforToImage(float* VolumeData_Normalized, uchar* Imag
 void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, int SizeZ, long ShiftValue, double K_Step, int CutValue)
 {
 	cout << "這邊 目前沒有驗證塞兩個 Channel 的資料!!!!" << endl;
+	// 算時間
+	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
+	totalTime = clock();
+	#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// 步驟說明
 	// 1. 上傳 GPU Data
@@ -332,7 +537,9 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	//////////////////////////////////////////////////////////////////////////
 	#pragma region 1. 上傳 GPU Data
 	// 初始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	clock_t time = clock();
+	#endif
 
 	// GPU Data
 	char* GPU_FileRawData;			// => 從檔案讀進來的 Raw Data
@@ -356,8 +563,10 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaMalloc(&GPU_OCTFloatData, sizeof(float) * OCTDataSize);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "1. 上傳至 GPU: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion 
 	#pragma region 2. 讀檔轉換
 	//////////////////////////////////////////////////////////////////////////
@@ -366,9 +575,10 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	// 其中一個 ↗↘ 是一個三角波的資料
 	// 但因為有兩個 channel 所以一組資料是 ↗↘↗↘
 	//////////////////////////////////////////////////////////////////////////
-
-	// 初始
+	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 	
 	// 解出 2 Byte 的資料
 	if (UseTwoChannels)
@@ -390,12 +600,16 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaFree(GPU_FileRawData);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "2. 讀檔轉換: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 3. 用五次項去 Fitting
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 	
 	// 初始化 Matrix
 	float* GPU_MatrixA;
@@ -441,12 +655,16 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	delete[] PolyValue;
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "3. 多項式去 Fitting : " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 4. λ Space 轉成 K Space
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	// 初始化
 	float* PX_Scale = new float[SizeZ];
@@ -492,12 +710,16 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	delete[] KSpaceIndexArray;
 	
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "4. λ Space 轉成 K Space : " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 5. cuFFT
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	cufftHandle PlanHandle;
 	cufftComplex* GPU_ComplexData;
@@ -529,12 +751,16 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaFree(GPU_ComplexData);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "5. cuFFT: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 7. Normaliza Data
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_OCTFloatData, GPU_OCTFloatData + OCTDataSize / 2);
 	float *GPU_MinElement = thrust::min_element(thrust::device, GPU_OCTFloatData, GPU_OCTFloatData + OCTDataSize / 2);
@@ -552,12 +778,16 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	NormalizeData << <dim3(SizeX, 1, SizeZ / NumThreads / 2), NumThreads >> > (GPU_OCTFloatData, MaxValue, MinValue, OCTDataSize / 2);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "7. Normalize Data: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 8. 轉成圖
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	// 圖片的資料
 	uchar *GPU_UintDataArray;
@@ -572,12 +802,16 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaFree(GPU_OCTFloatData);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "8. 轉成圖: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 10. 抓下 GPU Data
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 	
 	// 刪除之前的資料
 	SaveDelete(VolumeData);
@@ -593,12 +827,25 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	this->cols = SizeZ / 2;
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "10. 抓下 GPU Data : " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
+	
+	// 結算
+	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
+	totalTime = clock() - totalTime;
+	cout << "轉換單張點雲: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 }
 void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, int SizeY, int SizeZ, long ShiftValue, double K_Step, int CutValue)
 {
+	// 計算時間
+	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
+	totalTime = clock();
+	#endif
+
 	//////////////////////////////////////////////////////////////////////////
 	// 步驟說明
 	// 1. 上傳 GPU Data
@@ -622,7 +869,9 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	//////////////////////////////////////////////////////////////////////////
 	#pragma region 1. 上傳 GPU Data
 	// 初始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	clock_t time = clock();
+	#endif
 
 	// GPU Data
 	char* GPU_FileRawData;			// => 從檔案讀進來的 Raw Data
@@ -646,8 +895,10 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	cudaMalloc(&GPU_OCTFloatData, sizeof(float) * OCTDataSize);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "1. 上傳至 GPU: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion 
 	#pragma region 2. 讀檔轉換
 	//////////////////////////////////////////////////////////////////////////
@@ -656,9 +907,10 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	// 其中一個 ↗↘ 是一個三角波的資料
 	// 但因為有兩個 channel 所以一組資料是 ↗↘↗↘
 	//////////////////////////////////////////////////////////////////////////
-
 	// 初始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 	
 	// 解出 2 Byte 的資料
 	if (UseTwoChannels)
@@ -683,12 +935,16 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	cudaFree(GPU_FileRawData);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "2. 讀檔轉換: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 3. 用五次項去 Fitting
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 	
 	// 初始化 Matrix
 	float* GPU_MatrixA;
@@ -734,12 +990,16 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	delete[] PolyValue;
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "3. 多項式去 Fitting : " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 4. λ Space 轉成 K Space
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	// 初始化
 	float* PX_Scale = new float[SizeZ];
@@ -785,12 +1045,16 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	delete[] KSpaceIndexArray;
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "4. λ Space 轉成 K Space : " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 5. cuFFT
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	cufftHandle PlanHandle;
 	cufftComplex* GPU_ComplexData;
@@ -820,12 +1084,16 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	cudaFree(GPU_ComplexData);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "5. cuFFT: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 6. 位移 Data
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	float* GPU_ShiftData;
 	cudaMalloc(&GPU_ShiftData, sizeof(float) * OCTDataSize / 2);		// 因為一半相同，所以去掉了
@@ -838,12 +1106,16 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	cudaFree(GPU_OCTFloatData);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "6. 搬移資料: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 7. Normaliza Data
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
 	float *GPU_MinElement = thrust::min_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
@@ -860,12 +1132,16 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	NormalizeData << <dim3(SizeX, SizeY, SizeZ / NumThreads / 2), NumThreads >> > (GPU_ShiftData, MaxValue, MinValue, OCTDataSize / 2);
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "7. Normalize Data: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 8. 轉成圖
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 
 	// 圖片的資料
 	uchar *GPU_UintDataArray;
@@ -876,16 +1152,92 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	TransforToImage << <dim3(SizeX, SizeY, SizeZ / NumThreads / 2), NumThreads >> > (GPU_ShiftData, GPU_UintDataArray, SizeX, SizeY, SizeZ / 2);
 	CheckCudaError();
 
-	// 刪除記憶體
-	cudaFree(GPU_ShiftData);
+	// 設定一下其他參數
+	size = SizeY;
+	rows = SizeX;
+	cols = SizeZ / 2;
 
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "8. 轉成圖: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
+	#pragma endregion
+	#pragma region 9. 抓取邊界
+	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
+	time = clock();
+	#endif
+
+	#pragma region Init
+	SaveDelete(PointType);
+	PointType = new uchar[size * rows * cols];
+	memset(PointType, 0, sizeof(uchar) * size * rows * cols);
+	SaveDelete(PointType_1D);
+	PointType_1D = new int[size * rows];
+	memset(PointType_1D, 0, sizeof(int) * size * rows);
+
+	// 點的型別
+	uchar* GPU_PointType;
+	cudaMalloc(&GPU_PointType, sizeof(uchar) * size * rows * cols);
+	cudaMemset(GPU_PointType, 0, sizeof(uchar) * size * rows * cols);
+	#pragma endregion
+	#pragma region 抓取邊界
+	// 找最大最小值
+	findMaxAndMinPeak << < NumBlocks, NumThreads >> > (GPU_ShiftData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
+	CheckCudaError();
+
+	// Parse 一些連續最小值
+	ParseMaxMinPeak << < NumBlocks_small, NumThreads_small >> > (GPU_PointType, size, rows, cols, StartIndex);
+	CheckCudaError();
+
+	// 抓出一維陣列
+	int *GPU_PointType_BestN, *PointType_BestN;
+	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
+	PickBestChoiceToArray << <NumBlocks_small, NumThreads_small >> > (GPU_ShiftData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	CheckCudaError();
+
+	// 連結點
+	// 這個的大小 為 => 張數 * 250(rows) * 取幾個最大值(ChooseBestN個) * 每個最大值底下有 半徑個 (Raidus)  * 的下 N 排的幾個最大值(ChooseBestN) 
+	int *GPU_Connect_Status;
+	int ConnectStateSize = size * rows * ChooseBestN * ConnectRadius * ChooseBestN;
+	cudaMalloc(&GPU_Connect_Status, sizeof(int) * ConnectStateSize);
+	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * ConnectStateSize);
+	ConnectPointsStatus << <NumBlocks_small, NumThreads_small >> > (GPU_PointType_BestN, GPU_Connect_Status, size, rows, ChooseBestN, ConnectRadius);
+	CheckCudaError();
+
+	// 把資料傳回 CPU
+	int *Connect_Status = new int[ConnectStateSize];
+	PointType_BestN = new int[size * rows * ChooseBestN];
+	cudaMemcpy(PointType, GPU_PointType, sizeof(uchar) * size * rows * cols, cudaMemcpyDeviceToHost);
+	cudaMemcpy(Connect_Status, GPU_Connect_Status, sizeof(int) * ConnectStateSize, cudaMemcpyDeviceToHost);
+	cudaMemcpy(PointType_BestN, GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN, cudaMemcpyDeviceToHost);
+	CheckCudaError();
+
+	// 抓取最大的線
+	GetLargeLine(PointType_BestN, Connect_Status);
+	#pragma endregion
+
+	// 刪除記憶體
+	cudaFree(GPU_PointType);
+	cudaFree(GPU_PointType_BestN);
+	cudaFree(GPU_Connect_Status);
+	cudaFree(GPU_ShiftData);
+
+	delete[] Connect_Status;
+	delete[] PointType_BestN;
+
+	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
+	time = clock() - time;
+	cout << "9. 抓取邊界: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
 	#pragma region 10. 抓下 GPU Data
 	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
+	#endif
 	
 	// 刪除之前的資料
 	SaveDelete(VolumeData);
@@ -895,36 +1247,275 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	// 刪除 GPU
 	cudaFree(GPU_UintDataArray);
 
-	// 設定一下其他參數
-	this->size = SizeY;
-	this->rows = SizeX;
-	this->cols = SizeZ / 2;
-
 	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
 	cout << "10. 抓下 GPU Data : " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	#pragma endregion
+
+	// 結算
+	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
+	totalTime = clock() - totalTime;
+	cout << "轉換多張點雲: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 }
 
 // 拿出圖片
-vector<Mat> TRCudaV2::TransfromMatArray(bool)
+vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 {
+	// Total 時間
+	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
+	totalTime = clock();
+	#endif
+
 	// 轉換到 Mat
 	vector<Mat> ImgArray;
 	for (int i = 0; i < size; i++)
 	{
 		// 根據 Offset 拿圖片
 		Mat img(rows, cols, CV_8U, VolumeData + i * rows * cols);
+		cvtColor(img, img, CV_GRAY2BGR);
 
 		// 丟進堆疊
 		ImgArray.push_back(img);
 	}
+	if (SaveBorder)
+	{
+		// Debug 所有的 peak
+		/*for (int i = 0; i < size; i++)
+		for (int j = 0; j < rows * cols; j++)
+		{
+		int offsetIndex = i * rows * cols;
+		int rowIndex = j / cols;
+		int colIndex = j % cols;
+
+		Vec3b color(0, 0, 0);
+		if (PointType[offsetIndex + j] == 1)
+		color = Vec3b(0, 255, 255);
+		else if (PointType[offsetIndex + j] == 2)
+		color = Vec3b(255, 255, 255);
+		ImgArray[i].at<Vec3b>(rowIndex, colIndex) = color;
+		}*/
+
+		// 只抓出最後的邊界
+		for (int i = 0; i < size; i++)
+			for (int j = 0; j < rows; j++)
+			{
+				int index = i * rows + j;
+				if (PointType_1D[index] != -1)
+				{
+					Point contourPoint(PointType_1D[index], j);
+					circle(ImgArray[i], contourPoint, 2, Scalar(0, 255, 255), CV_FILLED);
+				}
+			}
+	}
+
+	// 結算
+	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
+	totalTime = clock() - totalTime;
+	cout << "轉換圖片: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
 	return ImgArray;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Helper Function
 //////////////////////////////////////////////////////////////////////////
+void TRCudaV2::GetLargeLine(int *PointType_BestN, int *Connect_Status)
+{
+	// 選 N 個
+	#pragma omp parallel for //num_thread(4)
+	for (int i = 0; i < size; i++)
+	{
+		// 每個 10 段下去 Sample
+		int RowGap = rows / 10;
+		vector<vector<ConnectInfo>> StatusVector;
+		
+		for (int j = 0; j < rows; j += RowGap)
+			for (int chooseNIndex = 0; chooseNIndex < ChooseBestN; chooseNIndex++)
+			{
+				int begin = j;
+				int end = j;
+
+				// 代表這個點沒有東西，所以略過
+				if (PointType_BestN[i * rows * ChooseBestN + j * ChooseBestN + chooseNIndex] == -1)
+					continue;
+
+				// 連接狀況
+				vector<ConnectInfo> Connect;
+
+				#pragma region 往上找
+				// 先加上自己
+				ConnectInfo info;
+				info.rowIndex = j;
+				info.chooseIndex = chooseNIndex;
+				Connect.push_back(info);
+
+				int FindIndex = j;
+				int FindChooseIndex = chooseNIndex;
+				bool IsFind = true;
+				while (IsFind && FindIndex > 0)
+				{
+					int minMoveIndex = -1;
+					int minChooseIndex = -1;
+					int tempValue = ConnectRadius * ConnectRadius;
+					for (int k = 1; k < ConnectRadius; k++)
+						for (int nextChooseNIndex = 0; nextChooseNIndex < ChooseBestN; nextChooseNIndex++)
+						{
+							int index = i * rows * ChooseBestN * ConnectRadius * ChooseBestN +					// Size
+										(FindIndex - k) * ChooseBestN * ConnectRadius * ChooseBestN +			// Rows
+										nextChooseNIndex * ConnectRadius * ChooseBestN +						// 現在在的 Top N 的點 (這邊要注意，這邊應該要放的是 要找的那個點的 ChooseIndex)
+										k * ChooseBestN +														// 半徑
+										FindChooseIndex;
+							if (FindIndex - k >= 0 && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+							{
+								tempValue = Connect_Status[index];
+								minMoveIndex = k;
+								minChooseIndex = nextChooseNIndex;
+							}
+						}
+
+					// 判斷是否有找到，找到就繼續找
+					if (minMoveIndex != -1)
+					{
+						// 更便位置
+						FindIndex = FindIndex - minMoveIndex;
+						FindChooseIndex = minChooseIndex;
+
+						// 丟進陣列
+						info.rowIndex = FindIndex;
+						info.chooseIndex = minChooseIndex;
+						Connect.push_back(info);
+
+						// 有找到
+						IsFind = true;
+					}
+					else
+						IsFind = false;
+				}
+				#pragma endregion
+				#pragma region 往下找
+				FindIndex = j;
+				FindChooseIndex = chooseNIndex;
+				while (IsFind && FindIndex < rows - 1)
+				{
+					int minMoveIndex = -1;
+					int minChooseIndex = -1;				
+					int tempValue = ConnectRadius * ConnectRadius;
+					for (int k = 1; k < ConnectRadius; k++)
+						for (int nextChooseNIndex = 0; nextChooseNIndex < ChooseBestN; nextChooseNIndex++)
+						{
+							int index = i * rows * ChooseBestN * ConnectRadius * ChooseBestN +					// Size
+										FindIndex * ChooseBestN * ConnectRadius * ChooseBestN +					// Rows
+										FindChooseIndex * ConnectRadius * ChooseBestN +							// 現在在的 Top N 的點
+										k * ChooseBestN +														// 半徑
+										nextChooseNIndex;
+							if (FindIndex + k < rows && Connect_Status[index] != 0 && tempValue > Connect_Status[index])
+							{
+								tempValue = Connect_Status[index];
+								minMoveIndex = k;
+								minChooseIndex = nextChooseNIndex;
+							}
+						}
+
+					// 判斷是否有找到，找到就繼續找
+					if (minMoveIndex != -1)
+					{
+						// 更便位置
+						FindIndex = FindIndex + minMoveIndex;
+						FindChooseIndex = minChooseIndex;
+
+						// 丟進陣列
+						info.rowIndex = FindIndex;
+						info.chooseIndex = minChooseIndex;
+						Connect.push_back(info);
+
+						// 有找到
+						IsFind = true;
+					}
+					else
+						IsFind = false;
+				}
+				#pragma endregion
+			
+				// 判斷是否有連出東西，如果連出來的東西大於 1
+				if (Connect.size() > 1)
+				{
+					// 由小排到大
+					sort(Connect.begin(), Connect.end(), SortByRows);
+					StatusVector.push_back(Connect);
+				}
+			}
+		
+
+		// 前面的幾個張數，可能會找不到點，所以跳過處理
+		if (StatusVector.size() == 0)
+		{
+			memset(&PointType_1D[i * rows], -1, sizeof(int) * rows);
+			continue;
+		}
+
+		// 排序之後取最大
+		sort(StatusVector.begin(), StatusVector.end(), SortByVectorSize);
+
+		// 每個點續算變化率
+		vector<float> DiffRateVector;
+		for (int j = 0; j < StatusVector.size(); j++)
+		{
+			float diffRate = 0;
+			for (int k = 0; k < StatusVector[j].size() - 1; k++)
+			{
+				int	FirstYIndex = i * rows * ChooseBestN +							// 張
+								StatusVector[j][k].rowIndex * ChooseBestN +			// row
+								StatusVector[j][k].chooseIndex;						// ChooseIndex
+				int NextYIndex = i * rows * ChooseBestN +							// 張
+								StatusVector[j][k + 1].rowIndex * ChooseBestN +		// row
+								StatusVector[j][k + 1].chooseIndex;					// ChooseIndex
+				float Diff = sqrt((float)(PointType_BestN[NextYIndex] - PointType_BestN[FirstYIndex]) * (PointType_BestN[NextYIndex] - PointType_BestN[FirstYIndex]));
+				diffRate += Diff;
+			}
+			DiffRateVector.push_back(diffRate);
+		}
+
+		// 每一個結果去算變化量最大的
+		int DiffMaxIndex = distance(DiffRateVector.begin(), max_element(DiffRateVector.begin(), DiffRateVector.end()));
+
+		vector<ConnectInfo> LineVector = StatusVector[DiffMaxIndex];
+		int index = 0;				// LineVector Index
+		for (int j = 0; j < rows; j++)
+		{
+			int Type1D_Index = i * rows + j;
+			if (LineVector[index].rowIndex != j)
+				PointType_1D[Type1D_Index] = -1;
+			else if (LineVector[index].rowIndex == j)
+			{
+				int BestN_Index = i * rows * ChooseBestN +							// 張
+								LineVector[index].rowIndex * ChooseBestN +			// row
+								LineVector[index].chooseIndex;						// ChooseIndex
+
+				// 放進 PointType
+				PointType_1D[j + i * rows] = PointType_BestN[BestN_Index];
+				index++;
+
+				if (index >= LineVector.size())
+				{
+					for (int k = j + 1; k < rows; k++)
+						PointType_1D[k + i * rows] = -1;
+					break;
+				}
+			}
+		}
+	}
+}
+bool TRCudaV2::SortByRows(ConnectInfo left, ConnectInfo right)
+{
+	return left.rowIndex < right.rowIndex;
+}
+bool TRCudaV2::SortByVectorSize(vector<ConnectInfo> left, vector<ConnectInfo> right)
+{
+	return right.size() < left.size();
+}
 void TRCudaV2::CheckCudaError()
 {
 	cudaError GPU_Error = cudaGetLastError();

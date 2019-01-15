@@ -41,5 +41,8 @@
     <ClInclude Include="EigenUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalDefine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

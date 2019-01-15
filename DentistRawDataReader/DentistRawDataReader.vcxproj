@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EigenUtility.h" />
+    <ClInclude Include="GlobalDefine.h" />
     <ClInclude Include="TRCudaV2.cuh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

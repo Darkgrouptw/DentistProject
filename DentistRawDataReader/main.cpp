@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 	cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
 	#pragma endregion
 	#pragma region 測試圖片
-	vector<Mat> ImgArray = cudaV2.TransfromMatArray(false);
+	vector<Mat> ImgArray = cudaV2.TransfromMatArray(true);
 	for (int x = 0; x < 250; x++)
 		imwrite("Images/" + to_string(x) + ".png", ImgArray[x]);
 	#pragma endregion
