@@ -494,7 +494,7 @@ __global__ static void TransforToImage(float* VolumeData_Normalized, uchar* Imag
 	if (id >= SizeX * SizeY * FinalSizeZ)								// 判斷是否超出大小
 		return;
 
-	float data = VolumeData_Normalized[id] * 255;
+	float data = VolumeData_Normalized[id] * 255 * 1.3f;
 	if (data >= 255)
 		ImageArray[id] = 255;
 	else if (data <= 0)
@@ -502,6 +502,7 @@ __global__ static void TransforToImage(float* VolumeData_Normalized, uchar* Imag
 	else
 		ImageArray[id] = (uchar)data;
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // CPU
@@ -806,6 +807,9 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	time = clock() - time;
 	cout << "8. 轉成圖: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
+	#pragma endregion
+	#pragma region 9. 邊界判斷
+	// 目前邊界判斷沒有寫
 	#pragma endregion
 	#pragma region 10. 抓下 GPU Data
 	// 開始
@@ -1116,15 +1120,30 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
 	#endif
-
-	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
-	float *GPU_MinElement = thrust::min_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
-
-	// 抓下數值
+	
+	// 算最大值
 	float MaxValue = 0;
-	float MinValue = 0;
+	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
 	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&MinValue, GPU_MinElement, sizeof(float), cudaMemcpyDeviceToHost);
+	CheckCudaError();
+
+	// 最小值 (拿一塊不會使用的 GPU 部分，來做 Normalize)
+	// 拿一個正方形的區塊
+	// TL－－－ｘ
+	// ｜　　　｜
+	// ｜　　　｜
+	// ｘ－－－BR
+	float MinValue = 0;
+	for (int i = MinValuePixel_TL; i <= MinValuePixel_BR; i++)
+	{
+		// [first, last)
+		int beginIndex = SizeX * SizeZ / 2 + i * SizeZ / 2 + i;
+		int endIndex = SizeX * SizeZ / 2 + i * SizeZ / 2 + MinValuePixel_BR + 1;
+		MinValue += thrust::reduce(thrust::device, GPU_ShiftData + beginIndex, GPU_ShiftData + endIndex);
+	}
+	MinValue /= (MinValuePixel_BR - MinValuePixel_TL + 1) * (MinValuePixel_BR - MinValuePixel_TL + 1);
+	MinValue *= MinValueSclar;
+	//MinValue *= 0.8;			// 這個是東元測試出來的值
 
 	// 因為 Normaliza Data 要做一件事情是  除 (Max - Min) ，要預防他除以 0
 	// 所以這邊先判斷兩個是不是位置一樣 (因為如果整個 array 值都一樣，Min & Max 給的位置都會一樣(以驗證過))
