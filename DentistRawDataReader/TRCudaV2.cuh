@@ -44,6 +44,7 @@ public:
 
 	// 拿出圖片
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
+	bool ShakeDetect(bool);														// 晃動偵測
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -74,12 +75,17 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 找邊界參數設定
 	//////////////////////////////////////////////////////////////////////////
-	const float MaxPeakThreshold = 0.67f;									// 要高於這個值
-	const float GoThroughThreshold = 0.05f;									// 要多少在走過去
+	const float MaxPeakThreshold = 0.18f;									// 要高於這個值
+	const float GoThroughThreshold = 0.02f;									// 要多少在走過去
 	const int ChooseBestN = 3;
 	const int StartIndex = 10;												// 從這裡開始找有效的資料
 	const int MinGroupSize = 20;											// 最少要有幾個點
 	const int ConnectRadius = 25;											// 連結半徑
+
+	//////////////////////////////////////////////////////////////////////////
+	// 晃動 Threshold
+	//////////////////////////////////////////////////////////////////////////
+	const float OCT_Move_Threshold = 7;										// 晃動大於某一個值，代表不能用
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他參數設定 設定
@@ -91,5 +97,5 @@ private:
 	const int NumPolynomial = 5;											// 使用 5 次項
 	const int MinValuePixel_TL = 2;											// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
 	const int MinValuePixel_BR = 10;										// Buttom Right 的 Pixel
-	const float MinValueScalar = 1.9f										// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
+	const float MinValueScalar = 1.9f;										// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
 };

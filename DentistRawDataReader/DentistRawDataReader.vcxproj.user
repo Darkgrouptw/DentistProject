@@ -9,7 +9,7 @@
     <QTDIR>C:\Qt\Qt5.10.0\5.10.0\msvc2015_64</QTDIR>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>"D:/Dentist/Data/ScanData/2018.12.18/test1"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>"D:/Dentist/Data/ScanData/2019.01.08/DATA/TOOTH bone 8.1"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PATH=$(QTDIR)\bin%3b$(PATH)</LocalDebuggerEnvironment>
   </PropertyGroup>
 </Project>

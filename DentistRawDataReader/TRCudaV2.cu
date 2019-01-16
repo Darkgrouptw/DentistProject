@@ -1142,7 +1142,7 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 		MinValue += thrust::reduce(thrust::device, GPU_ShiftData + beginIndex, GPU_ShiftData + endIndex);
 	}
 	MinValue /= (MinValuePixel_BR - MinValuePixel_TL + 1) * (MinValuePixel_BR - MinValuePixel_TL + 1);
-	MinValue *= MinValueSclar;
+	MinValue *= MinValueScalar;
 	//MinValue *= 0.8;			// 這個是東元測試出來的值
 
 	// 因為 Normaliza Data 要做一件事情是  除 (Max - Min) ，要預防他除以 0
@@ -1336,6 +1336,66 @@ vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 	cout << "轉換圖片: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 	return ImgArray;
+}
+bool TRCudaV2::ShakeDetect(bool ShowDebugMessage)
+{
+	// 找 60 ~ 200 裡面有效的有沒有斷層
+	int voteNum = 0;
+	float MoveRate = 0;
+	
+	// Reverse 的 0 ~ 250
+	for (int i = 60; i < 200; i++)
+	{
+		bool IsMove = false;
+
+		// 這邊先預設給這個值，後面會換掉
+		int leftIndex = 124 * rows + i;				// 第 124 張
+		int rightIndex = 125 * rows + i;			// 第 125 張
+
+		// 從中間往前找
+		for (int j = size / 2 - 1; j >= 0; j--)
+		{
+			if (!PointType_1D[j * rows + i] != -1)
+			{
+				leftIndex = j * rows + i;
+				break;
+			}
+		}
+		// 從中間像後找
+		for (int j = size / 2; j < size; j++)
+		{
+			if (PointType_1D[j] != -1)
+			{
+				rightIndex = j * rows + i;
+				break;
+			}
+		}
+
+		int leftY = PointType_1D[leftIndex];
+		int rightY = PointType_1D[rightIndex];
+
+		// 確認有效票數
+		if (PointType_1D[leftIndex] != -1 &&
+			PointType_1D[rightIndex] != -1)
+		{
+			int DisMid = abs(PointType_1D[rightIndex] - PointType_1D[leftIndex]);
+			MoveRate += DisMid;
+			voteNum++;
+		}
+
+	}
+
+	// 判斷是否有有效資料
+	if (voteNum > 0)
+	{
+		MoveRate /= voteNum;
+		cout << "晃動比例: " << (float)MoveRate << endl;
+
+		// 這邊是代表沒有晃動
+		if (MoveRate < OCT_Move_Threshold)
+			return true;
+	}
+	return false;
 }
 
 //////////////////////////////////////////////////////////////////////////

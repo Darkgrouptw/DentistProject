@@ -55,9 +55,10 @@ int main(int argc, char *argv[])
 	TRCudaV2 cudaV2;
 	//cudaV2.SingleRawDataToPointCloud(buffer.data(), bufferSize / 250 / 2, 250, 2048, 37 * 4 - 4, 2, 10);
 	cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
+	cudaV2.ShakeDetect(false);
 	#pragma endregion
 	#pragma region 測試圖片
-	vector<Mat> ImgArray = cudaV2.TransfromMatArray(true);
+	vector<Mat> ImgArray = cudaV2.TransfromMatArray(false);
 	for (int x = 0; x < 250; x++)
 		imwrite("Images/" + to_string(x) + ".png", ImgArray[x]);
 	#pragma endregion

@@ -111,8 +111,7 @@ private:
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
 	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
-	const int			OCT_Shake_Pixel_Threshold = 30;							// 如果晃動大於這個 Threshold 又代表有換動到
-	const float			OCT_Part_Threshold = 0.8f;								// 有效區域
+	
 
 	//////////////////////////////////////////////////////////////////////////
 	// 網路
