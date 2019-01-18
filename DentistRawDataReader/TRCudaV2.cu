@@ -40,13 +40,42 @@ __global__ static void RawDataToOriginalData(char* FileRawData, int* OCTRawData,
 
 	OCTRawData[id] = (int)((uchar)FileRawData[id * 2] + (uchar)FileRawData[id * 2 + 1] * 256);
 }
-__global__ static void CombineTwoChannels(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeZ)
+__global__ static void CombineTwoChannels_Single(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeZ)
 {
 	// 這邊是 Denoise，把兩個 Channel 的資料相加
 	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * (2 * 1024)
 		blockIdx.x * gridDim.z * blockDim.x +							// X	=> X * (2 * 1024)
 		blockIdx.z * blockDim.x +										// Z	=> (Z1 * 1024 + Z2)
 		threadIdx.x;
+
+	// 這邊應該是不會發生，就當作例外判斷
+	if (id >= SizeX * SizeZ)
+	{
+		printf("Combine Two Channel 有 Error!\n");
+		return;
+	}
+
+	int BoxSize = SizeX * SizeZ;										// 這邊沒有反掃，所以直接接上大小
+	int BoxIndex = id / BoxSize;
+	int BoxLeft = id % BoxSize;
+
+	OCTData[id] = (OCTData_2Channls[BoxIndex * 2 * BoxSize + BoxLeft] +
+		OCTData_2Channls[(BoxIndex * 2 + 1) * BoxSize + BoxLeft]) / 2;
+}
+__global__ static void CombineTwoChannels_Multi(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeZ)
+{
+	// 這邊是 Denoise，把兩個 Channel 的資料相加
+	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * (2 * 1024)
+		blockIdx.x * gridDim.z * blockDim.x +							// X	=> X * (2 * 1024)
+		blockIdx.z * blockDim.x +										// Z	=> (Z1 * 1024 + Z2)
+		threadIdx.x;
+
+	// 這邊應該是不會發生，就當作例外判斷
+	if (id >= SizeX * SizeZ)
+	{
+		printf("Combine Two Channel 有 Error!\n");
+		return;
+	}
 
 	int BoxSize = SizeX * SizeZ * 2;									// 一個 Channel 的資料是 正掃 + 反掃
 	int BoxIndex = id / BoxSize;
@@ -510,7 +539,6 @@ __global__ static void TransforToImage(float* VolumeData_Normalized, uchar* Imag
 // 轉換 Function
 void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, int SizeZ, long ShiftValue, double K_Step, int CutValue)
 {
-	cout << "這邊 目前沒有驗證塞兩個 Channel 的資料!!!!" << endl;
 	// 算時間
 	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
 	totalTime = clock();
@@ -535,6 +563,8 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	// 2. ShiftValue	=> TRIGGER DELAY位移(換FIBER，電線校正回來用的)
 	// 3. K_Step		=> 深度(14.多mm對應 2.5的k step；可以考慮之後用2)(k step越大，z軸越深，但資料精細度越差；1~2.5)
 	// 4. CutValue		=> OCT每個z軸，前面數據減去多少。原因是開頭的laser弱，干涉訊號不明顯，拿掉的資料會比較美。 (東元那邊的變數是 cuteValue XD)
+	// 5. 這邊如果是 2 Channel 的話，大小為 2048	x	250		x	2				x 2			x 2               
+	//										(深度)	x	(快軸)	x	(慢軸(反掃))	x Channel	x 2個 Byte 為一組
 	//////////////////////////////////////////////////////////////////////////
 	#pragma region 1. 上傳 GPU Data
 	// 初始
@@ -548,12 +578,18 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	int *GPU_OCTRawData;			// => 這個是實際 Denoise 的 Data (也就是 CH1 + CH2 的資料) (如果"只有一個" Channel，就只會用到這個陣列)
 	float *GPU_OCTFloatData;		// => 這個會用在兩個地方，一個是 K Space 的資料，一個是 FFT 後的資料
 
+	// 注意!! 因為只拿一組，不需要 兩個慢軸的資訊 (也就是反掃的資訊)，所以除以 2
+	DataSize /= 2;
+
 	// 是否是 2 Channels
 	bool UseTwoChannels = (DataSize / SizeX / SizeZ == 4);		// 2 Byte & 2 Channles
 
 	// 原始資料
 	cudaMalloc(&GPU_FileRawData, sizeof(char) * DataSize);
-	cudaMemcpy(GPU_FileRawData, FileRawData, sizeof(char) * DataSize, cudaMemcpyHostToDevice);
+
+	// 這邊要分兩個 Copy (略過反掃資料)
+	cudaMemcpy(GPU_FileRawData,					FileRawData,			sizeof(char) * DataSize / 2, cudaMemcpyHostToDevice);
+	cudaMemcpy(GPU_FileRawData + DataSize / 2,	FileRawData + DataSize,	sizeof(char) * DataSize / 2, cudaMemcpyHostToDevice);
 	CheckCudaError();
 
 	// 判對是否使用 2 Chanels
@@ -588,7 +624,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 		CheckCudaError();
 
 		// 兩個 Channel 作 Denoise
-		CombineTwoChannels << < dim3(SizeX, 1, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeZ);
+		CombineTwoChannels_Single << < dim3(SizeX, 1, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeZ);
 
 		// 刪除
 		cudaFree(GPU_OCTRawData_2Channel);
@@ -757,24 +793,37 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cout << "5. cuFFT: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 	#pragma endregion
-	#pragma region 7. Normaliza Data
+	#pragma region 7. Normalize Data
 	// 開始
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
 	#endif
 
-	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_OCTFloatData, GPU_OCTFloatData + OCTDataSize / 2);
-	float *GPU_MinElement = thrust::min_element(thrust::device, GPU_OCTFloatData, GPU_OCTFloatData + OCTDataSize / 2);
-
-	// 抓下數值
+	// 算最大值
 	float MaxValue = 0;
-	float MinValue = 0;
+	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_OCTFloatData, GPU_OCTFloatData + OCTDataSize / 2);
 	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
-	cudaMemcpy(&MinValue, GPU_MinElement, sizeof(float), cudaMemcpyDeviceToHost);
+	CheckCudaError();
 
+	// 最小值 (拿一塊不會使用的 GPU 部分，來做 Normalize)
+	// 拿一個正方形的區塊
+	// TL－－－ｘ
+	// ｜　　　｜
+	// ｜　　　｜
+	// ｘ－－－BR
+	float MinValue = 0;
+	for (int i = MinValuePixel_TL; i <= MinValuePixel_BR; i++)
+	{
+		// [first, last)
+		int beginIndex = i * SizeZ / 2 + i;
+		int endIndex = i * SizeZ / 2 + MinValuePixel_BR + 1;
+		MinValue += thrust::reduce(thrust::device, GPU_OCTFloatData + beginIndex, GPU_OCTFloatData + endIndex);
+	}
+	MinValue /= (MinValuePixel_BR - MinValuePixel_TL + 1) * (MinValuePixel_BR - MinValuePixel_TL + 1);
+	MinValue *= MinValueScalar;
 
-	// 因為 Normalize Data 要做一件事情是  除 (Max - Min) ，要預防他除以 0
-	// 所以這邊先判斷兩個是不是位置一樣 (因為如果整個 array 值都一樣，Min & Max 給的位置都會一樣(以驗證過)) (在抓下來之後，可以直接用直來判斷)
+	// 因為 Normaliza Data 要做一件事情是  除 (Max - Min) ，要預防他除以 0
+	// 所以這邊先判斷兩個是不是位置一樣 (因為如果整個 array 值都一樣，Min & Max 給的位置都會一樣(以驗證過))
 	assert(MaxValue != MinValue && "FFT後最大最小值一樣，資料有錯誤!!");
 	NormalizeData << <dim3(SizeX, 1, SizeZ / NumThreads / 2), NumThreads >> > (GPU_OCTFloatData, MaxValue, MinValue, OCTDataSize / 2);
 
@@ -923,7 +972,7 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 		CheckCudaError();
 
 		// 兩個 Channel 作 Denoise
-		CombineTwoChannels << < dim3(SizeX, SizeY, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeZ);
+		CombineTwoChannels_Multi << < dim3(SizeX, SizeY, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeZ);
 
 		// 刪除
 		cudaFree(GPU_OCTRawData_2Channel);
@@ -1115,7 +1164,7 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	cout << "6. 搬移資料: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 	#pragma endregion
-	#pragma region 7. Normaliza Data
+	#pragma region 7. Normalize Data
 	// 開始
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
@@ -1143,7 +1192,6 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 	}
 	MinValue /= (MinValuePixel_BR - MinValuePixel_TL + 1) * (MinValuePixel_BR - MinValuePixel_TL + 1);
 	MinValue *= MinValueScalar;
-	//MinValue *= 0.8;			// 這個是東元測試出來的值
 
 	// 因為 Normaliza Data 要做一件事情是  除 (Max - Min) ，要預防他除以 0
 	// 所以這邊先判斷兩個是不是位置一樣 (因為如果整個 array 值都一樣，Min & Max 給的位置都會一樣(以驗證過))

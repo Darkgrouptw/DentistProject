@@ -97,6 +97,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="OCT64">
+      <HintPath>..\OtherPackages\OCT\OCT64.dll</HintPath>
+    </Reference>
     <Reference Include="OCTTest">
       <HintPath>D:\Dentist\Code\DLL Part\Test DLL Part\dot net\OCTTest.dll</HintPath>
     </Reference>

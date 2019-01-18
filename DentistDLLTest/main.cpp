@@ -11,6 +11,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+	#pragma region OCT Test DLL 的部分
 	unsigned short IntData = 6;
 	unsigned short OutData = 0;
 	cli::array<unsigned short> ^IntArray;
@@ -28,6 +29,15 @@ int main(int argc, char *argv[])
 	cout << endl;
 	std::string unmanaged = msclr::interop::marshal_as<std::string>(TestString);
 	cout << unmanaged << endl;
+	#pragma endregion
+	#pragma region OCT 64 Test
+	int DeviceID = -1;
+	OCT64::OCT64::Init(
+		4,
+		DeviceID
+	);
+	cout << "DeviceID" << DeviceID << endl;
+	#pragma endregion
 	system("PAUSE");
 	return 0;
 }
