@@ -40,7 +40,7 @@ __global__ static void RawDataToOriginalData(char* FileRawData, int* OCTRawData,
 
 	OCTRawData[id] = (int)((uchar)FileRawData[id * 2] + (uchar)FileRawData[id * 2 + 1] * 256);
 }
-__global__ static void CombineTwoChannels_Single(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeZ)
+__global__ static void CombineTwoChannels_Single(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeY, int SizeZ)
 {
 	// 這邊是 Denoise，把兩個 Channel 的資料相加
 	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * (2 * 1024)
@@ -49,7 +49,7 @@ __global__ static void CombineTwoChannels_Single(int* OCTData_2Channls, int* OCT
 		threadIdx.x;
 
 	// 這邊應該是不會發生，就當作例外判斷
-	if (id >= SizeX * SizeZ)
+	if (id >= SizeX * SizeY * SizeZ)
 	{
 		printf("Combine Two Channel 有 Error!\n");
 		return;
@@ -62,7 +62,7 @@ __global__ static void CombineTwoChannels_Single(int* OCTData_2Channls, int* OCT
 	OCTData[id] = (OCTData_2Channls[BoxIndex * 2 * BoxSize + BoxLeft] +
 		OCTData_2Channls[(BoxIndex * 2 + 1) * BoxSize + BoxLeft]) / 2;
 }
-__global__ static void CombineTwoChannels_Multi(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeZ)
+__global__ static void CombineTwoChannels_Multi(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeY, int SizeZ)
 {
 	// 這邊是 Denoise，把兩個 Channel 的資料相加
 	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * (2 * 1024)
@@ -71,7 +71,7 @@ __global__ static void CombineTwoChannels_Multi(int* OCTData_2Channls, int* OCTD
 		threadIdx.x;
 
 	// 這邊應該是不會發生，就當作例外判斷
-	if (id >= SizeX * SizeZ)
+	if (id >= SizeX * SizeY * SizeZ)
 	{
 		printf("Combine Two Channel 有 Error!\n");
 		return;
@@ -624,7 +624,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 		CheckCudaError();
 
 		// 兩個 Channel 作 Denoise
-		CombineTwoChannels_Single << < dim3(SizeX, 1, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeZ);
+		CombineTwoChannels_Single << < dim3(SizeX, 1, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, 1, SizeZ);
 
 		// 刪除
 		cudaFree(GPU_OCTRawData_2Channel);
@@ -972,7 +972,7 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 		CheckCudaError();
 
 		// 兩個 Channel 作 Denoise
-		CombineTwoChannels_Multi << < dim3(SizeX, SizeY, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeZ);
+		CombineTwoChannels_Multi << < dim3(SizeX, SizeY, SizeZ / NumThreads), NumThreads >> > (GPU_OCTRawData_2Channel, GPU_OCTRawData, SizeX, SizeY, SizeZ);
 
 		// 刪除
 		cudaFree(GPU_OCTRawData_2Channel);

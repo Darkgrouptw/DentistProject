@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	vector<Mat> ImgArray = cudaV2.TransfromMatArray(false);
 	
 	// 單張圖片
-	imwrite("Images/" + to_string(0) + ".png", ImgArray[0]);
+	imwrite("Images/" + to_string(125) + ".png", ImgArray[0]);
 
 	// 多張圖片
 	/*for (int x = 0; x < 250; x++)
