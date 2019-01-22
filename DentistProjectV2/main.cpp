@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
 	system("chcp 65001");
 	system("chcp 950");
 
-
 	QApplication a(argc, argv);
 	DentistProjectV2 w;
 	w.show();

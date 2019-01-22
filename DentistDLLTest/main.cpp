@@ -31,12 +31,12 @@ int main(int argc, char *argv[])
 	cout << unmanaged << endl;
 	#pragma endregion
 	#pragma region OCT 64 Test
-	int DeviceID = -1;
+	/*int DeviceID = -1;
 	OCT64::OCT64::Init(
 		4,
 		DeviceID
 	);
-	cout << "DeviceID" << DeviceID << endl;
+	cout << "DeviceID" << DeviceID << endl;*/
 	#pragma endregion
 	system("PAUSE");
 	return 0;

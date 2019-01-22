@@ -107,11 +107,9 @@
     <ClInclude Include="OpenGLWidget.h">
       <Filter>Header Files\Display</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CudaV2\TRCudaV2.cuh">
+    <ClInclude Include="CudaV2\TRCudaV2.cuh">
       <Filter>CudaV2</Filter>
-    </None>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaV2\TRCudaV2.cu">

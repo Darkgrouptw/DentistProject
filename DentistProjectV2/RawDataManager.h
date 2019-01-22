@@ -63,15 +63,15 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// OCT 相關的步驟
 	//
-	// 底下這邊的步驟可以二選一
+	// 底下這邊的步驟可以二選一 (XXX 代表可能是 Single or Multi 的結果)
 	// 可以：
-	// ReadRawDataFromFile	=> 讀檔，然後把資料存起來
-	// ScanDataFromDevice	=> 直接從 OCT 讀資料
+	// Read_XXXData_FromFile		=> 讀檔，然後把資料存起來
+	// Scan_XXXData_FromDevice		=> 直接從 OCT 讀資料
 	//////////////////////////////////////////////////////////////////////////
-	//void Read_Single_FromFile(QString);										// 讀單張檔案
+	//void Read_Single_FromFile(QString);											// 讀單張檔案
 	//void Read_MultiData_FromFileV2(QString);									// 有修改的過後的 Raw Data Reader
-	//void Scan_Single_DataFromDevice(QString, bool);								// 輸入儲存路徑 和 要步要儲存，來轉點雲
-	//void Scan_Multi_DataFromDevice(QString, bool);								// 輸入儲存路徑 和 要步要儲存，來轉點雲
+	void Scan_SingleData_FromDeviceV2(QString, bool);							// 輸入儲存路徑 和 要步要儲存
+	void Scan_MultiData_FromDeviceV2(QString, bool);							// 輸入儲存路徑 和 要步要儲存
 	//void TranformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
 	//bool ShakeDetect_Multi(QMainWindow*, bool);									// 偵測有無晃動
 	//void WriteRawDataToFile(QString);											// 將 Raw Data 轉成檔案
@@ -139,12 +139,12 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
 	//////////////////////////////////////////////////////////////////////////
-	//int					LerpFunction(int, int, int, int, int);
-	//QImage				Mat2QImage(cv::Mat const &, int);
-	//string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
-	//void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
-	//vector<GlobalRegistration::Point3D>	ConvertQVector2Point3D(QVector<QVector3D>);	// 轉換
-	//void				super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *, int);	// Alignment
+	int					LerpFunction(int, int, int, int, int);
+	QImage				Mat2QImage(cv::Mat const &, int);
+	string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
+	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
+	vector<GlobalRegistration::Point3D> ConvertQVector2Point3D(QVector<QVector3D>); // 轉換
+	void				super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *, int);	// Alignment
 
 
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
