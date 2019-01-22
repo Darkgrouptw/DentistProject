@@ -55,23 +55,23 @@ int main(int argc, char *argv[])
 	TRCudaV2 cudaV2;
 
 	// 測試 Single Scan
-	cudaV2.SingleRawDataToPointCloud(buffer.data(), bufferSize, 250, 2048, 37 * 4 - 4, 2, 10);
+	//cudaV2.SingleRawDataToPointCloud(buffer.data(), bufferSize, 250, 2048, 37 * 4 - 4, 2, 10);
 
 	// 測試 Multi Scan
-	//cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
+	cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
 
 	// 晃動判斷
 	//cudaV2.ShakeDetect(false);
 	#pragma endregion
 	#pragma region 測試圖片
-	vector<Mat> ImgArray = cudaV2.TransfromMatArray(false);
+	vector<Mat> ImgArray = cudaV2.TransfromMatArray(true);
 	
 	// 單張圖片
-	imwrite("Images/" + to_string(125) + ".png", ImgArray[0]);
+	//imwrite("Images/" + to_string(125) + ".png", ImgArray[0]);
 
 	// 多張圖片
-	/*for (int x = 0; x < 250; x++)
-		imwrite("Images/" + to_string(x) + ".png", ImgArray[x]);*/
+	for (int x = 0; x < 250; x++)
+		imwrite("Images/" + to_string(x) + ".png", ImgArray[x]);
 	#pragma endregion
 	system("PAUSE");
 	return 0;

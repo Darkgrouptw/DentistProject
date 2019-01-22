@@ -805,7 +805,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
 	CheckCudaError();
 
-	// 最小值 (拿一塊不會使用的 GPU 部分，來做 Normalize)
+	// 最小值 (拿一塊不會使用的 GPU 部分，來做 Normalize) 
 	// 拿一個正方形的區塊
 	// TL－－－ｘ
 	// ｜　　　｜
