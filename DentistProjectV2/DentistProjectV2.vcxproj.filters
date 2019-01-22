@@ -28,12 +28,45 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="CudaV2">
+      <UniqueIdentifier>{05d8cebe-471a-42e8-a780-fef2c5bb3c40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\RawDataManager">
+      <UniqueIdentifier>{372522d4-233a-4895-bf60-8de32646a060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RawDataManager">
+      <UniqueIdentifier>{03506854-bca5-4290-b2e9-4bf260ca1bc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Display">
+      <UniqueIdentifier>{35bea49c-4545-45ee-916c-7bee95959b4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Display">
+      <UniqueIdentifier>{c904cca0-862f-4a0f-af68-b4c19cc6d3d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="DentistProjectV2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DentistProjectV2.cpp">
+    <ClCompile Include="CudaV2\EigenUtility.cpp">
+      <Filter>CudaV2</Filter>
+    </ClCompile>
+    <ClCompile Include="BluetoothManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="PointCloudInfo.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="RawDataManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLWidget.cpp">
+      <Filter>Source Files\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -51,5 +84,38 @@
     <QtRcc Include="DentistProjectV2.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CudaV2\EigenUtility.h">
+      <Filter>CudaV2</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDefine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BluetoothManager.h">
+      <Filter>Header Files\RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="DataManager.h">
+      <Filter>Header Files\RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="PointCloudInfo.h">
+      <Filter>Header Files\RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="RawDataManager.h">
+      <Filter>Header Files\RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGLWidget.h">
+      <Filter>Header Files\Display</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CudaV2\TRCudaV2.cuh">
+      <Filter>CudaV2</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CudaV2\TRCudaV2.cu">
+      <Filter>CudaV2</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

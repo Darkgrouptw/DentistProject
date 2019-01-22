@@ -20,11 +20,11 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QOpenGLWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QWidget>
+#include "openglwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -32,7 +32,7 @@ class Ui_DentistProjectV2Class
 {
 public:
     QWidget *centralWidget;
-    QOpenGLWidget *openGLWidget;
+    OpenGLWidget *DisplayPanel;
     QGroupBox *ScanResult;
     QLabel *ImageResult;
     QLabel *FinalResult;
@@ -85,9 +85,9 @@ public:
         DentistProjectV2Class->resize(1600, 900);
         centralWidget = new QWidget(DentistProjectV2Class);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        openGLWidget = new QOpenGLWidget(centralWidget);
-        openGLWidget->setObjectName(QStringLiteral("openGLWidget"));
-        openGLWidget->setGeometry(QRect(0, 0, 900, 900));
+        DisplayPanel = new OpenGLWidget(centralWidget);
+        DisplayPanel->setObjectName(QStringLiteral("DisplayPanel"));
+        DisplayPanel->setGeometry(QRect(0, 0, 900, 900));
         ScanResult = new QGroupBox(centralWidget);
         ScanResult->setObjectName(QStringLiteral("ScanResult"));
         ScanResult->setGeometry(QRect(900, 0, 581, 561));
