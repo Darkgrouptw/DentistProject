@@ -30,6 +30,14 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+// 讀資料的部分
+enum RawDataType
+{
+	SINGLE_DATA_TYPE = 0,
+	MULTI_DATA_TYPE,
+	ERROR_TYPE,
+};
+
 // 4PCS 的 Data Structor
 struct TransformVisitor {
 	inline void operator() (
@@ -63,16 +71,16 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// OCT 相關的步驟
 	//
-	// 底下這邊的步驟可以二選一 (XXX 代表可能是 Single or Multi 的結果)
+	// 底下這邊的步驟可以三選一
 	// 可以：
-	// Read_XXXData_FromFile		=> 讀檔，然後把資料存起來
-	// Scan_XXXData_FromDevice		=> 直接從 OCT 讀資料
+	// ReadRawDataFromFileV2			=> 讀檔，根據檔案大小來判斷是 Single 還是 Multi 的資料
+	// ScanSingleDataFromDeviceV2		=> 直接從 OCT 讀單張資料
+	// ScanMultiDataFromDeviceV2		=> 直接從 OCT 讀多張資料
 	//////////////////////////////////////////////////////////////////////////
-	//void Read_Single_FromFile(QString);											// 讀單張檔案
-	//void Read_MultiData_FromFileV2(QString);									// 有修改的過後的 Raw Data Reader
-	void Scan_SingleData_FromDeviceV2(QString, bool);							// 輸入儲存路徑 和 要步要儲存
-	void Scan_MultiData_FromDeviceV2(QString, bool);							// 輸入儲存路徑 和 要步要儲存
-	//void TranformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
+	RawDataType ReadRawDataFromFileV2(QString);									// 有修改的過後的 Raw Data Reader
+	void ScanSingleDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
+	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
+	void TranformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
 	//bool ShakeDetect_Multi(QMainWindow*, bool);									// 偵測有無晃動
 	//void WriteRawDataToFile(QString);											// 將 Raw Data 轉成檔案
 
@@ -118,29 +126,27 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
 	//////////////////////////////////////////////////////////////////////////
-	QVector<Mat>		ImageResultArray;										// 原圖								(SegNet 使用)
-	QVector<Mat>		SmoothResultArray;										// Smooth 過後的結果				(邊界判斷使用)
-	QVector<Mat>		CombineResultArray;										// 判斷完的結果圖					(顯示使用)
+	QVector<Mat>		ImageResultArray;										// 原圖
+	QVector<Mat>		BorderDetectionResultArray;								// 邊界判斷完
 
 	//////////////////////////////////////////////////////////////////////////
 	// 顯示部分
 	//////////////////////////////////////////////////////////////////////////
 	QVector<QImage>		QImageResultArray;										// 同上(顯示)
-	QVector<QImage>		QSmoothResultArray;										// 同上(顯示)
-	QVector<QImage>		QCombineResultArray;									// 同上(顯示)
+	QVector<QImage>		QBorderDetectionResultArray;							// 同上(顯示)
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer
 	//////////////////////////////////////////////////////////////////////////
 	QLabel*				ImageResult;											// 外部的原圖 UI Pointer
+	QLabel*				BorderDetectionResult;									// 最後找出來的結果圖
 	QLabel*				NetworkResult;											// 同上，但目前是沒有用
-	QLabel*				FinalResult;											// 最後找出來的結果圖
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
 	//////////////////////////////////////////////////////////////////////////
 	int					LerpFunction(int, int, int, int, int);
-	QImage				Mat2QImage(cv::Mat const &, int);
+	QImage				Mat2QImage(Mat const &, int);
 	string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
 	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
 	vector<GlobalRegistration::Point3D> ConvertQVector2Point3D(QVector<QVector3D>); // 轉換

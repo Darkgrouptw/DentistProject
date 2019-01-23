@@ -14,34 +14,75 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
 	assert(UIPointer.size() == 3);
-	ImageResult			= (QLabel*)UIPointer[0];
-	NetworkResult		= (QLabel*)UIPointer[1];
-	FinalResult			= (QLabel*)UIPointer[2];
+	ImageResult				= (QLabel*)UIPointer[0];
+	BorderDetectionResult	= (QLabel*)UIPointer[1];
+	NetworkResult			= (QLabel*)UIPointer[2];
 }
 void RawDataManager::ShowImageIndex(int index)
 {
-	// 這邊有兩種狀況
-	// 1. 第一種狀況是 60 ~ 200
-	// 2. 第二種狀況是 只有掃描一張的結果
 	if (60 <= index && index <= 200 && QImageResultArray.size() > 0)
 	{
-		//QImage Pixmap_ImageResult = QImageResultArray[index];
-		//ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
+		QImage Pixmap_ImageResult = QImageResultArray[index];
+		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 
-		////QImage Pixmap_NetworkResult = Mat2QImage(FastBorderResultArray[index - 60], CV_8UC3);
-		////NetworkResult->setPixmap(QPixmap::fromImage(Pixmap_NetworkResult));
-
-		//// 如果有東西的話才顯示 Network 預測的結果
-		//if (QCombineResultArray.size() > 0)
-		//{
-		//	QImage Pixmap_FinalResult = QCombineResultArray[index];
-		//	FinalResult->setPixmap(QPixmap::fromImage(Pixmap_FinalResult));
-		//}
+		QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
+		BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
 	}
 }
 
 // OCT 相關的步驟
-void RawDataManager::Scan_SingleData_FromDeviceV2(QString SaveFileName, bool NeedSave_RawData)
+RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
+{
+	// 起始
+	clock_t startT, endT;
+	startT = clock();
+
+	QFile inputFile(FileName);
+	if (!inputFile.open(QIODevice::ReadOnly))
+	{
+		cout << "Raw Data 讀取錯誤" << endl;
+		return RawDataType::ERROR_TYPE;
+	}
+	else
+		cout << "讀取 Raw Data: " << FileName.toLocal8Bit().constData() << endl;
+
+	int bufferSize = inputFile.size() / sizeof(quint8);
+
+	QDataStream qData(&inputFile);
+	QByteArray buffer;
+	buffer.clear();
+	buffer.resize(bufferSize);
+	qData.readRawData(buffer.data(), bufferSize);
+
+	inputFile.close();
+
+	// 結算
+	endT = clock();
+	cout << "讀取 Raw Data: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
+
+	RawDataProperty prop = DManager.prop;
+	if (bufferSize <= prop.SizeX * prop.SizeZ * 8)
+	{
+		//RawDataManager
+		cout << "讀取單張 RawData !!" << endl;
+		cudaV2.SingleRawDataToPointCloud(
+			buffer.data(), bufferSize,
+			prop.SizeX, prop.SizeZ,
+			prop.ShiftValue, prop.K_Step, prop.CutValue);
+		return RawDataType::SINGLE_DATA_TYPE;
+	}
+	else
+	{
+		//RawDataManager
+		cout << "讀取多張 RawData !!" << endl;
+		cudaV2.MultiRawDataToPointCloud(
+			buffer.data(), bufferSize,
+			prop.SizeX, prop.SizeY, prop.SizeZ,
+			prop.ShiftValue, prop.K_Step, prop.CutValue);
+		return RawDataType::MULTI_DATA_TYPE;
+	}
+}
+void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedSave_RawData)
 {
 	#pragma region 初始化裝置
 	OCT64::OCT64::Init(
@@ -130,7 +171,7 @@ void RawDataManager::Scan_SingleData_FromDeviceV2(QString SaveFileName, bool Nee
 	delete Final_OCT_Char;
 	#pragma endregion
 }
-void RawDataManager::Scan_MultiData_FromDeviceV2(QString SaveFileName, bool NeedSave_RawData)
+void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSave_RawData)
 {
 	#pragma region 初始化裝置
 	OCT64::OCT64::Init(
@@ -223,6 +264,83 @@ void RawDataManager::Scan_MultiData_FromDeviceV2(QString SaveFileName, bool Need
 	#pragma region 刪除 New 出來的 Array
 	delete Final_OCT_Array;
 	delete Final_OCT_Char;
+	#pragma endregion
+}
+void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
+{
+	#pragma region 開始時間
+	clock_t startT, endT;
+	startT = clock();
+	#pragma endregion
+	#pragma region 清空其他 Array
+	// 如果跑出結果是全黑的，那有可能是顯卡記憶體不夠的問題
+	ImageResultArray.clear();
+	BorderDetectionResultArray.clear();
+
+	QImageResultArray.clear();
+	QBorderDetectionResultArray.clear();
+
+	// Point Cloud 相關
+	//PointCloudArray.clear();
+	#pragma endregion
+	#pragma region 塞進 Array
+	vector<Mat> TempMatArray;
+
+	// 轉換到 Vector 中
+	TempMatArray = cudaV2.TransfromMatArray(false);
+	ImageResultArray = QVector<Mat>::fromStdVector(TempMatArray);
+
+	TempMatArray = cudaV2.TransfromMatArray(true);
+	BorderDetectionResultArray = QVector<Mat>::fromStdVector(TempMatArray);
+
+	// 轉 QImage
+	for (int i = 0; i < ImageResultArray.size(); i++)
+	{
+		QImage tempQImage = Mat2QImage(ImageResultArray[i], CV_8UC3);
+		QImageResultArray.push_back(tempQImage);
+
+		tempQImage = Mat2QImage(BorderDetectionResultArray[i], CV_8UC3);
+		QBorderDetectionResultArray.push_back(tempQImage);
+
+		if (NeedSave_Image)
+		{
+			// 原圖
+			cv::imwrite("Images/OCTImages/origin_v2/" + to_string(i) + ".png", ImageResultArray[i]);
+			
+			// Combine 結果圖
+			cv::imwrite("Images/OCTImages/border_v2/" + to_string(i) + ".png", BorderDetectionResultArray[i]);
+		}
+	}
+
+	// 加入 Point Cloud 的陣列
+	//float ratio = 1;						// 這是放大的比率
+	//for (int x = 60; x <= 200; x++)
+	//{
+	//	for (int y = 0; y < 250; y++)
+	//	{
+	//		int index = x * 250 + y;
+	//		int Mapidx = ((y * theTRcuda.sample_Y * theTRcuda.VolumeSize_X) + x) * theTRcuda.sample_X;
+	//		int PCidx = ((x * theTRcuda.VolumeSize_Y) + y) * theTRcuda.VolumeSize_Z;
+	//		if (cudaBorder.PointType_1D[index] != -1)
+	//		{
+	//			QVector3D pointInSpace;
+	//			pointInSpace.setX(DManager.MappingMatrix[Mapidx * 2 + 1] * ratio + 0.2);
+	//			pointInSpace.setY(DManager.MappingMatrix[Mapidx * 2] * ratio);
+	//			pointInSpace.setZ(cudaBorder.PointType_1D[index] * DManager.zRatio / theTRcuda.VolumeSize_Z * ratio);
+	//			CurrentPointCloud.push_back(pointInSpace);
+	//		}
+	//	}
+	//}
+	//PointCloudArray.push_back(CurrentPointCloud);
+	#pragma endregion
+	#pragma region 結束時間
+	endT = clock();
+
+	if (NeedSave_Image)
+		cout << "有存出圖片";
+	else
+		cout << "無存出圖片";
+	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#pragma endregion
 }
 

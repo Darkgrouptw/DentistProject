@@ -874,9 +874,9 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
  	cudaFree(GPU_UintDataArray);
 
 	// 設定一下其他參數
-	this->size = 1;
-	this->rows = SizeX;
-	this->cols = SizeZ / 2;
+	size = 1;
+	rows = SizeX;
+	cols = SizeZ / 2;
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME

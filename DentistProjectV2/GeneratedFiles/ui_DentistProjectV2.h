@@ -35,9 +35,9 @@ public:
     OpenGLWidget *DisplayPanel;
     QGroupBox *ScanResult;
     QLabel *ImageResult;
-    QLabel *FinalResult;
+    QLabel *BorderDetectionResult;
     QLabel *ImageResultText;
-    QLabel *FinalResultText;
+    QLabel *BorderDetectionResultText;
     QSlider *ScanNumSlider;
     QLabel *ScanNum_Min;
     QLabel *ScanNum_Max;
@@ -73,10 +73,10 @@ public:
     QGroupBox *OCTTestingBox;
     QPushButton *RawDataToImage;
     QPushButton *EasyBorderDetect;
-    QPushButton *RawDataCheck;
-    QPushButton *ShakeTestButton;
+    QPushButton *SingleImageShakeTestButton;
     QPushButton *SegNetTestButton;
     QPushButton *BeepSoundTestButton;
+    QPushButton *MultiImageShakeTestButton;
 
     void setupUi(QMainWindow *DentistProjectV2Class)
     {
@@ -96,17 +96,17 @@ public:
         ImageResult->setGeometry(QRect(10, 40, 550, 135));
         ImageResult->setStyleSheet(QStringLiteral(""));
         ImageResult->setScaledContents(true);
-        FinalResult = new QLabel(ScanResult);
-        FinalResult->setObjectName(QStringLiteral("FinalResult"));
-        FinalResult->setGeometry(QRect(10, 200, 550, 135));
-        FinalResult->setStyleSheet(QStringLiteral(""));
-        FinalResult->setScaledContents(true);
+        BorderDetectionResult = new QLabel(ScanResult);
+        BorderDetectionResult->setObjectName(QStringLiteral("BorderDetectionResult"));
+        BorderDetectionResult->setGeometry(QRect(10, 200, 550, 135));
+        BorderDetectionResult->setStyleSheet(QStringLiteral(""));
+        BorderDetectionResult->setScaledContents(true);
         ImageResultText = new QLabel(ScanResult);
         ImageResultText->setObjectName(QStringLiteral("ImageResultText"));
         ImageResultText->setGeometry(QRect(10, 20, 101, 16));
-        FinalResultText = new QLabel(ScanResult);
-        FinalResultText->setObjectName(QStringLiteral("FinalResultText"));
-        FinalResultText->setGeometry(QRect(10, 180, 151, 16));
+        BorderDetectionResultText = new QLabel(ScanResult);
+        BorderDetectionResultText->setObjectName(QStringLiteral("BorderDetectionResultText"));
+        BorderDetectionResultText->setGeometry(QRect(10, 180, 151, 16));
         ScanNumSlider = new QSlider(ScanResult);
         ScanNumSlider->setObjectName(QStringLiteral("ScanNumSlider"));
         ScanNumSlider->setEnabled(false);
@@ -126,11 +126,11 @@ public:
         ScanNum_Value->setGeometry(QRect(540, 510, 21, 16));
         NetworkResultText = new QLabel(ScanResult);
         NetworkResultText->setObjectName(QStringLiteral("NetworkResultText"));
-        NetworkResultText->setEnabled(false);
+        NetworkResultText->setEnabled(true);
         NetworkResultText->setGeometry(QRect(10, 340, 111, 16));
         NetworkResult = new QLabel(ScanResult);
         NetworkResult->setObjectName(QStringLiteral("NetworkResult"));
-        NetworkResult->setEnabled(false);
+        NetworkResult->setEnabled(true);
         NetworkResult->setGeometry(QRect(10, 360, 550, 135));
         NetworkResult->setStyleSheet(QStringLiteral(""));
         NetworkResult->setScaledContents(true);
@@ -233,26 +233,26 @@ public:
         AutoScanImageWhileScan_CheckBox->setChecked(false);
         OCTTestingBox = new QGroupBox(Tab_OCT);
         OCTTestingBox->setObjectName(QStringLiteral("OCTTestingBox"));
-        OCTTestingBox->setEnabled(false);
+        OCTTestingBox->setEnabled(true);
         OCTTestingBox->setGeometry(QRect(540, 10, 151, 271));
         RawDataToImage = new QPushButton(OCTTestingBox);
         RawDataToImage->setObjectName(QStringLiteral("RawDataToImage"));
         RawDataToImage->setGeometry(QRect(10, 20, 131, 23));
         EasyBorderDetect = new QPushButton(OCTTestingBox);
         EasyBorderDetect->setObjectName(QStringLiteral("EasyBorderDetect"));
-        EasyBorderDetect->setGeometry(QRect(10, 80, 131, 23));
-        RawDataCheck = new QPushButton(OCTTestingBox);
-        RawDataCheck->setObjectName(QStringLiteral("RawDataCheck"));
-        RawDataCheck->setGeometry(QRect(10, 50, 131, 23));
-        ShakeTestButton = new QPushButton(OCTTestingBox);
-        ShakeTestButton->setObjectName(QStringLiteral("ShakeTestButton"));
-        ShakeTestButton->setGeometry(QRect(10, 110, 131, 23));
+        EasyBorderDetect->setGeometry(QRect(10, 50, 131, 23));
+        SingleImageShakeTestButton = new QPushButton(OCTTestingBox);
+        SingleImageShakeTestButton->setObjectName(QStringLiteral("SingleImageShakeTestButton"));
+        SingleImageShakeTestButton->setGeometry(QRect(10, 80, 131, 23));
         SegNetTestButton = new QPushButton(OCTTestingBox);
         SegNetTestButton->setObjectName(QStringLiteral("SegNetTestButton"));
         SegNetTestButton->setGeometry(QRect(10, 240, 131, 23));
         BeepSoundTestButton = new QPushButton(OCTTestingBox);
         BeepSoundTestButton->setObjectName(QStringLiteral("BeepSoundTestButton"));
         BeepSoundTestButton->setGeometry(QRect(10, 210, 131, 23));
+        MultiImageShakeTestButton = new QPushButton(OCTTestingBox);
+        MultiImageShakeTestButton->setObjectName(QStringLiteral("MultiImageShakeTestButton"));
+        MultiImageShakeTestButton->setGeometry(QRect(10, 110, 131, 23));
         tabWidget->addTab(Tab_OCT, QString());
         DentistProjectV2Class->setCentralWidget(centralWidget);
 
@@ -271,9 +271,9 @@ public:
         DentistProjectV2Class->setWindowTitle(QApplication::translate("DentistProjectV2Class", "DentistProjectV2", nullptr));
         ScanResult->setTitle(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\347\265\220\346\236\234", nullptr));
         ImageResult->setText(QString());
-        FinalResult->setText(QString());
+        BorderDetectionResult->setText(QString());
         ImageResultText->setText(QApplication::translate("DentistProjectV2Class", "OCT \350\275\211\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
-        FinalResultText->setText(QApplication::translate("DentistProjectV2Class", "\350\231\225\347\220\206\345\256\214 & \346\212\223\345\207\272\351\202\212\347\225\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
+        BorderDetectionResultText->setText(QApplication::translate("DentistProjectV2Class", "\350\231\225\347\220\206\345\256\214 & \346\212\223\345\207\272\351\202\212\347\225\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
         ScanNum_Min->setText(QApplication::translate("DentistProjectV2Class", "60", nullptr));
         ScanNum_Max->setText(QApplication::translate("DentistProjectV2Class", "200", nullptr));
         ScanNum_Value->setText(QApplication::translate("DentistProjectV2Class", "60", nullptr));
@@ -303,12 +303,12 @@ public:
         ScanButton->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203    \346\217\217    \346\250\241    \345\274\217", nullptr));
         AutoScanImageWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\345\275\261\345\203\217\347\265\220\346\236\234", nullptr));
         OCTTestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "OCT \346\270\254\350\251\246\347\233\270\351\227\234 (\351\200\262\351\232\216)", nullptr));
-        RawDataToImage->setText(QApplication::translate("DentistProjectV2Class", "\350\274\270\345\207\272\345\234\226 (Raw Data)", nullptr));
+        RawDataToImage->setText(QApplication::translate("DentistProjectV2Class", "\350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", nullptr));
         EasyBorderDetect->setText(QApplication::translate("DentistProjectV2Class", "\347\260\241\346\230\223\351\202\212\347\225\214\346\270\254\350\251\246", nullptr));
-        RawDataCheck->setText(QApplication::translate("DentistProjectV2Class", "\350\274\270\345\207\272\350\263\207\346\226\231 (Raw Data)", nullptr));
-        ShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
+        SingleImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\226\256\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
         SegNetTestButton->setText(QApplication::translate("DentistProjectV2Class", "SegNet \351\240\220\346\270\254", nullptr));
         BeepSoundTestButton->setText(QApplication::translate("DentistProjectV2Class", "Beep Sound \346\270\254\350\251\246", nullptr));
+        MultiImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\244\232\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistProjectV2Class", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
     } // retranslateUi
 

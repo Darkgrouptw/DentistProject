@@ -46,7 +46,7 @@ public:
 
 	// 轉換 Function
 	void SingleRawDataToPointCloud(char*, int, int, int, long, double, int);	// 這邊應該只有 250 * 2048
-	void RawDataToPointCloud(char*, int, int, int ,int, long, double, int);		// 250 * 250 * 2048
+	void MultiRawDataToPointCloud(char*, int, int, int ,int, long, double, int);// 250 * 250 * 2048
 
 	// 拿出圖片
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
@@ -81,11 +81,10 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 找邊界參數設定
 	//////////////////////////////////////////////////////////////////////////
-	const float MaxPeakThreshold = 0.15f;									// 要高於這個值
+	const float MaxPeakThreshold = 0.18f;									// 要高於這個值
 	const float GoThroughThreshold = 0.01f;									// 要多少在走過去
 	const int ChooseBestN = 3;
 	const int StartIndex = 10;												// 從這裡開始找有效的資料
-	const int MinGroupSize = 20;											// 最少要有幾個點
 	const int ConnectRadius = 25;											// 連結半徑
 
 	//////////////////////////////////////////////////////////////////////////

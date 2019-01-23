@@ -55,7 +55,7 @@
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="FinalResult">
+    <widget class="QLabel" name="BorderDetectionResult">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -87,7 +87,7 @@
       <string>OCT 轉完的結果：</string>
      </property>
     </widget>
-    <widget class="QLabel" name="FinalResultText">
+    <widget class="QLabel" name="BorderDetectionResultText">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -166,7 +166,7 @@
     </widget>
     <widget class="QLabel" name="NetworkResultText">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -182,7 +182,7 @@
     </widget>
     <widget class="QLabel" name="NetworkResult">
      <property name="enabled">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="geometry">
       <rect>
@@ -573,7 +573,7 @@
      </widget>
      <widget class="QGroupBox" name="OCTTestingBox">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
@@ -596,23 +596,10 @@
         </rect>
        </property>
        <property name="text">
-        <string>輸出圖 (Raw Data)</string>
+        <string>轉成圖輸出</string>
        </property>
       </widget>
       <widget class="QPushButton" name="EasyBorderDetect">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>80</y>
-         <width>131</width>
-         <height>23</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>簡易邊界測試</string>
-       </property>
-      </widget>
-      <widget class="QPushButton" name="RawDataCheck">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -622,20 +609,20 @@
         </rect>
        </property>
        <property name="text">
-        <string>輸出資料 (Raw Data)</string>
+        <string>簡易邊界測試</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="ShakeTestButton">
+      <widget class="QPushButton" name="SingleImageShakeTestButton">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>110</y>
+         <y>80</y>
          <width>131</width>
          <height>23</height>
         </rect>
        </property>
        <property name="text">
-        <string>晃動偵測</string>
+        <string>單張晃動偵測</string>
        </property>
       </widget>
       <widget class="QPushButton" name="SegNetTestButton">
@@ -662,6 +649,19 @@
        </property>
        <property name="text">
         <string>Beep Sound 測試</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="MultiImageShakeTestButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>110</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>多張晃動偵測</string>
        </property>
       </widget>
      </widget>

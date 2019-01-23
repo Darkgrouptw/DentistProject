@@ -30,10 +30,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//connect(ui.AutoScanImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	//connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
 
-	//// OCT 測試
-	//connect(ui.RawDataToImage,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
-	//connect(ui.RawDataCheck,								SIGNAL(clicked()),				this,	SLOT(WriteRawDataForTesting()));
-	//connect(ui.EasyBorderDetect,							SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
+	// OCT 測試
+	connect(ui.RawDataToImage,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
+	connect(ui.EasyBorderDetect,							SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
 	//connect(ui.BeepSoundTestButton,							SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
 	//connect(ui.ShakeTestButton,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataForShakeTest()));
 	//connect(ui.SegNetTestButton,							SIGNAL(clicked()),				this,	SLOT(SegNetTest()));
@@ -42,8 +41,8 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//connect(ui.PrePCBtn,									SIGNAL(clicked()),				this,	SLOT(PrePointCloudClick()));
 	//connect(ui.NextPCBtn,									SIGNAL(clicked()),				this,	SLOT(NextPointCloudClick()));
 
-	//// 顯示部分
-	//connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
+	// 顯示部分
+	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
 	#pragma endregion
 	#pragma region 傳 UI 指標進去
 	// 藍芽的部分
@@ -59,13 +58,13 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	// OCT 顯示的部分
 	objList.clear();
 	objList.push_back(ui.ImageResult);
+	objList.push_back(ui.BorderDetectionResult);
 	objList.push_back(ui.NetworkResult);
-	objList.push_back(ui.FinalResult);
 
 	rawManager.SendUIPointer(objList);
 
 	// 傳送 rawManager 到 OpenGL Widget
-	//ui.DisplayPanel->SetRawDataManager(&rawManager);
+	ui.DisplayPanel->SetRawDataManager(&rawManager);
 	#pragma endregion
 	#pragma region 初始化參數
 	QString SaveLocation_Temp;
@@ -79,6 +78,11 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	#else
 	// 表示在醫院測試
 	SaveLocation_Temp = "V:/OCT Scan DataSet/" + currentDateStr;
+
+	// 關閉一些進階功能
+	ui.NetworkResult->setEnabled(false);
+	ui.NetworkResultText->setEnabled(false);
+	ui.OCTTestingBox->setEnabled(false);
 	#endif
 
 	// 創建資料夾
@@ -92,4 +96,61 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//);
 	//segNetModel.ReshapeToMultiBatch(GPUBatchSize);
 	#pragma endregion
+}
+
+// OCT 測試
+void DentistProjectV2::ReadRawDataToImage()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
+		rawManager.TranformToIMG(true);
+
+		// UI 更改
+		if (type == RawDataType::MULTI_DATA_TYPE)
+		{
+			ui.ScanNumSlider->setEnabled(true);
+			if (ui.ScanNumSlider->value() == 60)
+				ScanNumSlider_Change(60);
+			else
+				ui.ScanNumSlider->setValue(60);
+			return;
+		}
+	}
+
+	// 其他狀況都需要進來這裡
+	// Slider
+	ui.ScanNumSlider->setEnabled(false);
+	ui.ScanNumSlider->setValue(60);
+}
+void DentistProjectV2::ReadRawDataForBorderTest()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName != "")
+	{
+		// rawManager.ReadRawDataFromFile(RawFileName);
+		//rawManager.ReadRawDataFromFileV2(RawFileName);
+		//rawManager.TranformToIMG(true);
+
+		// UI 更改
+		/*ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+		ScanNumSlider_Change(60);
+		else
+		ui.ScanNumSlider->setValue(60);*/
+	}
+	else
+	{
+		// Slider
+		ui.ScanNumSlider->setEnabled(false);
+		ui.ScanNumSlider->setValue(60);
+	}
+}
+
+// 顯示部分的事件
+void DentistProjectV2::ScanNumSlider_Change(int value)
+{
+	rawManager.ShowImageIndex(value);
+	ui.ScanNum_Value->setText(QString::number(value));
 }

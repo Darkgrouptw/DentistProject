@@ -879,9 +879,9 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
  	cudaFree(GPU_UintDataArray);
 
 	// 設定一下其他參數
-	this->size = 1;
-	this->rows = SizeX;
-	this->cols = SizeZ / 2;
+	size = 1;
+	rows = SizeX;
+	cols = SizeZ / 2;
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -896,7 +896,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cout << "轉換單張點雲: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 }
-void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, int SizeY, int SizeZ, long ShiftValue, double K_Step, int CutValue)
+void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, int SizeY, int SizeZ, long ShiftValue, double K_Step, int CutValue)
 {
 	// 計算時間
 	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
@@ -1335,11 +1335,6 @@ void TRCudaV2::RawDataToPointCloud(char* FileRawData, int DataSize, int SizeX, i
 // 拿出圖片
 vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 {
-	// Total 時間
-	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
-	totalTime = clock();
-	#endif
-
 	// 轉換到 Mat
 	vector<Mat> ImgArray;
 	for (int i = 0; i < size; i++)
@@ -1381,12 +1376,6 @@ vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 				}
 			}
 	}
-
-	// 結算
-	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
-	totalTime = clock() - totalTime;
-	cout << "轉換圖片: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
-	#endif
 	return ImgArray;
 }
 bool TRCudaV2::ShakeDetect(bool ShowDebugMessage)

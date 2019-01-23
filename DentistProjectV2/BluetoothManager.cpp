@@ -109,9 +109,7 @@ QVector3D BluetoothManager::GetAngle()
 	return QVector3D(AngleX, AngleY, AngleZ);
 }
 
-//////////////////////////////////////////////////////////////////////////
 // 藍芽 & Callback
-//////////////////////////////////////////////////////////////////////////
 void BluetoothManager::Callback_DeviceInitDone(string com)
 {
 	cout << "藍芽初始化: " <<  com << " " << (device->IsInitialized()? "成功!": "失敗!") << endl;
@@ -122,7 +120,6 @@ void BluetoothManager::Callback_DeviceCloseDone(string com)
 	cout << "藍芽關閉完成: " << com << " " << (!device->IsInitialized() ? "成功!" : "失敗!") << endl;
 	BLEStatus->setText(codec->toUnicode("藍芽狀態：未連結"));
 }
-
 void BluetoothManager::Callback_DeviceDiscovered(LibBLE::DeviceInfo* deviceInfo)
 {
 	cout << "找到裝置: " << deviceInfo->DeviceName << " " << deviceInfo->DeviceAddress << endl;
@@ -166,9 +163,7 @@ void BluetoothManager::Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*,
 	EularText->setText(codec->toUnicode(Eular_Output.c_str()));
 }
 
-//////////////////////////////////////////////////////////////////////////
 // Helper Function
-//////////////////////////////////////////////////////////////////////////
 void BluetoothManager::MarshalString(System::String ^ s, string& os) 
 {
 	using namespace System::Runtime::InteropServices;
