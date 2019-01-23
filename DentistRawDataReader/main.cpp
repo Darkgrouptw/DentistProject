@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 	//cudaV2.SingleRawDataToPointCloud(buffer.data(), bufferSize, 250, 2048, 37 * 4 - 4, 2, 10);
 
 	// 測試 Multi Scan
-	cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
+	cudaV2.MultiRawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
 
 	// 晃動判斷
 	//cudaV2.ShakeDetect(false);

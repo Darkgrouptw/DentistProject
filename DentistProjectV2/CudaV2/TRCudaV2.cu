@@ -884,18 +884,20 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaMemset(GPU_PointType, 0, sizeof(uchar) * size * rows * cols);
 	#pragma endregion
 	#pragma region 抓取邊界
+	assert(rows <= NumThreads && "rows 要小於 1024 的限制");
+
 	// 找最大最小值
 	findMaxAndMinPeak << < size * rows * cols / NumThreads, NumThreads >> > (GPU_OCTFloatData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
 	CheckCudaError();
 
 	// Parse 一些連續最小值
-	ParseMaxMinPeak << < size * rows * ChooseBestN / NumThreads_small, NumThreads_small >> > (GPU_PointType, size, rows, cols, StartIndex);
+	ParseMaxMinPeak << < size * ChooseBestN, rows >> > (GPU_PointType, size, rows, cols, StartIndex);
 	CheckCudaError();
 
 	// 抓出一維陣列
 	int *GPU_PointType_BestN, *PointType_BestN;
 	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
-	PickBestChoiceToArray << < size * rows * ChooseBestN / NumThreads_small, NumThreads_small >> > (GPU_OCTFloatData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	PickBestChoiceToArray << < size * ChooseBestN, rows >> > (GPU_OCTFloatData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
@@ -904,7 +906,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	int ConnectStateSize = size * rows * ChooseBestN * ConnectRadius * ChooseBestN;
 	cudaMalloc(&GPU_Connect_Status, sizeof(int) * ConnectStateSize);
 	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * ConnectStateSize);
-	ConnectPointsStatus << < size * rows * ChooseBestN / NumThreads_small, NumThreads_small >> > (GPU_PointType_BestN, GPU_Connect_Status, size, rows, ChooseBestN, ConnectRadius);
+	ConnectPointsStatus << < size * ChooseBestN , rows >> > (GPU_PointType_BestN, GPU_Connect_Status, size, rows, ChooseBestN, ConnectRadius);
 	CheckCudaError();
 
 	// 把資料傳回 CPU
@@ -1317,18 +1319,20 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	cudaMemset(GPU_PointType, 0, sizeof(uchar) * size * rows * cols);
 	#pragma endregion
 	#pragma region 抓取邊界
+	assert(rows <= NumThreads && "rows 要小於 1024 的限制");
+	
 	// 找最大最小值
 	findMaxAndMinPeak << < size * rows * cols / NumThreads, NumThreads >> > (GPU_ShiftData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
 	CheckCudaError();
 
 	// Parse 一些連續最小值
-	ParseMaxMinPeak << < size * rows * ChooseBestN / NumThreads_small, NumThreads_small >> > (GPU_PointType, size, rows, cols, StartIndex);
+	ParseMaxMinPeak << < size * ChooseBestN, rows >> > (GPU_PointType, size, rows, cols, StartIndex);
 	CheckCudaError();
 
 	// 抓出一維陣列
 	int *GPU_PointType_BestN, *PointType_BestN;
 	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
-	PickBestChoiceToArray << < size * rows * ChooseBestN / NumThreads_small, NumThreads_small >> > (GPU_ShiftData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	PickBestChoiceToArray << < size * ChooseBestN, rows >> > (GPU_ShiftData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
@@ -1337,7 +1341,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	int ConnectStateSize = size * rows * ChooseBestN * ConnectRadius * ChooseBestN;
 	cudaMalloc(&GPU_Connect_Status, sizeof(int) * ConnectStateSize);
 	cudaMemset(GPU_Connect_Status, 0, sizeof(int) * ConnectStateSize);
-	ConnectPointsStatus << < size * rows * ChooseBestN / NumThreads_small, NumThreads_small >> > (GPU_PointType_BestN, GPU_Connect_Status, size, rows, ChooseBestN, ConnectRadius);
+	ConnectPointsStatus << < size * ChooseBestN, rows >> > (GPU_PointType_BestN, GPU_Connect_Status, size, rows, ChooseBestN, ConnectRadius);
 	CheckCudaError();
 
 	// 把資料傳回 CPU

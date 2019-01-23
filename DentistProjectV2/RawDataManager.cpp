@@ -9,12 +9,10 @@ RawDataManager::RawDataManager()
 	// 設定 Function Pointer
 	ScanSingle_Pointer	= bind(&RawDataManager::ScanSingleDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
 	ScanMulti_Pointer	= bind(&RawDataManager::ScanMultiDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
-	TestFunctionPointer	= bind(&RawDataManager::TestFunction,				this, placeholders::_1);
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread();
 	//Worker->InitFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer);
-	Worker->InitTestFunctionPointer(&TestFunctionPointer);
 }
 RawDataManager::~RawDataManager()
 {
@@ -369,7 +367,7 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 }
 void RawDataManager::SetScanOCTMode(bool IsStart, bool NeedSave_RawData)
 {
-	Worker->SetScanModel(IsStart);
+	Worker->SetScanModel(IsStart, NeedSave_RawData);
 }
 
 // Helper Function

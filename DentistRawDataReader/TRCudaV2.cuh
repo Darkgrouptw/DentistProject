@@ -40,7 +40,7 @@ public:
 
 	// 轉換 Function
 	void SingleRawDataToPointCloud(char*, int, int, int, long, double, int);	// 這邊應該只有 250 * 2048
-	void RawDataToPointCloud(char*, int, int, int ,int, long, double, int);		// 250 * 250 * 2048
+	void MultiRawDataToPointCloud(char*, int, int, int, int, long, double, int);// 250 * 250 * 2048
 
 	// 拿出圖片
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
@@ -90,10 +90,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 其他參數設定 設定
 	//////////////////////////////////////////////////////////////////////////
-	const int NumBlocks = 250 * 250;
 	const int NumThreads = 1024;											// 最多限制在 1024
-	const int NumBlocks_small = 250 * ChooseBestN;
-	const int NumThreads_small = 250;
 	const int NumPolynomial = 5;											// 使用 5 次項
 	const int MinValuePixel_TL = 2;											// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
 	const int MinValuePixel_BR = 10;										// Buttom Right 的 Pixel

@@ -96,7 +96,6 @@ private:
 	// 其他參數設定 設定
 	//////////////////////////////////////////////////////////////////////////
 	const int NumThreads = 1024;											// 最多限制在 1024
-	const int NumThreads_small = 250;
 	const int NumPolynomial = 5;											// 使用 5 次項
 	const int MinValuePixel_TL = 2;											// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
 	const int MinValuePixel_BR = 10;										// Buttom Right 的 Pixel

@@ -20,12 +20,13 @@ void ScanningWorkerThread::InitUIPointer(QPushButton* button, QString* endText)
 }
 
 // 外部掃描的 Function
-void ScanningWorkerThread::SetScanModel(bool IsStart)
+void ScanningWorkerThread::SetScanModel(bool IsStart, bool SaveRawData)
 {
 	if (IsStart && ScanThread == nullptr)
 	{
 		// 開始掃描模式
 		IsEnd = false;
+		NeedSave_RawData = SaveRawData;
 
 		// 清一次記憶體
 		System::GC::Collect();

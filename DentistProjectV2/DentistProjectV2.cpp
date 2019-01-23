@@ -146,14 +146,10 @@ void DentistProjectV2::ScanOCTMode()
 	if (ui.ScanButton->text() == EndStartText)
 	{
 		ui.ScanButton->setText(StartScanText);
-		//rawManager.Init
-		rawManager.SetScanOCTMode(true);
+		rawManager.SetScanOCTMode(true, true);
 	}
 	else
-	{
-		rawManager.SetScanOCTMode(false);
-		//rawManager.SetScanOCTMode(false);
-	}
+		rawManager.SetScanOCTMode(false, true);		// 設定只掃完最後一張就停止了
 	/*
 	#pragma region 檔名處理
 	QString SaveLocation;							// 最後儲存的路徑
