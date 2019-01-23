@@ -23,11 +23,11 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//// 藍芽測試
 	//connect(ui.PointCloudAlignmentTestBtn,					SIGNAL(clicked()),				this,	SLOT(PointCloudAlignmentTest()));
 
-	//// OCT 相關(主要)
-	//connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
-	//connect(ui.SaveWithTime_CheckBox,						SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
-	//connect(ui.AutoScanRawDataWhileScan_CheckBox,			SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
-	//connect(ui.AutoScanImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
+	// OCT 相關(主要)
+	connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
+	connect(ui.SaveWithTime_CheckBox,						SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
+	connect(ui.AutoScanRawDataWhileScan_CheckBox,			SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
+	connect(ui.AutoScanImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	//connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
 
 	// OCT 測試
@@ -98,6 +98,42 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	#pragma endregion
 }
 
+// OCT 相關(主要)
+void DentistProjectV2::ChooseSaveLocaton()
+{
+	QString OCT_SaveLocation = QFileDialog::getExistingDirectory(this, "Save OCT Data Location", ui.SaveLocationText->text() + "/../", QFileDialog::DontUseNativeDialog);
+	if (OCT_SaveLocation != "")
+	{
+		ui.SaveLocationText->setText(OCT_SaveLocation);
+
+		// 創建目錄
+		QDir().mkdir(OCT_SaveLocation);
+	}
+}
+void DentistProjectV2::SaveWithTime_ChangeEvent(int signalNumber)
+{
+	if (!ui.SaveWithTime_CheckBox->isChecked())
+	{
+		QMessageBox::information(
+			this,																												// 此視窗
+			codec->toUnicode("貼心的提醒視窗"),																					// Title
+			codec->toUnicode("如果取消勾選，那儲存位置會以掃描順序來定\n(Ex: V:/OCT OCT Scan DataSet/1)")						// 中間的文字解說
+		);
+	}
+	//cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
+}
+void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
+{
+	if (ui.AutoScanRawDataWhileScan_CheckBox->isChecked())
+	{
+		QMessageBox::information(
+			this,																												// 此視窗
+			codec->toUnicode("貼心的提醒視窗"),																					// Title
+			codec->toUnicode("如果勾選，會增加資料儲存致硬碟的時間")															// 中間的文字解說
+		);
+	}
+}
+
 // OCT 測試
 void DentistProjectV2::ReadRawDataToImage()
 {
@@ -129,23 +165,25 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
-		// rawManager.ReadRawDataFromFile(RawFileName);
-		//rawManager.ReadRawDataFromFileV2(RawFileName);
-		//rawManager.TranformToIMG(true);
+		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
+		rawManager.TranformToIMG(false);
 
 		// UI 更改
-		/*ui.ScanNumSlider->setEnabled(true);
-		if (ui.ScanNumSlider->value() == 60)
-		ScanNumSlider_Change(60);
-		else
-		ui.ScanNumSlider->setValue(60);*/
+		if (type == RawDataType::MULTI_DATA_TYPE)
+		{
+			ui.ScanNumSlider->setEnabled(true);
+			if (ui.ScanNumSlider->value() == 60)
+				ScanNumSlider_Change(60);
+			else
+				ui.ScanNumSlider->setValue(60);
+			return;
+		}
 	}
-	else
-	{
-		// Slider
-		ui.ScanNumSlider->setEnabled(false);
-		ui.ScanNumSlider->setValue(60);
-	}
+
+	// 其他狀況都需要進來這裡
+	// Slider
+	ui.ScanNumSlider->setEnabled(false);
+	ui.ScanNumSlider->setValue(60);
 }
 
 // 顯示部分的事件
