@@ -260,6 +260,12 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 				ui.ScanNumSlider->setValue(60);
 			return;
 		}
+		else if (type == RawDataType::SINGLE_DATA_TYPE)
+		{
+			ui.ScanNumSlider->setEnabled(false);
+			ScanNumSlider_Change(0);
+			return;
+		}
 	}
 
 	// 其他狀況都需要進來這裡

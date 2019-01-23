@@ -36,7 +36,15 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 }
 void RawDataManager::ShowImageIndex(int index)
 {
-	if (60 <= index && index <= 200 && QImageResultArray.size() > 0)
+	if (60 <= index && index <= 200 && QImageResultArray.size() > 0)//multi
+	{
+		QImage Pixmap_ImageResult = QImageResultArray[index];
+		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
+
+		QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
+		BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
+	}
+	else if (0 == index)//single
 	{
 		QImage Pixmap_ImageResult = QImageResultArray[index];
 		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
