@@ -551,7 +551,8 @@
         </rect>
        </property>
        <property name="text">
-        <string>掃    描    模    式</string>
+        <string>掃    描    模    式
+(End)</string>
        </property>
       </widget>
       <widget class="QCheckBox" name="AutoScanImageWhileScan_CheckBox">

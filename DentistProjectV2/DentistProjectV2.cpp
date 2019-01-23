@@ -28,7 +28,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.SaveWithTime_CheckBox,						SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
 	connect(ui.AutoScanRawDataWhileScan_CheckBox,			SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.AutoScanImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
-	//connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCT()));
+	connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCTMode()));
 
 	// OCT 測試
 	connect(ui.RawDataToImage,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
@@ -44,29 +44,12 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
 	#pragma endregion
-	#pragma region 傳 UI 指標進去
-	// 藍芽的部分
-	QVector<QObject*>		objList;
-
-	objList.push_back(ui.BLEStatus);
-	objList.push_back(ui.EularText);
-	objList.push_back(this);
-	objList.push_back(ui.BLEDeviceList);
-	
-	rawManager.bleManager.SendUIPointer(objList);
-
-	// OCT 顯示的部分
-	objList.clear();
-	objList.push_back(ui.ImageResult);
-	objList.push_back(ui.BorderDetectionResult);
-	objList.push_back(ui.NetworkResult);
-
-	rawManager.SendUIPointer(objList);
-
-	// 傳送 rawManager 到 OpenGL Widget
-	ui.DisplayPanel->SetRawDataManager(&rawManager);
-	#pragma endregion
 	#pragma region 初始化參數
+	// UI 文字 & Scan Thread
+	StartScanText = codec->toUnicode("掃    描    模    式\n(Start)");
+	EndStartText = codec->toUnicode("掃    描    模    式\n(End)");
+
+	// 存檔位置
 	QString SaveLocation_Temp;
 	QDate date = QDate::currentDate();
 	
@@ -96,6 +79,30 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//);
 	//segNetModel.ReshapeToMultiBatch(GPUBatchSize);
 	#pragma endregion
+	#pragma region 傳 UI 指標進去
+	// 藍芽的部分
+	QVector<QObject*>		objList;
+
+	objList.push_back(ui.BLEStatus);
+	objList.push_back(ui.EularText);
+	objList.push_back(this);
+	objList.push_back(ui.BLEDeviceList);
+	
+	rawManager.bleManager.SendUIPointer(objList);
+
+	// OCT 顯示的部分
+	objList.clear();
+	objList.push_back(ui.ImageResult);
+	objList.push_back(ui.BorderDetectionResult);
+	objList.push_back(ui.NetworkResult);
+	objList.push_back(ui.ScanButton);
+	objList.push_back((QObject*)&EndStartText);
+
+	rawManager.SendUIPointer(objList);
+
+	// 傳送 rawManager 到 OpenGL Widget
+	ui.DisplayPanel->SetRawDataManager(&rawManager);
+	#pragma endregion
 }
 
 // OCT 相關(主要)
@@ -120,7 +127,6 @@ void DentistProjectV2::SaveWithTime_ChangeEvent(int signalNumber)
 			codec->toUnicode("如果取消勾選，那儲存位置會以掃描順序來定\n(Ex: V:/OCT OCT Scan DataSet/1)")						// 中間的文字解說
 		);
 	}
-	//cout << ui.SaveWithTime_CheckBox->isChecked() << endl;
 }
 void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 {
@@ -132,6 +138,82 @@ void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 			codec->toUnicode("如果勾選，會增加資料儲存致硬碟的時間")															// 中間的文字解說
 		);
 	}
+}
+void DentistProjectV2::ScanOCTMode()
+{
+	//cout << ui.ScanButton->text().toStdString() << endl;
+	//cout << EndStartText.toStdString() << endl;
+	if (ui.ScanButton->text() == EndStartText)
+	{
+		ui.ScanButton->setText(StartScanText);
+		//rawManager.Init
+		rawManager.SetScanOCTMode(true);
+	}
+	else
+	{
+		rawManager.SetScanOCTMode(false);
+		//rawManager.SetScanOCTMode(false);
+	}
+	/*
+	#pragma region 檔名處理
+	QString SaveLocation;							// 最後儲存的路徑
+	if (ui.SaveWithTime_CheckBox->isChecked())
+	{
+		QTime currentTime = QTime::currentTime();
+		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
+		cout << "現在時間: " << TimeFileName.toStdString() << endl;
+
+		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(TimeFileName);
+	}
+	else
+	{
+		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(QString::number(ScanIndex));
+		ScanIndex++;
+	}
+	cout << "儲存位置: " << SaveLocation.toStdString() << endl;
+	#pragma endregion
+	#pragma region 掃描
+	#ifdef TEST_NO_OCT
+	// 判斷是否有
+	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
+
+	// 這邊是確認檔名 OK 不 OK
+	// 因為以前檔名有一個 Bug 導致會有 Error String 會有 Api Wait TimeOut (579) 的問題
+	//QFile TestFile(SaveLocation);
+	//if (!TestFile.open(QIODevice::WriteOnly))
+	//	cout << "此檔名有問題!!" << endl;
+	//else
+	//	cout << "此檔名沒有問題!!" << endl;
+	//TestFile.close();
+	return;
+	#else
+	// 開始 Scan
+
+	bool NeedSave_RawData = ui.AutoScanRawDataWhileScan_CheckBox->isChecked();
+	bool NeedSave_Image = ui.AutoScanImageWhileScan_CheckBox->isChecked();
+	//while (true)
+	//{
+	//	rawManager.ScanDataFromDevice(SaveLocation, NeedSave_RawData);
+	//	rawManager.TranformToIMG(NeedSave_Image);
+	//	if (rawManager.ShakeDetect(this, false))
+	//	{
+	//		// 沒晃動到
+	//		cout << "沒有晃動到" << endl;
+	//		break;
+	//	}
+	//	else
+	//		cout << "晃到重拍" << endl;
+
+	//}
+	//rawManager.ScanDataFromDevice(SaveLocation, NeedSave_RawData);
+	rawManager.ScanSingleData(SaveLocation, NeedSave_RawData);
+	//rawManager.TranformToIMG(NeedSave_Image);
+	#endif
+	#pragma endregion
+	#pragma region 網路預測結果
+	//rawManager.GenerateNetworkData();
+	#pragma endregion
+	*/
 }
 
 // OCT 測試

@@ -7,11 +7,14 @@
 #include "DataManager.h"
 #include "BluetoothManager.h"
 #include "PointCloudInfo.h"
+#include "ScanningWorkerThread.h"
 
 #include "4pcs.h"
 #include "super4pcs/shared4pcs.h"
 #include "super4pcs/algorithms/super4pcs.h"
 #include "super4pcs/io/io.h"
+
+#include <vcclr.h>								// 要使用 Manage 的 Class，要拿這個使用 gcroot
 
 #include <cmath>
 #include <vector>
@@ -81,6 +84,8 @@ public:
 	void ScanSingleDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void TranformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
+
+	void SetScanOCTMode(bool, bool);											// 開始掃描 OCT
 	//bool ShakeDetect_Multi(QMainWindow*, bool);									// 偵測有無晃動
 	//void WriteRawDataToFile(QString);											// 將 Raw Data 轉成檔案
 
@@ -105,6 +110,7 @@ private:
 	// 其他 Class 的資料
 	DataManager			DManager;
 	TRCudaV2			cudaV2;
+	gcroot<ScanningWorkerThread^> Worker;
 
 	//////////////////////////////////////////////////////////////////////////
 	// OCT
@@ -116,6 +122,13 @@ private:
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
 	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Function Pointer
+	//////////////////////////////////////////////////////////////////////////
+	function<void(QString, bool)> ScanSingle_Pointer;
+	function<void(QString, bool)> ScanMulti_Pointer;
+	function<void(int)>	TestFunctionPointer;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 網路

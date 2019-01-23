@@ -300,7 +300,8 @@ public:
         SaveLocationBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\201\270\346\223\207\350\267\257\345\276\221", nullptr));
         SaveWithTime_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\344\273\245\346\231\202\351\226\223\345\204\262\345\255\230", nullptr));
         AutoScanRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230 Raw Data", nullptr));
-        ScanButton->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203    \346\217\217    \346\250\241    \345\274\217", nullptr));
+        ScanButton->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203    \346\217\217    \346\250\241    \345\274\217\n"
+"(End)", nullptr));
         AutoScanImageWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\345\275\261\345\203\217\347\265\220\346\236\234", nullptr));
         OCTTestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "OCT \346\270\254\350\251\246\347\233\270\351\227\234 (\351\200\262\351\232\216)", nullptr));
         RawDataToImage->setText(QApplication::translate("DentistProjectV2Class", "\350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", nullptr));
