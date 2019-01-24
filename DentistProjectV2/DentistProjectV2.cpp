@@ -47,7 +47,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	#pragma region 初始化參數
 	// UI 文字 & Scan Thread
 	StartScanText = codec->toUnicode("掃    描    模    式\n(Start)");
-	EndStartText = codec->toUnicode("掃    描    模    式\n(End)");
+	EndScanText = codec->toUnicode("掃    描    模    式\n(End)");
 
 	// 存檔位置
 	QString SaveLocation_Temp;
@@ -96,7 +96,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.BorderDetectionResult);
 	objList.push_back(ui.NetworkResult);
 	objList.push_back(ui.ScanButton);
-	objList.push_back((QObject*)&EndStartText);
 
 	rawManager.SendUIPointer(objList);
 
@@ -141,12 +140,15 @@ void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 }
 void DentistProjectV2::ScanOCTMode()
 {
-	//cout << ui.ScanButton->text().toStdString() << endl;
-	//cout << EndStartText.toStdString() << endl;
-	if (ui.ScanButton->text() == EndStartText)
+	// 初始化變數
+	bool NeedSave_RawData = ui.AutoScanRawDataWhileScan_CheckBox->isChecked();
+	bool NeedSave_Image = ui.AutoScanImageWhileScan_CheckBox->isChecked();
+
+	// 判斷
+	if (ui.ScanButton->text() == EndScanText)
 	{
 		ui.ScanButton->setText(StartScanText);
-		rawManager.SetScanOCTMode(true, true);
+		rawManager.SetScanOCTMode(true, EndScanText);
 	}
 	else
 		rawManager.SetScanOCTMode(false, true);		// 設定只掃完最後一張就停止了
@@ -223,14 +225,16 @@ void DentistProjectV2::ReadRawDataToImage()
 
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
-		{
 			ui.ScanNumSlider->setEnabled(true);
-			if (ui.ScanNumSlider->value() == 60)
-				ScanNumSlider_Change(60);
-			else
-				ui.ScanNumSlider->setValue(60);
-			return;
-		}
+		else if (type == RawDataType::SINGLE_DATA_TYPE)
+			ui.ScanNumSlider->setEnabled(false);
+
+		// 換圖片
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+		return;
 	}
 
 	// 其他狀況都需要進來這裡
@@ -248,20 +252,16 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
-		{
 			ui.ScanNumSlider->setEnabled(true);
-			if (ui.ScanNumSlider->value() == 60)
-				ScanNumSlider_Change(60);
-			else
-				ui.ScanNumSlider->setValue(60);
-			return;
-		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
-		{
 			ui.ScanNumSlider->setEnabled(false);
-			ScanNumSlider_Change(0);
-			return;
-		}
+
+		// 換圖片
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+		return;
 	}
 
 	// 其他狀況都需要進來這裡

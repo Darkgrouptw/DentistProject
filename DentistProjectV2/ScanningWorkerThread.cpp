@@ -13,10 +13,9 @@ void ScanningWorkerThread::InitFunctionPointer(function<void(QString, bool)>* Sc
 	ScanSingleDataFromDeviceV2 = ScanSingle;
 	ScanMultiDataFromDeviceV2 = ScanMulti;
 }
-void ScanningWorkerThread::InitUIPointer(QPushButton* button, QString* endText)
+void ScanningWorkerThread::InitUIPointer(QPushButton* button)
 {
 	ScanButton = button;
-	EndScanText = endText;
 }
 
 // 外部掃描的 Function
@@ -49,7 +48,7 @@ void ScanningWorkerThread::ScanProcess()
 	// 這邊要改進讀條 & 顯示文字
 	while (!IsEnd)
 	{
-		#pragma region 1. 開始掃描，要顯示畫面
+		#pragma region 1. 開始掃描的初始化設定
 		//(*TestFunciton)(times++);
 		//cout << times++ << endl;
 		//Thread::Sleep(300);

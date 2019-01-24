@@ -32,7 +32,7 @@ private:
 	// 儲存時，如果不溝時間，會以 Index 儲存
 	int ScanIndex = 0;
 	QString StartScanText;
-	QString EndStartText;
+	QString EndScanText;
 
 
 	//////////////////////////////////////////////////////////////////////////

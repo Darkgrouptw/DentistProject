@@ -12,7 +12,7 @@ RawDataManager::RawDataManager()
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread();
-	//Worker->InitFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer);
+	Worker->InitFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer);
 }
 RawDataManager::~RawDataManager()
 {
@@ -22,34 +22,38 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 5);
+	assert(UIPointer.size() == 4);
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
 
 	// 後面兩個是 給 ScanThread
 	QPushButton* scanButton = (QPushButton*)UIPointer[3];
-	QString* endText		= (QString*)UIPointer[4];
-	Worker->InitUIPointer(scanButton, endText);
+	Worker->InitUIPointer(scanButton);
 }
 void RawDataManager::ShowImageIndex(int index)
 {
-	if (60 <= index && index <= 200 && QImageResultArray.size() > 0)//multi
+	if (60 <= index && index <= 200)
 	{
-		QImage Pixmap_ImageResult = QImageResultArray[index];
-		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
+		if (QImageResultArray.size() > 1)				
+		{
+			// Multi
+			QImage Pixmap_ImageResult = QImageResultArray[index];
+			ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 
-		QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
-		BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
-	}
-	else if (0 == index)//single
-	{
-		QImage Pixmap_ImageResult = QImageResultArray[index];
-		ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
+			QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
+			BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
+		}
+		else if (QImageResultArray.size() == 1)
+		{
+			// Single
+			QImage Pixmap_ImageResult = QImageResultArray[index];
+			ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 
-		QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
-		BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
-	}
+			QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
+			BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
+		}
+	}	
 }
 
 // OCT 相關的步驟
@@ -365,7 +369,7 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#pragma endregion
 }
-void RawDataManager::SetScanOCTMode(bool IsStart, bool NeedSave_RawData)
+void RawDataManager::SetScanOCTMode(bool IsStart, QString EndText, bool NeedSave_RawData, bool NeedSave_ImageData)
 {
 	Worker->SetScanModel(IsStart, NeedSave_RawData);
 }

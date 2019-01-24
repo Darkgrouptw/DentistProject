@@ -24,7 +24,7 @@ public:
 	// 傳送 Function Pointer
 	//////////////////////////////////////////////////////////////////////////
 	void InitFunctionPointer(function<void(QString, bool)>*, function<void(QString, bool)>*);
-	void InitUIPointer(QPushButton*, QString*);
+	void InitUIPointer(QPushButton*);
 
 	//////////////////////////////////////////////////////////////////////////
 	// 外部掃描的 Function
