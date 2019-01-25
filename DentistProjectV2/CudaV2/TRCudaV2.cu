@@ -536,7 +536,6 @@ __global__ static void TransforToImage(float* VolumeData_Normalized, uchar* Imag
 		ImageArray[id] = (uchar)data;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // CPU
 //////////////////////////////////////////////////////////////////////////
@@ -891,13 +890,13 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	CheckCudaError();
 
 	// Parse 一些連續最小值
-	ParseMaxMinPeak << < size * ChooseBestN, rows >> > (GPU_PointType, size, rows, cols, StartIndex);
+	ParseMaxMinPeak << < size, rows >> > (GPU_PointType, size, rows, cols, StartIndex);
 	CheckCudaError();
 
 	// 抓出一維陣列
 	int *GPU_PointType_BestN, *PointType_BestN;
 	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
-	PickBestChoiceToArray << < size * ChooseBestN, rows >> > (GPU_OCTFloatData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	PickBestChoiceToArray << < size, rows >> > (GPU_OCTFloatData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
@@ -1326,13 +1325,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	CheckCudaError();
 
 	// Parse 一些連續最小值
-	ParseMaxMinPeak << < size * ChooseBestN, rows >> > (GPU_PointType, size, rows, cols, StartIndex);
+	ParseMaxMinPeak << < size, rows >> > (GPU_PointType, size, rows, cols, StartIndex);
 	CheckCudaError();
 
 	// 抓出一維陣列
 	int *GPU_PointType_BestN, *PointType_BestN;
 	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
-	PickBestChoiceToArray << < size * ChooseBestN, rows >> > (GPU_ShiftData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	PickBestChoiceToArray << < size, rows >> > (GPU_ShiftData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
@@ -1445,13 +1444,46 @@ vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 	}
 	return ImgArray;
 }
-bool TRCudaV2::ShakeDetect(bool ShowDebugMessage)
+void TRCudaV2::CopySingleBorder(int* LastArray)
+{
+	assert(LastArray != NULL && PointType_1D != NULL && "要先初始化 Array 和要做轉點雲的部分!!");
+	memcpy(LastArray, PointType_1D, 1 * rows * cols);				// 一定是一張
+}
+bool TRCudaV2::ShakeDetect_Single(int* LastArray)
+{
+	// 設定變數
+	int voteNum = 0;								// 有效票數
+	float MoveDis = 0;								// 移動的總共距離
+
+	// 跑每一個點
+	for (int i = 0; i < rows; i++)
+	{
+		if (PointType_1D[i] != -1 && LastArray[i] != -1)
+		{
+			MoveDis += abs(PointType_1D[i] - LastArray[i]);
+			voteNum++;
+		}
+	}
+
+	// 判斷是否有有效資料
+	if (voteNum > OCT_Valid_VoteNum)
+	{
+		MoveDis /= voteNum;
+		cout << "晃動距離(pixel): " << (float)MoveDis << endl;
+
+		// 這邊是代表沒有晃動
+		if (MoveDis < OCT_Move_Threshold)
+			return false;
+	}
+	return true;
+}
+bool TRCudaV2::ShakeDetect_Multi()
 {
 	// 找 60 ~ 200 裡面有效的有沒有斷層
-	int voteNum = 0;
-	float MoveRate = 0;
+	int voteNum = 0;								// 有效票數
+	float MoveDis = 0;								// 移動的總共距離
 	
-	// Reverse 的 0 ~ 250
+	// Reverse 後的 0 ~ 250
 	for (int i = 60; i < 200; i++)
 	{
 		bool IsMove = false;
@@ -1462,22 +1494,19 @@ bool TRCudaV2::ShakeDetect(bool ShowDebugMessage)
 
 		// 從中間往前找
 		for (int j = size / 2 - 1; j >= 0; j--)
-		{
 			if (!PointType_1D[j * rows + i] != -1)
 			{
 				leftIndex = j * rows + i;
 				break;
 			}
-		}
+		
 		// 從中間像後找
 		for (int j = size / 2; j < size; j++)
-		{
 			if (PointType_1D[j] != -1)
 			{
 				rightIndex = j * rows + i;
 				break;
 			}
-		}
 
 		int leftY = PointType_1D[leftIndex];
 		int rightY = PointType_1D[rightIndex];
@@ -1487,23 +1516,23 @@ bool TRCudaV2::ShakeDetect(bool ShowDebugMessage)
 			PointType_1D[rightIndex] != -1)
 		{
 			int DisMid = abs(PointType_1D[rightIndex] - PointType_1D[leftIndex]);
-			MoveRate += DisMid;
+			MoveDis += DisMid;
 			voteNum++;
 		}
 
 	}
 
 	// 判斷是否有有效資料
-	if (voteNum > 0)
+	if (voteNum > OCT_Valid_VoteNum)
 	{
-		MoveRate /= voteNum;
-		cout << "晃動比例: " << (float)MoveRate << endl;
+		MoveDis /= voteNum;
+		cout << "晃動距離(pixel): " << (float)MoveDis << endl;
 
 		// 這邊是代表沒有晃動
-		if (MoveRate < OCT_Move_Threshold)
-			return true;
+		if (MoveDis < OCT_Move_Threshold)
+			return false;
 	}
-	return false;
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

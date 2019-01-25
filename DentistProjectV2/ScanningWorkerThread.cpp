@@ -8,7 +8,7 @@ ScanningWorkerThread::~ScanningWorkerThread()
 }
 
 // 傳送 Function Pointer
-void ScanningWorkerThread::InitFunctionPointer(
+void ScanningWorkerThread::InitScanFunctionPointer(
 	function<void(QString, bool)>* ScanSingle,
 	function<void(QString, bool)>* ScanMulti,
 	function<void(bool)>* ToImage)
@@ -17,8 +17,13 @@ void ScanningWorkerThread::InitFunctionPointer(
 	ScanMultiDataFromDeviceV2 = ScanMulti;
 	TranformToIMG = ToImage;
 }
-void ScanningWorkerThread::InitUIPointer(QPushButton* button, QLineEdit* lineEdt)
+void ScanningWorkerThread::InitShowFunctionPointer(function<void()>* showImage)
 {
+	ShowImageIndex = showImage;
+}
+void ScanningWorkerThread::InitUIPointer(QSlider* scanNumSlider, QPushButton* button, QLineEdit* lineEdt)
+{
+	ScanNumSlider = scanNumSlider;
 	ScanButton = button;
 	SaveLocationText = lineEdt;
 }
@@ -65,19 +70,25 @@ void ScanningWorkerThread::ScanProcess()
 		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
 		SaveLocation = QDir(SaveLocationText->text()).absoluteFilePath(TimeFileName);
 		cout << "儲存位置: " << SaveLocation.toStdString() << endl;
-
-		Thread::Sleep(300);
 		#pragma endregion
 		#pragma region 2. 掃描單張資料
-
+		(*ScanSingleDataFromDeviceV2)(SaveLocation + "_single", NeedSave_RawData);
+		(*TranformToIMG)(NeedSave_ImageData);
 		#pragma endregion
-		#pragma region 3. 等待結果判斷
+		#pragma region 3. 顯示 & 判斷結果
+		(*ShowImageIndex)();
+		ScanNumSlider->setEnabled(false);
 		#pragma endregion
 		#pragma region 4. 如果是一張，那還要再掃一張，如果大於一張，驗證最後兩張是否正確
 		#pragma endregion
 		#pragma region 5. 開始掃描多個資料
+		//(*ScanMultiDataFromDeviceV2)(SaveLocation + "_single", NeedSave_RawData);
+		//(*TranformToIMG)(NeedSave_ImageData);
 		#pragma endregion
-		#pragma region 6. 等待結果判斷
+		#pragma region 6. 顯示 & 判斷結果
+		//(*ShowImageIndex)();
+		//ScanNumSlider->setEnabled(true);
+		//break;
 		#pragma endregion
 		#pragma region 7. 驗證是否有晃動到
 		#pragma endregion

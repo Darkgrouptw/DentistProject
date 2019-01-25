@@ -94,6 +94,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.ImageResult);
 	objList.push_back(ui.BorderDetectionResult);
 	objList.push_back(ui.NetworkResult);
+	objList.push_back(ui.ScanNumSlider);
 	objList.push_back(ui.ScanButton);
 	objList.push_back(ui.SaveLocationText);
 
@@ -129,6 +130,19 @@ void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 }
 void DentistProjectV2::ScanOCTMode()
 {
+	#ifdef TEST_NO_OCT
+	// 判斷是否有
+	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
+
+	// 這邊是確認檔名 OK 不 OK
+	// 因為以前檔名有一個 Bug 導致會有 Error String 會有 Api Wait TimeOut (579) 的問題
+	/*QFile TestFile(SaveLocation);
+	if (!TestFile.open(QIODevice::WriteOnly))
+		cout << "此檔名有問題!!" << endl;
+	else
+		cout << "此檔名沒有問題!!" << endl;
+	TestFile.close();*/
+	#else
 	// 初始化變數
 	bool NeedSave_RawData = ui.AutoScanRawDataWhileScan_CheckBox->isChecked();
 	bool NeedSave_ImageData = ui.AutoScanImageWhileScan_CheckBox->isChecked();
@@ -141,66 +155,7 @@ void DentistProjectV2::ScanOCTMode()
 	}
 	else
 		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_RawData, NeedSave_ImageData);		// 設定只掃完最後一張就停止了
-	/*
-	#pragma region 檔名處理
-	QString SaveLocation;							// 最後儲存的路徑
-	if (ui.SaveWithTime_CheckBox->isChecked())
-	{
-		QTime currentTime = QTime::currentTime();
-		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
-		cout << "現在時間: " << TimeFileName.toStdString() << endl;
-
-		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(TimeFileName);
-	}
-	else
-	{
-		SaveLocation = QDir(ui.SaveLocationText->text()).absoluteFilePath(QString::number(ScanIndex));
-		ScanIndex++;
-	}
-	cout << "儲存位置: " << SaveLocation.toStdString() << endl;
-	#pragma endregion
-	#pragma region 掃描
-	#ifdef TEST_NO_OCT
-	// 判斷是否有
-	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
-
-	// 這邊是確認檔名 OK 不 OK
-	// 因為以前檔名有一個 Bug 導致會有 Error String 會有 Api Wait TimeOut (579) 的問題
-	//QFile TestFile(SaveLocation);
-	//if (!TestFile.open(QIODevice::WriteOnly))
-	//	cout << "此檔名有問題!!" << endl;
-	//else
-	//	cout << "此檔名沒有問題!!" << endl;
-	//TestFile.close();
-	return;
-	#else
-	// 開始 Scan
-
-	bool NeedSave_RawData = ui.AutoScanRawDataWhileScan_CheckBox->isChecked();
-	bool NeedSave_Image = ui.AutoScanImageWhileScan_CheckBox->isChecked();
-	//while (true)
-	//{
-	//	rawManager.ScanDataFromDevice(SaveLocation, NeedSave_RawData);
-	//	rawManager.TranformToIMG(NeedSave_Image);
-	//	if (rawManager.ShakeDetect(this, false))
-	//	{
-	//		// 沒晃動到
-	//		cout << "沒有晃動到" << endl;
-	//		break;
-	//	}
-	//	else
-	//		cout << "晃到重拍" << endl;
-
-	//}
-	//rawManager.ScanDataFromDevice(SaveLocation, NeedSave_RawData);
-	rawManager.ScanSingleData(SaveLocation, NeedSave_RawData);
-	//rawManager.TranformToIMG(NeedSave_Image);
 	#endif
-	#pragma endregion
-	#pragma region 網路預測結果
-	//rawManager.GenerateNetworkData();
-	#pragma endregion
-	*/
 }
 
 // OCT 測試

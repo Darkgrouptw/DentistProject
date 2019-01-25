@@ -2,7 +2,7 @@
 
 RawDataManager::RawDataManager()
 {
-	// 初始化設定
+	#pragma region 初始化裝置以外的設定
 	cout << "OpenCV Version: " << CV_VERSION << endl;
 	DManager.ReadCalibrationData();
 
@@ -10,10 +10,22 @@ RawDataManager::RawDataManager()
 	ScanSingle_Pointer		= bind(&RawDataManager::ScanSingleDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
 	ScanMulti_Pointer		= bind(&RawDataManager::ScanMultiDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
 	TransforImage_Pointer	= bind(&RawDataManager::TranformToIMG,				this, placeholders::_1);
+	ShowImageIndex_Pointer	= bind(&RawDataManager::ShowImageIndex,				this, 60);
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread();
-	Worker->InitFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
+	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
+	Worker->InitShowFunctionPointer(&ShowImageIndex_Pointer);
+	#pragma endregion
+	#pragma region 初始化裝置
+	#ifndef TEST_NO_OCT
+	OCT64::OCT64::Init(
+		4,
+		OCT_DeviceID
+	);
+	cout << "初始化裝置ID: " << OCT_DeviceID << endl;
+	#endif
+	#pragma endregion
 }
 RawDataManager::~RawDataManager()
 {
@@ -23,15 +35,16 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 5);
+	assert(UIPointer.size() == 6);
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
 
 	// 後面兩個是 給 ScanThread
-	QPushButton* scanButton = (QPushButton*)UIPointer[3];
-	QLineEdit* saveLineEdt	= (QLineEdit*)UIPointer[4];
-	Worker->InitUIPointer(scanButton, saveLineEdt);
+	QSlider* slider			= (QSlider*)UIPointer[3];
+	QPushButton* scanButton = (QPushButton*)UIPointer[4];
+	QLineEdit* saveLineEdt	= (QLineEdit*)UIPointer[5];
+	Worker->InitUIPointer(slider, scanButton, saveLineEdt);
 }
 void RawDataManager::ShowImageIndex(int index)
 {
@@ -49,10 +62,10 @@ void RawDataManager::ShowImageIndex(int index)
 		else if (QImageResultArray.size() == 1)
 		{
 			// Single
-			QImage Pixmap_ImageResult = QImageResultArray[index];
+			QImage Pixmap_ImageResult = QImageResultArray[0];
 			ImageResult->setPixmap(QPixmap::fromImage(Pixmap_ImageResult));
 
-			QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
+			QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[0];
 			BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
 		}
 	}	
@@ -86,7 +99,7 @@ RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
 
 	// 結算
 	endT = clock();
-	cout << "讀取 Raw Data: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
+	cout << "讀取時間: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << " sec" << endl;
 
 	RawDataProperty prop = DManager.prop;
 	if (bufferSize <= prop.SizeX * prop.SizeZ * 8)
@@ -112,12 +125,6 @@ RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
 }
 void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedSave_RawData)
 {
-	#pragma region 初始化裝置
-	OCT64::OCT64::Init(
-		4,
-		OCT_DeviceID
-	);
-	#pragma endregion
 	#pragma region 開 Port
 	SerialPort port(gcnew System::String(OCTDevicePort.c_str()), 9600);
 	port.Open();
@@ -138,6 +145,7 @@ void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedS
 	OCT_DataLen = 1;
 	OCT_ErrorBoolean = false;
 	System::String^ ErrorString = gcnew System::String("");
+	string ErrorCString = "";
 	System::String^ SaveFileName_C = gcnew System::String(SaveFileName.toStdString().c_str());
 
 	OCT64::OCT64::StartCap(
@@ -151,12 +159,22 @@ void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedS
 		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息
 	);
-	cout << "OCT StartCap Error String: " << MarshalString(ErrorString) << endl;
+
+	// 代表硬體有問題
+	ErrorCString = MarshalString(ErrorString);
+	if (ErrorCString != OCT_SUCCESS_TEXT.toStdString())
+	{
+		// 先關閉
+		OCT64::OCT64::AboutADC(OCT_DeviceID);
+		port.Close();
+
+		cout << "OCT StartCap Error String: " << ErrorCString << endl;
+		assert(false && "OCT Start 有 Bug!!");
+	}
 
 	// 要接的 Array
 	cli::array<unsigned short>^ OutDataArray = gcnew cli::array<unsigned short>(OCT_PIC_SIZE);				// 暫存的 Array
 	unsigned short* Final_OCT_Array = new unsigned short[OCT_PIC_SIZE];										// 取值得 Array
-	unsigned short* Temp_OCT_Pointer = Final_OCT_Array;														// 暫存，因為上面那個會一直位移 (別問我，前人就這樣寫= =)
 	char* Final_OCT_Char = new char[OCT_PIC_SIZE * 2];														// 最後要丟到 Cuda 的 Array
 
 	// 動慢軸
@@ -171,7 +189,18 @@ void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedS
 		OutDataArray,					// 掃描的結果
 		ErrorString						// 錯誤訊息
 	);
-	cout << "Scan Error String: " << MarshalString(ErrorString) << endl;
+
+	// 代表硬體有問題
+	ErrorCString = MarshalString(ErrorString);
+	if (ErrorCString != OCT_SUCCESS_TEXT.toStdString())
+	{
+		// 先關閉
+		OCT64::OCT64::AboutADC(OCT_DeviceID);
+		port.Close();
+
+		cout << "Scan Error String: " << ErrorCString << endl;
+		assert(false && "OCT Scan 有 Bug!!");
+	}
 
 	// cli Array 轉到 manage array
 	pin_ptr<unsigned short> pinPtrArray = &OutDataArray[OutDataArray->GetLowerBound(0)];
@@ -188,11 +217,10 @@ void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedS
 	// 要將資料轉到陣列上
 	RawDataProperty prop = DManager.prop;
 	cudaV2.SingleRawDataToPointCloud(
-		Final_OCT_Char, OCT_PIC_SIZE,
+		Final_OCT_Char, OCT_PIC_SIZE * 2,
 		prop.SizeX, prop.SizeZ,
 		prop.ShiftValue, prop.K_Step, prop.CutValue
 	);
-	// cudaV2.SingleRawDataToPointCloud(buffer.data(), bufferSize, 250, 2048, 37 * 4 - 4, 2, 10);
 	#pragma endregion
 	#pragma region 刪除 New 出來的 Array
 	delete Final_OCT_Array;
@@ -201,12 +229,6 @@ void RawDataManager::ScanSingleDataFromDeviceV2(QString SaveFileName, bool NeedS
 }
 void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSave_RawData)
 {
-	#pragma region 初始化裝置
-	OCT64::OCT64::Init(
-		4,
-		OCT_DeviceID
-	);
-	#pragma endregion
 	#pragma region 開 Port
 	SerialPort port(gcnew System::String(OCTDevicePort.c_str()), 9600);
 	port.Open();
@@ -227,24 +249,37 @@ void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSa
 	OCT_DataLen = 1;
 	OCT_ErrorBoolean = false;
 	System::String^ ErrorString = gcnew System::String("");
+	string ErrorCString = "";
 	System::String^ SaveFileName_C = gcnew System::String(SaveFileName.toStdString().c_str());
 
 	OCT64::OCT64::StartCap(
 		OCT_DeviceID,						// 裝置 ID
 		OCT_HandleOut,						// Handle (要傳給 Scan 的)
-		LV_65,								// ?
+		LV_65,								// 直流
 		SampleCount,						// 2048
 		OCT_DataLen,						// 資料長度
-		NeedSave_RawData,							// 這個好像是要步要 output
+		NeedSave_RawData,					// 這個好像是要步要 output
 		SaveFileName_C,						// 儲存位置
 		OCT_ErrorBoolean,					// 是否要有 Error
 		ErrorString							// 錯誤訊息
 	);
 
+	// 代表硬體有問題
+	ErrorCString = MarshalString(ErrorString);
+	if (ErrorCString != OCT_SUCCESS_TEXT.toStdString())
+	{
+		// 先關閉
+		OCT64::OCT64::AboutADC(OCT_DeviceID);
+		port.Close();
+
+		cout << "OCT StartCap Error String: " << ErrorCString << endl;
+		assert(false && "OCT Start 有 Bug!!");
+	}
+
 	// 要接的 Array
 	cli::array<unsigned short>^ OutDataArray = gcnew cli::array<unsigned short>(OCT_PIC_SIZE);				// 暫存的 Array
 	unsigned short* Final_OCT_Array = new unsigned short[OCT_PIC_SIZE * 125];								// 取值得 Array
-	unsigned short* Temp_OCT_Pointer = Final_OCT_Array;														// 暫存，因為上面那個會一直位移 (別問我，前人就這樣寫= =)
+	unsigned short* Temp_OCT_Pointer = Final_OCT_Array;														// 暫存，因為會一直位移
 	char* Final_OCT_Char = new char[OCT_PIC_SIZE * 250];													// 最後要丟到 Cuda 的 Array
 
 	// 動慢軸
@@ -261,11 +296,22 @@ void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSa
 			ErrorString						// 錯誤訊息
 		);
 
+		// 代表硬體有問題
+		ErrorCString = MarshalString(ErrorString);
+		if (ErrorCString != OCT_SUCCESS_TEXT.toStdString())
+		{
+			// 先關閉
+			OCT64::OCT64::AboutADC(OCT_DeviceID);
+			port.Close();
+
+			cout << "Scan Error String: " << ErrorCString << endl;
+			assert(false && "OCT Scan 有 Bug!!");
+		}
+
 		// cli Array 轉到 manage array
 		pin_ptr<unsigned short> pinPtrArray = &OutDataArray[OutDataArray->GetLowerBound(0)];
 		memcpy(Temp_OCT_Pointer, pinPtrArray, sizeof(unsigned short) * OCT_PIC_SIZE);
 		Temp_OCT_Pointer += OCT_PIC_SIZE;
-
 
 		// 繼續往下掃
 		PicNumber++;
@@ -282,9 +328,9 @@ void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSa
 
 	// 要將資料轉到 DManager.rawDP 上
 	RawDataProperty prop = DManager.prop;
-	cudaV2.SingleRawDataToPointCloud(
+	cudaV2.MultiRawDataToPointCloud(
 		Final_OCT_Char, OCT_PIC_SIZE * 250,
-		prop.SizeX, prop.SizeZ,
+		prop.SizeX, prop.SizeY, prop.SizeZ,
 		prop.ShiftValue, prop.K_Step, prop.CutValue
 	);
 	// cudaV2.RawDataToPointCloud(buffer.data(), bufferSize, 250, 250, 2048, 37 * 4 - 4, 2, 10);
@@ -375,6 +421,14 @@ void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSav
 {
 	Worker->SetParams(EndText, NeedSave_RawData, NeedSave_ImageData);
 	Worker->SetScanModel(IsStart);
+}
+bool RawDataManager::ShakeDetect_Single(int* LastData)
+{
+	return cudaV2.ShakeDetect_Single(LastData);
+}
+bool RawDataManager::ShakeDetect_Multi()
+{
+	return cudaV2.ShakeDetect_Multi();
 }
 
 // Helper Function

@@ -86,8 +86,8 @@ public:
 	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void TranformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
 	void SetScanOCTMode(bool, QString*, bool, bool);							// 開始掃描 OCT
-	//bool ShakeDetect_Multi(QMainWindow*, bool);									// 偵測有無晃動
-	//void WriteRawDataToFile(QString);											// 將 Raw Data 轉成檔案
+	bool ShakeDetect_Single(int *);												// 有無晃動 (單)
+	bool ShakeDetect_Multi();													// 有無晃動 (多)
 
 	//////////////////////////////////////////////////////////////////////////
 	// Netowrk 相關的 Function
@@ -121,7 +121,8 @@ private:
 	unsigned int		OCT_AllDataLen;
 	bool				OCT_ErrorBoolean;
 	int					OCT_DeviceID;
-	const int			OCT_PIC_SIZE = 2048 * 2 * 500;
+	const int			OCT_PIC_SIZE = 2048  * 250 * 2 * 2;						// 2 (來回) & 2 Channel
+	QString				OCT_SUCCESS_TEXT = "ATS : ApiSuccess (512)";			// 正常的話，會顯示這個 Message
 
 	//////////////////////////////////////////////////////////////////////////
 	// Function Pointer
@@ -129,6 +130,7 @@ private:
 	function<void(QString, bool)>	ScanSingle_Pointer;
 	function<void(QString, bool)>	ScanMulti_Pointer;
 	function<void(bool)>			TransforImage_Pointer;
+	function<void()>				ShowImageIndex_Pointer;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 網路

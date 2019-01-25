@@ -44,14 +44,21 @@ public:
 	TRCudaV2();
 	~TRCudaV2();
 
+	//////////////////////////////////////////////////////////////////////////
 	// 轉換 Function
+	//////////////////////////////////////////////////////////////////////////
 	void SingleRawDataToPointCloud(char*, int, int, int, long, double, int);	// 這邊應該只有 250 * 2048
 	void MultiRawDataToPointCloud(char*, int, int, int ,int, long, double, int);// 250 * 250 * 2048
 
+	//////////////////////////////////////////////////////////////////////////
 	// 拿出圖片
+	//////////////////////////////////////////////////////////////////////////
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
-	bool ShakeDetect(bool);														// 晃動偵測
-
+	void CopySingleBorder(int*);												// Copy 單張 Border 的
+	bool ShakeDetect_Single(int*);												// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
+	bool ShakeDetect_Multi();													// 晃動偵測						=> True 代表有晃動
+	
+	
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 圖片資料
@@ -91,6 +98,7 @@ private:
 	// 晃動 Threshold
 	//////////////////////////////////////////////////////////////////////////
 	const float OCT_Move_Threshold = 7;										// 晃動大於某一個值，代表不能用
+	const int	OCT_Valid_VoteNum = 10;										// 有效票數起碼要大於這個值
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他參數設定 設定
@@ -101,3 +109,9 @@ private:
 	const int MinValuePixel_BR = 10;										// Buttom Right 的 Pixel
 	const float MinValueScalar = 1.8f;										// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
 };
+
+/*
+ToDo
+1. 判斷圖片的亮度是否大於某一個 th
+2. 邊界要做 Smooth 的動作
+*/
