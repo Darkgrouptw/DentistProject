@@ -82,7 +82,7 @@ void ScanningWorkerThread::ScanProcess()
 		#pragma region 4. 如果是一張，那還要再掃一張，如果大於一張，驗證最後兩張是否正確
 		#pragma endregion
 		#pragma region 5. 開始掃描多個資料
-		//(*ScanMultiDataFromDeviceV2)(SaveLocation + "_single", NeedSave_RawData);
+		//(*ScanMultiDataFromDeviceV2)(SaveLocation + "_Multi", NeedSave_RawData);
 		//(*TranformToIMG)(NeedSave_ImageData);
 		#pragma endregion
 		#pragma region 6. 顯示 & 判斷結果
