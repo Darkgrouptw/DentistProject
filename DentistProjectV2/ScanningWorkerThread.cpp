@@ -8,24 +8,34 @@ ScanningWorkerThread::~ScanningWorkerThread()
 }
 
 // 傳送 Function Pointer
-void ScanningWorkerThread::InitFunctionPointer(function<void(QString, bool)>* ScanSingle, function<void(QString, bool)>* ScanMulti)
+void ScanningWorkerThread::InitFunctionPointer(
+	function<void(QString, bool)>* ScanSingle,
+	function<void(QString, bool)>* ScanMulti,
+	function<void(bool)>* ToImage)
 {
 	ScanSingleDataFromDeviceV2 = ScanSingle;
 	ScanMultiDataFromDeviceV2 = ScanMulti;
+	TranformToIMG = ToImage;
 }
-void ScanningWorkerThread::InitUIPointer(QPushButton* button)
+void ScanningWorkerThread::InitUIPointer(QPushButton* button, QLineEdit* lineEdt)
 {
 	ScanButton = button;
+	SaveLocationText = lineEdt;
 }
 
 // 外部掃描的 Function
-void ScanningWorkerThread::SetScanModel(bool IsStart, bool SaveRawData)
+void ScanningWorkerThread::SetParams(QString* EndText, bool Save_RawData, bool Save_ImageData)
+{
+	EndScanText = EndText;
+	NeedSave_RawData = Save_RawData;
+	NeedSave_ImageData = Save_ImageData;
+}
+void ScanningWorkerThread::SetScanModel(bool IsStart)
 {
 	if (IsStart && ScanThread == nullptr)
 	{
 		// 開始掃描模式
 		IsEnd = false;
-		NeedSave_RawData = SaveRawData;
 
 		// 清一次記憶體
 		System::GC::Collect();
@@ -49,9 +59,14 @@ void ScanningWorkerThread::ScanProcess()
 	while (!IsEnd)
 	{
 		#pragma region 1. 開始掃描的初始化設定
-		//(*TestFunciton)(times++);
-		//cout << times++ << endl;
-		//Thread::Sleep(300);
+		QString SaveLocation;							// 最後儲存的路徑
+
+		QTime currentTime = QTime::currentTime();
+		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
+		SaveLocation = QDir(SaveLocationText->text()).absoluteFilePath(TimeFileName);
+		cout << "儲存位置: " << SaveLocation.toStdString() << endl;
+
+		Thread::Sleep(300);
 		#pragma endregion
 		#pragma region 2. 掃描單張資料
 

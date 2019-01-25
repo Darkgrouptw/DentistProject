@@ -509,27 +509,11 @@
         <string>選擇路徑</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="SaveWithTime_CheckBox">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>80</y>
-         <width>91</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>以時間儲存</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
       <widget class="QCheckBox" name="AutoScanRawDataWhileScan_CheckBox">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>110</y>
+         <y>70</y>
          <width>161</width>
          <height>16</height>
         </rect>
@@ -559,7 +543,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>140</y>
+         <y>100</y>
          <width>151</width>
          <height>16</height>
         </rect>

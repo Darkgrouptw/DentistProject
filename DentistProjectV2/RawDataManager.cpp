@@ -7,12 +7,13 @@ RawDataManager::RawDataManager()
 	DManager.ReadCalibrationData();
 
 	// 設定 Function Pointer
-	ScanSingle_Pointer	= bind(&RawDataManager::ScanSingleDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
-	ScanMulti_Pointer	= bind(&RawDataManager::ScanMultiDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
+	ScanSingle_Pointer		= bind(&RawDataManager::ScanSingleDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
+	ScanMulti_Pointer		= bind(&RawDataManager::ScanMultiDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
+	TransforImage_Pointer	= bind(&RawDataManager::TranformToIMG,				this, placeholders::_1);
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread();
-	Worker->InitFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer);
+	Worker->InitFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
 }
 RawDataManager::~RawDataManager()
 {
@@ -22,14 +23,15 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 4);
+	assert(UIPointer.size() == 5);
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
 
 	// 後面兩個是 給 ScanThread
 	QPushButton* scanButton = (QPushButton*)UIPointer[3];
-	Worker->InitUIPointer(scanButton);
+	QLineEdit* saveLineEdt	= (QLineEdit*)UIPointer[4];
+	Worker->InitUIPointer(scanButton, saveLineEdt);
 }
 void RawDataManager::ShowImageIndex(int index)
 {
@@ -369,9 +371,10 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#pragma endregion
 }
-void RawDataManager::SetScanOCTMode(bool IsStart, QString EndText, bool NeedSave_RawData, bool NeedSave_ImageData)
+void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_RawData, bool NeedSave_ImageData)
 {
-	Worker->SetScanModel(IsStart, NeedSave_RawData);
+	Worker->SetParams(EndText, NeedSave_RawData, NeedSave_ImageData);
+	Worker->SetScanModel(IsStart);
 }
 
 // Helper Function

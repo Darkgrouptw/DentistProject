@@ -25,7 +25,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 
 	// OCT 相關(主要)
 	connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
-	connect(ui.SaveWithTime_CheckBox,						SIGNAL(stateChanged(int)),		this,	SLOT(SaveWithTime_ChangeEvent(int)));
 	connect(ui.AutoScanRawDataWhileScan_CheckBox,			SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.AutoScanImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCTMode()));
@@ -96,6 +95,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.BorderDetectionResult);
 	objList.push_back(ui.NetworkResult);
 	objList.push_back(ui.ScanButton);
+	objList.push_back(ui.SaveLocationText);
 
 	rawManager.SendUIPointer(objList);
 
@@ -116,17 +116,6 @@ void DentistProjectV2::ChooseSaveLocaton()
 		QDir().mkdir(OCT_SaveLocation);
 	}
 }
-void DentistProjectV2::SaveWithTime_ChangeEvent(int signalNumber)
-{
-	if (!ui.SaveWithTime_CheckBox->isChecked())
-	{
-		QMessageBox::information(
-			this,																												// 此視窗
-			codec->toUnicode("貼心的提醒視窗"),																					// Title
-			codec->toUnicode("如果取消勾選，那儲存位置會以掃描順序來定\n(Ex: V:/OCT OCT Scan DataSet/1)")						// 中間的文字解說
-		);
-	}
-}
 void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 {
 	if (ui.AutoScanRawDataWhileScan_CheckBox->isChecked())
@@ -142,16 +131,16 @@ void DentistProjectV2::ScanOCTMode()
 {
 	// 初始化變數
 	bool NeedSave_RawData = ui.AutoScanRawDataWhileScan_CheckBox->isChecked();
-	bool NeedSave_Image = ui.AutoScanImageWhileScan_CheckBox->isChecked();
+	bool NeedSave_ImageData = ui.AutoScanImageWhileScan_CheckBox->isChecked();
 
 	// 判斷
 	if (ui.ScanButton->text() == EndScanText)
 	{
 		ui.ScanButton->setText(StartScanText);
-		rawManager.SetScanOCTMode(true, EndScanText);
+		rawManager.SetScanOCTMode(true, &EndScanText, NeedSave_RawData, NeedSave_ImageData);
 	}
 	else
-		rawManager.SetScanOCTMode(false, true);		// 設定只掃完最後一張就停止了
+		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_RawData, NeedSave_ImageData);		// 設定只掃完最後一張就停止了
 	/*
 	#pragma region 檔名處理
 	QString SaveLocation;							// 最後儲存的路徑

@@ -8,6 +8,9 @@
 #include <vector>
 #include <functional>
 
+#include <QDir>
+#include <QTime>
+#include <QLineEdit>
 #include <QString>
 #include <QPushButton>
 
@@ -23,13 +26,16 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 傳送 Function Pointer
 	//////////////////////////////////////////////////////////////////////////
-	void InitFunctionPointer(function<void(QString, bool)>*, function<void(QString, bool)>*);
-	void InitUIPointer(QPushButton*);
+	void InitFunctionPointer(function<void(QString, bool)>*,
+		function<void(QString, bool)>*,
+		function<void(bool)>*);													// 初始化 Function Pointer
+	void InitUIPointer(QPushButton*, QLineEdit*);								// 初始化 UI Pointer (Thread 中，做完會去改圖，所以需要這個 Function Pointer)
 
 	//////////////////////////////////////////////////////////////////////////
 	// 外部掃描的 Function
 	//////////////////////////////////////////////////////////////////////////
-	void SetScanModel(bool, bool);												// 設定掃描 Mode & 設定是否儲存檔案
+	void SetParams(QString*, bool, bool);										// 設定參數
+	void SetScanModel(bool);													// 設定掃描 Mode & 設定是否儲存檔案
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -48,12 +54,14 @@ private:
 	void ScanProcess();															// Thread 跑的 Function
 	bool IsEnd = true;															// 是否要結束
 	bool NeedSave_RawData = false;												// 是否要儲存 Raw Data
+	bool NeedSave_ImageData = false;											// 是否要儲存完 Image Data
 	//const int Start
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI 設定
 	//////////////////////////////////////////////////////////////////////////
+	QLineEdit* SaveLocationText;
 	QString* EndScanText;
 	QPushButton* ScanButton;
 
@@ -67,6 +75,6 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	function<void(QString, bool)>*	ScanSingleDataFromDeviceV2 = NULL;
 	function<void(QString, bool)>*	ScanMultiDataFromDeviceV2 = NULL;
-	function<void(int)>*			TestFunciton = NULL;
+	function<void(bool)>*			TranformToIMG = NULL;
 };
 

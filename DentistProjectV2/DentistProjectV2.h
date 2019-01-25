@@ -29,8 +29,6 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 掃描相關變數
 	//////////////////////////////////////////////////////////////////////////
-	// 儲存時，如果不溝時間，會以 Index 儲存
-	int ScanIndex = 0;
 	QString StartScanText;
 	QString EndScanText;
 
@@ -46,7 +44,6 @@ private slots:
 	// OCT 相關(主要)
 	//////////////////////////////////////////////////////////////////////////
 	void ChooseSaveLocaton();
-	void SaveWithTime_ChangeEvent(int);											// UI 是否勾選(儲存加上時間)
 	void AutoSaveWhileScan_ChangeEvent(int);									// UI 是否勾選(掃描自動儲存 Raw Data & Image 的通知)
 	void ScanOCTMode();															// 掃描按鈕
 

@@ -66,7 +66,6 @@ public:
     QLineEdit *SaveLocationText;
     QLabel *SaveLocationLabel;
     QPushButton *SaveLocationBtn;
-    QCheckBox *SaveWithTime_CheckBox;
     QCheckBox *AutoScanRawDataWhileScan_CheckBox;
     QPushButton *ScanButton;
     QCheckBox *AutoScanImageWhileScan_CheckBox;
@@ -216,20 +215,16 @@ public:
         SaveLocationBtn = new QPushButton(OCTNormalSettingBox);
         SaveLocationBtn->setObjectName(QStringLiteral("SaveLocationBtn"));
         SaveLocationBtn->setGeometry(QRect(440, 40, 75, 23));
-        SaveWithTime_CheckBox = new QCheckBox(OCTNormalSettingBox);
-        SaveWithTime_CheckBox->setObjectName(QStringLiteral("SaveWithTime_CheckBox"));
-        SaveWithTime_CheckBox->setGeometry(QRect(10, 80, 91, 16));
-        SaveWithTime_CheckBox->setChecked(true);
         AutoScanRawDataWhileScan_CheckBox = new QCheckBox(OCTNormalSettingBox);
         AutoScanRawDataWhileScan_CheckBox->setObjectName(QStringLiteral("AutoScanRawDataWhileScan_CheckBox"));
-        AutoScanRawDataWhileScan_CheckBox->setGeometry(QRect(10, 110, 161, 16));
+        AutoScanRawDataWhileScan_CheckBox->setGeometry(QRect(10, 70, 161, 16));
         AutoScanRawDataWhileScan_CheckBox->setChecked(true);
         ScanButton = new QPushButton(OCTNormalSettingBox);
         ScanButton->setObjectName(QStringLiteral("ScanButton"));
         ScanButton->setGeometry(QRect(360, 130, 151, 101));
         AutoScanImageWhileScan_CheckBox = new QCheckBox(OCTNormalSettingBox);
         AutoScanImageWhileScan_CheckBox->setObjectName(QStringLiteral("AutoScanImageWhileScan_CheckBox"));
-        AutoScanImageWhileScan_CheckBox->setGeometry(QRect(10, 140, 151, 16));
+        AutoScanImageWhileScan_CheckBox->setGeometry(QRect(10, 100, 151, 16));
         AutoScanImageWhileScan_CheckBox->setChecked(false);
         OCTTestingBox = new QGroupBox(Tab_OCT);
         OCTTestingBox->setObjectName(QStringLiteral("OCTTestingBox"));
@@ -298,7 +293,6 @@ public:
         OCTNormalSettingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\345\270\270\347\224\250\350\250\255\345\256\232", nullptr));
         SaveLocationLabel->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));
         SaveLocationBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\201\270\346\223\207\350\267\257\345\276\221", nullptr));
-        SaveWithTime_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\344\273\245\346\231\202\351\226\223\345\204\262\345\255\230", nullptr));
         AutoScanRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230 Raw Data", nullptr));
         ScanButton->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203    \346\217\217    \346\250\241    \345\274\217\n"
 "(End)", nullptr));
