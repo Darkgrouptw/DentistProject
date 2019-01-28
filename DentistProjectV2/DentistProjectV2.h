@@ -52,7 +52,8 @@ private slots:
 	//////////////////////////////////////////////////////////////////////////
 	void ReadRawDataToImage();													// 轉圖 & 儲存
 	void ReadRawDataForBorderTest();											// 邊界測試 & 不儲存
-	//void ReadRawDataForShakeTest();											// 偵測是否有晃動
+	void ReadSingleRawDataForShakeTest();										// 偵測是否有晃動
+	void ReadMultiRawDataForShakeTest();										// 偵測是否有晃動
 
 	//////////////////////////////////////////////////////////////////////////
 	// 顯示部分的事件

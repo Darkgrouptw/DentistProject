@@ -13,7 +13,7 @@ RawDataManager::RawDataManager()
 	ShowImageIndex_Pointer	= bind(&RawDataManager::ShowImageIndex,				this, 60);
 
 	// 傳進 Scan Thread 中
-	Worker = gcnew ScanningWorkerThread();
+	Worker = gcnew ScanningWorkerThread(DManager.prop.SizeX);
 	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
 	Worker->InitShowFunctionPointer(&ShowImageIndex_Pointer);
 	#pragma endregion
@@ -421,6 +421,13 @@ void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSav
 {
 	Worker->SetParams(EndText, NeedSave_RawData, NeedSave_ImageData);
 	Worker->SetScanModel(IsStart);
+}
+void RawDataManager::CopySingleBorder(int *&LastData_Pointer)
+{
+	// 如果是空的，就給一段位置
+	if (LastData_Pointer == NULL)
+		LastData_Pointer = new int[DManager.prop.SizeX];
+	cudaV2.CopySingleBorder(LastData_Pointer);
 }
 bool RawDataManager::ShakeDetect_Single(int* LastData)
 {

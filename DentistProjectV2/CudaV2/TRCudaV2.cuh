@@ -56,8 +56,7 @@ public:
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
 	void CopySingleBorder(int*);												// Copy 單張 Border 的
 	bool ShakeDetect_Single(int*);												// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
-	bool ShakeDetect_Multi();													// 晃動偵測						=> True 代表有晃動
-	
+	bool ShakeDetect_Multi();													// 晃動偵測							=> True 代表有晃動
 	
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -90,7 +89,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	const int SmoothSizeRange = 11;												// 向外 Smooth  左 (SmoothLength - 1) / 2 + 中間 1 + 右 (SmoothLength - 1) / 2
 	const float MaxPeakThreshold = 0.18f;										// 要高於這個值
-	const float GoThroughThreshold = 0.01f;										// 要多少在走過去
+	const float GoThroughThreshold = 0.001f;									// 要多少在走過去
 	const int ChooseBestN = 3;
 	const int StartIndex = 10;													// 從這裡開始找有效的資料
 	const int ConnectRadius = 25;												// 連結半徑
@@ -98,21 +97,21 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 晃動 Threshold
 	//////////////////////////////////////////////////////////////////////////
-	const float OCT_Move_Threshold = 7;										// 晃動大於某一個值，代表不能用
-	const int	OCT_Valid_VoteNum = 10;										// 有效票數起碼要大於這個值
+	const float OCT_Move_Threshold = 7;											// 晃動大於某一個值，代表不能用
+	const int	OCT_Valid_VoteNum = 10;											// 有效票數起碼要大於這個值
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他參數設定 設定
 	//////////////////////////////////////////////////////////////////////////
-	const int NumThreads = 1024;											// 最多限制在 1024
-	const int NumPolynomial = 5;											// 使用 5 次項
-	const int MinValuePixel_TL = 2;											// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
-	const int MinValuePixel_BR = 10;										// Buttom Right 的 Pixel
-	const float MinValueScalar = 1.8f;										// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
+	const int NumThreads = 1024;												// 最多限制在 1024
+	const int NumPolynomial = 5;												// 使用 5 次項
+	const int MinValuePixel_TL = 2;												// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
+	const int MinValuePixel_BR = 10;											// Buttom Right 的 Pixel
+	const float MinValueScalar = 1.8f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
 };
 
 /*
 ToDo
 1. 判斷圖片的亮度是否大於某一個 th
-2. 邊界要做 Smooth 的動作
+2. 邊界要做 Smooth 的動作 (x)
 */

@@ -29,7 +29,7 @@ struct PointTypeInfo {
 public ref class ScanningWorkerThread
 {
 public:
-	ScanningWorkerThread();
+	ScanningWorkerThread(int);
 	~ScanningWorkerThread();
 
 	//////////////////////////////////////////////////////////////////////////

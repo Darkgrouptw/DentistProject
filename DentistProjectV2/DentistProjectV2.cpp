@@ -32,6 +32,8 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	// OCT 測試
 	connect(ui.RawDataToImage,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
 	connect(ui.EasyBorderDetect,							SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
+	connect(ui.SingleImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadSingleRawDataForShakeTest()));
+	connect(ui.MultiImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadMultiRawDataForShakeTest()));
 	//connect(ui.BeepSoundTestButton,							SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
 	//connect(ui.ShakeTestButton,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataForShakeTest()));
 	//connect(ui.SegNetTestButton,							SIGNAL(clicked()),				this,	SLOT(SegNetTest()));
@@ -161,7 +163,7 @@ void DentistProjectV2::ScanOCTMode()
 // OCT 測試
 void DentistProjectV2::ReadRawDataToImage()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
@@ -188,7 +190,7 @@ void DentistProjectV2::ReadRawDataToImage()
 }
 void DentistProjectV2::ReadRawDataForBorderTest()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, "Read Raw Data", "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("邊界測試"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
@@ -212,6 +214,39 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 	// Slider
 	ui.ScanNumSlider->setEnabled(false);
 	ui.ScanNumSlider->setValue(60);
+}
+void DentistProjectV2::ReadSingleRawDataForShakeTest()
+{
+	
+	QStringList RawFileName = QFileDialog::getOpenFileNames(this, codec->toUnicode("晃動測式"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	if (RawFileName.count() == 2)
+	{
+		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName[0]);
+		rawManager.TranformToIMG(false);
+
+		// 直接給 250
+		int* LastDataArray = NULL;
+		rawManager.CopySingleBorder(LastDataArray);
+
+		// 在讀下一筆資料
+		rawManager.ReadRawDataFromFileV2(RawFileName[1]);
+		rawManager.TranformToIMG(false);
+
+		// 單張判斷
+		rawManager.ShakeDetect_Single(LastDataArray);
+		delete LastDataArray;
+	}
+	else
+		cout << "請選擇兩張圖片!!" << endl;
+
+	// 其他狀況都需要進來這裡
+	// Slider
+	ui.ScanNumSlider->setEnabled(false);
+	ui.ScanNumSlider->setValue(60);
+}
+void DentistProjectV2::ReadMultiRawDataForShakeTest()
+{
+
 }
 
 // 顯示部分的事件
