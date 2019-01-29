@@ -87,9 +87,9 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 找邊界參數設定
 	//////////////////////////////////////////////////////////////////////////
-	const int SmoothSizeRange = 11;												// 向外 Smooth  左 (SmoothLength - 1) / 2 + 中間 1 + 右 (SmoothLength - 1) / 2
-	const float MaxPeakThreshold = 0.18f;										// 要高於這個值
-	const float GoThroughThreshold = 0.001f;									// 要多少在走過去
+	const int SmoothSizeRange = 5;												// 向外 Smooth  左 (SmoothLength - 1) / 2 + 中間 1 + 右 (SmoothLength - 1) / 2
+	const float MaxPeakThreshold = 0.125f;										// 要高於這個值
+	const float GoThroughThreshold = 0.0032f;									// 要多少在走過去
 	const int ChooseBestN = 3;
 	const int StartIndex = 10;													// 從這裡開始找有效的資料
 	const int ConnectRadius = 25;												// 連結半徑
