@@ -7,14 +7,19 @@ RawDataManager::RawDataManager()
 	DManager.ReadCalibrationData();
 
 	// 設定 Function Pointer
-	ScanSingle_Pointer		= bind(&RawDataManager::ScanSingleDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
-	ScanMulti_Pointer		= bind(&RawDataManager::ScanMultiDataFromDeviceV2,	this, placeholders::_1, placeholders::_2);
-	TransforImage_Pointer	= bind(&RawDataManager::TranformToIMG,				this, placeholders::_1);
-	ShowImageIndex_Pointer	= bind(&RawDataManager::ShowImageIndex,				this, 60);
+	ScanSingle_Pointer			= bind(&RawDataManager::ScanSingleDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
+	ScanMulti_Pointer			= bind(&RawDataManager::ScanMultiDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
+	TransforImage_Pointer		= bind(&RawDataManager::TransformToIMG,					this, placeholders::_1);
+	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
+	SavePointCloud_Pointer		= bind(&RawDataManager::SavePointCloud,					this);
+	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1);
+	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this);
+	ShowImageIndex_Pointer		= bind(&RawDataManager::ShowImageIndex,					this, 60);
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread(DManager.prop.SizeX);
 	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
+	Worker->IntitShakeDetectFunctionPointer(&CopySingleBorder_Pointer, &ShakeDetect_Single_Pointer, &ShakeDetect_Multi_Pointer, &SavePointCloud_Pointer);
 	Worker->InitShowFunctionPointer(&ShowImageIndex_Pointer);
 	#pragma endregion
 	#pragma region 初始化裝置
@@ -26,6 +31,14 @@ RawDataManager::RawDataManager()
 	cout << "初始化裝置ID: " << OCT_DeviceID << endl;
 	#endif
 	#pragma endregion
+	#pragma region 創建 Images 資料夾
+	vector<QString>testDir = { "origin_v2", "border_v2" };
+	QDir dir(".");
+
+	for (int i = 0; i < testDir.size(); i++)
+		dir.mkpath("Images/OCTImages/" + testDir[i]);
+	#pragma endregion
+
 }
 RawDataManager::~RawDataManager()
 {
@@ -340,7 +353,7 @@ void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSa
 	delete Final_OCT_Char;
 	#pragma endregion
 }
-void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
+void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 {
 	#pragma region 開始時間
 	clock_t startT, endT;
@@ -353,9 +366,6 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 
 	QImageResultArray.clear();
 	QBorderDetectionResultArray.clear();
-
-	// Point Cloud 相關
-	//PointCloudArray.clear();
 	#pragma endregion
 	#pragma region 塞進 Array
 	vector<Mat> TempMatArray;
@@ -385,27 +395,6 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 			cv::imwrite("Images/OCTImages/border_v2/" + to_string(i) + ".png", BorderDetectionResultArray[i]);
 		}
 	}
-
-	// 加入 Point Cloud 的陣列
-	//float ratio = 1;						// 這是放大的比率
-	//for (int x = 60; x <= 200; x++)
-	//{
-	//	for (int y = 0; y < 250; y++)
-	//	{
-	//		int index = x * 250 + y;
-	//		int Mapidx = ((y * theTRcuda.sample_Y * theTRcuda.VolumeSize_X) + x) * theTRcuda.sample_X;
-	//		int PCidx = ((x * theTRcuda.VolumeSize_Y) + y) * theTRcuda.VolumeSize_Z;
-	//		if (cudaBorder.PointType_1D[index] != -1)
-	//		{
-	//			QVector3D pointInSpace;
-	//			pointInSpace.setX(DManager.MappingMatrix[Mapidx * 2 + 1] * ratio + 0.2);
-	//			pointInSpace.setY(DManager.MappingMatrix[Mapidx * 2] * ratio);
-	//			pointInSpace.setZ(cudaBorder.PointType_1D[index] * DManager.zRatio / theTRcuda.VolumeSize_Z * ratio);
-	//			CurrentPointCloud.push_back(pointInSpace);
-	//		}
-	//	}
-	//}
-	//PointCloudArray.push_back(CurrentPointCloud);
 	#pragma endregion
 	#pragma region 結束時間
 	endT = clock();
@@ -417,9 +406,9 @@ void RawDataManager::TranformToIMG(bool NeedSave_Image = false)
 	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#pragma endregion
 }
-void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_RawData, bool NeedSave_ImageData)
+void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData)
 {
-	Worker->SetParams(EndText, NeedSave_RawData, NeedSave_ImageData);
+	Worker->SetParams(EndText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData);
 	Worker->SetScanModel(IsStart);
 }
 void RawDataManager::CopySingleBorder(int *&LastData_Pointer)
@@ -428,6 +417,46 @@ void RawDataManager::CopySingleBorder(int *&LastData_Pointer)
 	if (LastData_Pointer == NULL)
 		LastData_Pointer = new int[DManager.prop.SizeX];
 	cudaV2.CopySingleBorder(LastData_Pointer);
+}
+void RawDataManager::SavePointCloud()
+{
+	#pragma region 創建 Array
+	// 邊界 & 其他資訊
+	RawDataProperty prop = DManager.prop;
+	int* BorderData = new int[prop.SizeX *DManager.prop.SizeY];
+	cudaV2.CopyBorder(BorderData);
+
+	// 點雲
+	PointCloudInfo info;
+	#pragma endregion
+	#pragma region 轉成點雲
+	float ratio = 1;
+	for (int y = 0; y < prop.SizeY; y++)
+		for (int x = 0; x < prop.SizeX; x++)
+		{
+			int index = y * prop.SizeX + x;			// 對應到 Border Data
+			int MapID = (y * prop.SizeX + x) * 2;	// 對應到 Mapping Matrix，在讀取的時候他是兩筆為一個單位
+			if (BorderData[index] != -1)
+			{
+				// ToDo 確認
+				QVector3D pointInSpace;
+				pointInSpace.setX(DManager.MappingMatrix[MapID + 0] * ratio + 0.2);
+				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio);
+				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2);
+
+				// 加進 Point 陣列裡
+				info.Points.push_back(pointInSpace);
+			}
+		}
+
+	// ToDo 加入九軸資訊
+
+	// 加進陣列裡
+	PointCloudArray.push_back(info);
+	#pragma endregion
+	#pragma region 刪除 Array
+	delete[] BorderData;
+	#pragma endregion
 }
 bool RawDataManager::ShakeDetect_Single(int* LastData)
 {

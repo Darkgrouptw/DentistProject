@@ -40,6 +40,12 @@ public:
 		function<void(QString, bool)>*,											// Multi
 		function<void(bool)>*													// ToImage
 	);
+	void IntitShakeDetectFunctionPointer(
+		function<void(int*&)>*,													// Copy 單張資訊
+		function<bool(int*)>*,													// Shake Detect (Single)
+		function<bool()>*,														// Shake Detect (Multi)
+		function<void()>*														// Save 點雲
+	);
 	void InitShowFunctionPointer(
 		function<void()>*														// ShowImageIndex
 	);
@@ -48,7 +54,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 外部掃描的 Function
 	//////////////////////////////////////////////////////////////////////////
-	void SetParams(QString*, bool, bool);										// 設定參數
+	void SetParams(QString*, bool, bool, bool);									// 設定參數
 	void SetScanModel(bool);													// 設定掃描 Mode & 設定是否儲存檔案
 
 private:
@@ -67,7 +73,8 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	void ScanProcess();															// Thread 跑的 Function
 	bool IsEnd = true;															// 是否要結束
-	bool NeedSave_RawData = false;												// 是否要儲存 Raw Data
+	bool NeedSave_Single_RawData = false;										// 是否要儲存 Single Raw Data
+	bool NeedSave_Multi_RawData = false;										// 是否要儲存 Multi Raw Data
 	bool NeedSave_ImageData = false;											// 是否要儲存完 Image Data
 	PointTypeInfo* Last_PointType_1D = NULL;									// 掃描玩的時候需要去抓上一張的結果
 
@@ -87,9 +94,13 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Function Pointer
 	//////////////////////////////////////////////////////////////////////////
-	function<void(QString, bool)>*	ScanSingleDataFromDeviceV2 = NULL;
-	function<void(QString, bool)>*	ScanMultiDataFromDeviceV2 = NULL;
-	function<void(bool)>*			TranformToIMG = NULL;
-	function<void()>*				ShowImageIndex = NULL;
+	function<void(QString, bool)>*	ScanSingleDataFromDeviceV2 = NULL;			// 掃描單張資料
+	function<void(QString, bool)>*	ScanMultiDataFromDeviceV2 = NULL;			// 掃描多張資料
+	function<void(bool)>*			TransformToIMG = NULL;						// 將資料轉成圖 (準備顯示前)
+	function<void(int*&)>*			CopySingleBorder = NULL;					// 抓出單張資訊
+	function<bool(int*)>*			ShakeDetect_Single = NULL;					// 是否有晃動 (Single)
+	function<bool()>*				ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)
+	function<void()>*				SavePointCloud = NULL;						// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
+	function<void()>*				ShowImageIndex = NULL;						// 顯示在畫面上
 };
 

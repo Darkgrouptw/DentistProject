@@ -21,7 +21,18 @@ void ScanningWorkerThread::InitScanFunctionPointer(
 {
 	ScanSingleDataFromDeviceV2 = ScanSingle;
 	ScanMultiDataFromDeviceV2 = ScanMulti;
-	TranformToIMG = ToImage;
+	TransformToIMG = ToImage;
+}
+void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
+	function<void(int*&)>* CopyBorderInfo,
+	function<bool(int*)>* ShakeDetectSingle,
+	function<bool()>* ShakeDetectMulti,
+	function<void()>* SavePC)
+{
+	CopySingleBorder = CopyBorderInfo;
+	ShakeDetect_Single = ShakeDetectSingle;
+	ShakeDetect_Multi = ShakeDetectMulti;
+	SavePointCloud = SavePC;
 }
 void ScanningWorkerThread::InitShowFunctionPointer(function<void()>* showImage)
 {
@@ -35,10 +46,11 @@ void ScanningWorkerThread::InitUIPointer(QSlider* scanNumSlider, QPushButton* bu
 }
 
 // 外部掃描的 Function
-void ScanningWorkerThread::SetParams(QString* EndText, bool Save_RawData, bool Save_ImageData)
+void ScanningWorkerThread::SetParams(QString* EndText, bool Save_Single_RawData, bool Save_Multi_RawData, bool Save_ImageData)
 {
 	EndScanText = EndText;
-	NeedSave_RawData = Save_RawData;
+	NeedSave_Multi_RawData = Save_Single_RawData;
+	NeedSave_Multi_RawData = Save_Multi_RawData;
 	NeedSave_ImageData = Save_ImageData;
 }
 void ScanningWorkerThread::SetScanModel(bool IsStart)
@@ -79,8 +91,8 @@ void ScanningWorkerThread::ScanProcess()
 		cout << "儲存位置: " << SaveLocation.toStdString() << endl;
 		#pragma endregion
 		#pragma region 2. 掃描單張資料
-		(*ScanSingleDataFromDeviceV2)(SaveLocation + "_single", NeedSave_RawData);
-		(*TranformToIMG)(NeedSave_ImageData);
+		(*ScanSingleDataFromDeviceV2)(SaveLocation + "_single", NeedSave_Single_RawData);
+		(*TransformToIMG)(NeedSave_ImageData);
 		#pragma endregion
 		#pragma region 3. 顯示
 		// 顯示畫面
@@ -91,21 +103,38 @@ void ScanningWorkerThread::ScanProcess()
 		// 複製下來給下一次做判斷
 		if (Last_PointType_1D->IsEmpty)
 		{
-			//Last_PointType_1D->IsEmpty = false;
-
+			// 如果只有一張
+			Last_PointType_1D->IsEmpty = false;
+			(*CopySingleBorder)(Last_PointType_1D->TypeData);
 			continue;
+		}
+		else
+		{
+			// 有兩張以上，可以做比較
+			bool IsShake = (*ShakeDetect_Single)(Last_PointType_1D);
+			if (IsShake)
+			{
+				// 如果有晃動，就要重新更新
+				(*CopySingleBorder)(Last_PointType_1D->TypeData);
+				continue;
+			}
 		}
 		#pragma endregion
 		#pragma region 5. 開始掃描多個資料
-		//(*ScanMultiDataFromDeviceV2)(SaveLocation + "_Multi", NeedSave_RawData);
-		//(*TranformToIMG)(NeedSave_ImageData);
+		(*ScanMultiDataFromDeviceV2)(SaveLocation + "_Multi", NeedSave_Multi_RawData);
+		(*TransformToIMG)(NeedSave_ImageData);
 		#pragma endregion
 		#pragma region 6. 顯示
-		//(*ShowImageIndex)();
-		//ScanNumSlider->setEnabled(true);
-		//break;
+		(*ShowImageIndex)();
+		ScanNumSlider->setEnabled(true);
 		#pragma endregion
 		#pragma region 7. 驗證是否有晃動到
+		// 這裡只需要做一整片的驗證
+		bool IsShake = (*ShakeDetect_Multi)();
+
+		// 晃到重掃
+		if (IsShake)
+			continue;
 		#pragma endregion
 		#pragma region 8. 傳到 UI 告訴他要顯示
 		#pragma endregion

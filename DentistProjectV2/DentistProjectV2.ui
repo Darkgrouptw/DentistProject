@@ -509,20 +509,20 @@
         <string>選擇路徑</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="AutoScanRawDataWhileScan_CheckBox">
+      <widget class="QCheckBox" name="AutoSaveSingleRawDataWhileScan_CheckBox">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>70</y>
-         <width>161</width>
+         <width>191</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
-        <string>掃描時自動儲存 Raw Data</string>
+        <string>掃描時自動儲存單張 Raw Data</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QPushButton" name="ScanButton">
@@ -539,20 +539,36 @@
 (End)</string>
        </property>
       </widget>
-      <widget class="QCheckBox" name="AutoScanImageWhileScan_CheckBox">
+      <widget class="QCheckBox" name="AutoSaveImageWhileScan_CheckBox">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>100</y>
-         <width>151</width>
+         <y>130</y>
+         <width>191</width>
          <height>16</height>
         </rect>
        </property>
        <property name="text">
-        <string>掃描時自動儲存影像結果</string>
+        <string>掃描時自動轉成影像並儲存結果</string>
        </property>
        <property name="checked">
         <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="AutoSaveMultiRawDataWhileScan_CheckBox">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>100</y>
+         <width>191</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>掃描時自動儲存立體 Raw Data</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </widget>

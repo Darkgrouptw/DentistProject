@@ -25,8 +25,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 
 	// OCT 相關(主要)
 	connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
-	connect(ui.AutoScanRawDataWhileScan_CheckBox,			SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
-	connect(ui.AutoScanImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
+	connect(ui.AutoSaveSingleRawDataWhileScan_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
+	connect(ui.AutoSaveMultiRawDataWhileScan_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
+	connect(ui.AutoSaveImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCTMode()));
 
 	// OCT 測試
@@ -121,7 +122,7 @@ void DentistProjectV2::ChooseSaveLocaton()
 }
 void DentistProjectV2::AutoSaveWhileScan_ChangeEvent(int signalNumber)
 {
-	if (ui.AutoScanRawDataWhileScan_CheckBox->isChecked())
+	if (ui.AutoSaveMultiRawDataWhileScan_CheckBox->isChecked())
 	{
 		QMessageBox::information(
 			this,																												// 此視窗
@@ -146,17 +147,18 @@ void DentistProjectV2::ScanOCTMode()
 	TestFile.close();*/
 	#else
 	// 初始化變數
-	bool NeedSave_RawData = ui.AutoScanRawDataWhileScan_CheckBox->isChecked();
-	bool NeedSave_ImageData = ui.AutoScanImageWhileScan_CheckBox->isChecked();
+	bool NeedSave_Single_RawData = ui.AutoSaveSingleRawDataWhileScan_CheckBox->isChecked();
+	bool NeedSave_Multi_RawData = ui.AutoSaveMultiRawDataWhileScan_CheckBox->isChecked();
+	bool NeedSave_ImageData = ui.AutoSaveImageWhileScan_CheckBox->isChecked();
 
 	// 判斷
 	if (ui.ScanButton->text() == EndScanText)
 	{
 		ui.ScanButton->setText(StartScanText);
-		rawManager.SetScanOCTMode(true, &EndScanText, NeedSave_RawData, NeedSave_ImageData);
+		rawManager.SetScanOCTMode(true, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData);
 	}
 	else
-		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_RawData, NeedSave_ImageData);		// 設定只掃完最後一張就停止了
+		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData);		// 設定只掃完最後一張就停止了
 	#endif
 }
 
@@ -167,11 +169,14 @@ void DentistProjectV2::ReadRawDataToImage()
 	if (RawFileName != "")
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
-		rawManager.TranformToIMG(true);
+		rawManager.TransformToIMG(true);
 
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
+		{
+			//rawManager.SavePointCloud();
 			ui.ScanNumSlider->setEnabled(true);
+		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
 			ui.ScanNumSlider->setEnabled(false);
 
@@ -194,7 +199,7 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 	if (RawFileName != "")
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
-		rawManager.TranformToIMG(false);
+		rawManager.TransformToIMG(false);
 
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
@@ -222,7 +227,7 @@ void DentistProjectV2::ReadSingleRawDataForShakeTest()
 	if (RawFileName.count() == 2)
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName[0]);
-		rawManager.TranformToIMG(false);
+		rawManager.TransformToIMG(false);
 
 		// 直接給 250
 		int* LastDataArray = NULL;
@@ -230,7 +235,7 @@ void DentistProjectV2::ReadSingleRawDataForShakeTest()
 
 		// 在讀下一筆資料
 		rawManager.ReadRawDataFromFileV2(RawFileName[1]);
-		rawManager.TranformToIMG(false);
+		rawManager.TransformToIMG(false);
 
 		// 單張判斷
 		rawManager.ShakeDetect_Single(LastDataArray);

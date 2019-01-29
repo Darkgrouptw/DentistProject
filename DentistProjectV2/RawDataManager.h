@@ -84,11 +84,12 @@ public:
 	RawDataType ReadRawDataFromFileV2(QString);									// 有修改的過後的 Raw Data Reader
 	void ScanSingleDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
-	void TranformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
-	void SetScanOCTMode(bool, QString*, bool, bool);							// 開始掃描 OCT
-	void CopySingleBorder(int *&);
+	void TransformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
+	void SetScanOCTMode(bool, QString*, bool, bool, bool);						// 開始掃描 OCT
+	void CopySingleBorder(int *&);												// 存單張 Border
 	bool ShakeDetect_Single(int *);												// 有無晃動 (單)
 	bool ShakeDetect_Multi();													// 有無晃動 (多)
+	void SavePointCloud();														// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
 
 	//////////////////////////////////////////////////////////////////////////
 	// Netowrk 相關的 Function
@@ -100,7 +101,7 @@ public:
 	// 點雲資料
 	//////////////////////////////////////////////////////////////////////////
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
-	int					SelectIndex = 0;										// 目前選擇地的片數
+	//int					SelectIndex = 0;										// 目前選擇地的片數
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
@@ -131,6 +132,10 @@ private:
 	function<void(QString, bool)>	ScanSingle_Pointer;
 	function<void(QString, bool)>	ScanMulti_Pointer;
 	function<void(bool)>			TransforImage_Pointer;
+	function<void(int*&)>			CopySingleBorder_Pointer;
+	function<bool(int*)>			ShakeDetect_Single_Pointer;
+	function<bool()>				ShakeDetect_Multi_Pointer;
+	function<void()>				SavePointCloud_Pointer;
 	function<void()>				ShowImageIndex_Pointer;
 
 	//////////////////////////////////////////////////////////////////////////

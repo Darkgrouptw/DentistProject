@@ -311,9 +311,9 @@ void OpenGLWidget::SetRawDataManager(RawDataManager* raw)
 void OpenGLWidget::InitProgram()
 {
 	program = new QOpenGLShaderProgram();
-	program->addShaderFromSourceFile(QOpenGLShader::Vertex,		"./Shaders/Model.vert");
-	program->addShaderFromSourceFile(QOpenGLShader::Fragment,	"./Shaders/Model.frag");
-	program->link();
+	//program->addShaderFromSourceFile(QOpenGLShader::Vertex,		"./Shaders/Model.vert");
+	//program->addShaderFromSourceFile(QOpenGLShader::Fragment,	"./Shaders/Model.frag");
+	//program->link();
 
 	// Get Location
 	ProjectionMatrixLoc		= program->uniformLocation("ProjectionMatrix");

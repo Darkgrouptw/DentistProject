@@ -1476,8 +1476,13 @@ vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 }
 void TRCudaV2::CopySingleBorder(int* LastArray)
 {
-	assert(LastArray != NULL && PointType_1D != NULL && size == 1 && "要先初始化 Array 和要做轉點雲的部分!!");
+	assert(LastArray != NULL && PointType_1D != NULL && size == 1 && "要先初始化 Array 和要做轉點雲的部分!!");	// assert 抓出 call 錯的可能性 (這邊只能單張)
 	memcpy(LastArray, PointType_1D, sizeof (int) * size * rows);
+}
+void TRCudaV2::CopyBorder(int* BorderArray)
+{
+	assert(BorderArray != NULL && PointType_1D != NULL && size != 1 && "要先初始化 Array 和要做轉點雲的部分!!");	// assert 抓出 call 錯的可能性 (這邊要多張)
+	memcpy(BorderArray, PointType_1D, sizeof(int) * size * rows);
 }
 bool TRCudaV2::ShakeDetect_Single(int* LastArray)
 {
