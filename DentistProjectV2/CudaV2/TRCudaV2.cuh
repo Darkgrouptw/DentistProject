@@ -109,10 +109,3 @@ private:
 	const int MinValuePixel_BR = 10;											// Buttom Right 的 Pixel
 	const float MinValueScalar = 1.8f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
 };
-
-/*
-ToDo
-1. 判斷圖片的亮度是否大於某一個 th
-2. 邊界要做 Smooth 的動作 (x)
-3. zratio 要修改
-*/

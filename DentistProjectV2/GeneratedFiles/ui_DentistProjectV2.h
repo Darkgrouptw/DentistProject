@@ -61,6 +61,7 @@ public:
     QPushButton *GyroscopeResetToZero;
     QGroupBox *BLETestingBox;
     QPushButton *PointCloudAlignmentTestBtn;
+    QPushButton *BLEConnect_OneBtn;
     QWidget *Tab_OCT;
     QGroupBox *OCTNormalSettingBox;
     QLineEdit *SaveLocationText;
@@ -182,7 +183,7 @@ public:
         BLEStatus->setFont(font);
         ResetRotationBox = new QGroupBox(Tab_Deivce);
         ResetRotationBox->setObjectName(QStringLiteral("ResetRotationBox"));
-        ResetRotationBox->setGeometry(QRect(210, 130, 151, 141));
+        ResetRotationBox->setGeometry(QRect(210, 120, 151, 141));
         ResetRotationMode = new QPushButton(ResetRotationBox);
         ResetRotationMode->setObjectName(QStringLiteral("ResetRotationMode"));
         ResetRotationMode->setGeometry(QRect(10, 20, 131, 31));
@@ -200,6 +201,10 @@ public:
         PointCloudAlignmentTestBtn = new QPushButton(BLETestingBox);
         PointCloudAlignmentTestBtn->setObjectName(QStringLiteral("PointCloudAlignmentTestBtn"));
         PointCloudAlignmentTestBtn->setGeometry(QRect(10, 20, 131, 23));
+        BLEConnect_OneBtn = new QPushButton(Tab_Deivce);
+        BLEConnect_OneBtn->setObjectName(QStringLiteral("BLEConnect_OneBtn"));
+        BLEConnect_OneBtn->setEnabled(true);
+        BLEConnect_OneBtn->setGeometry(QRect(370, 130, 151, 111));
         tabWidget->addTab(Tab_Deivce, QString());
         Tab_OCT = new QWidget();
         Tab_OCT->setObjectName(QStringLiteral("Tab_OCT"));
@@ -258,7 +263,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(0);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -294,6 +299,7 @@ public:
         GyroscopeResetToZero->setText(QApplication::translate("DentistProjectV2Class", "\344\271\235\350\273\270\346\255\270\351\233\266", nullptr));
         BLETestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\346\270\254\350\251\246\347\233\270\351\227\234(\351\200\262\351\232\216)", nullptr));
         PointCloudAlignmentTestBtn->setText(QApplication::translate("DentistProjectV2Class", "\344\271\235\350\273\270\351\273\236\351\233\262\346\213\274\346\216\245\346\270\254\350\251\246", nullptr));
+        BLEConnect_OneBtn->setText(QApplication::translate("DentistProjectV2Class", "\344\270\200    \351\215\265    \350\227\215    \350\212\275    \351\200\243    \347\267\232", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\350\243\235\347\275\256", nullptr));
         OCTNormalSettingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\345\270\270\347\224\250\350\250\255\345\256\232", nullptr));
         SaveLocationLabel->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));

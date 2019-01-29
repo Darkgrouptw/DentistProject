@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -371,7 +371,7 @@
       <property name="geometry">
        <rect>
         <x>210</x>
-        <y>130</y>
+        <y>120</y>
         <width>151</width>
         <height>141</height>
        </rect>
@@ -452,6 +452,22 @@
         <string>九軸點雲拼接測試</string>
        </property>
       </widget>
+     </widget>
+     <widget class="QPushButton" name="BLEConnect_OneBtn">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>370</x>
+        <y>130</y>
+        <width>151</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>一    鍵    藍    芽    連    線</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="Tab_OCT">

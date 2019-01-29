@@ -422,6 +422,14 @@ void RawDataManager::CopySingleBorder(int *&LastData_Pointer)
 		LastData_Pointer = new int[DManager.prop.SizeX];
 	cudaV2.CopySingleBorder(LastData_Pointer);
 }
+bool RawDataManager::ShakeDetect_Single(int* LastData)
+{
+	return cudaV2.ShakeDetect_Single(LastData);
+}
+bool RawDataManager::ShakeDetect_Multi()
+{
+	return cudaV2.ShakeDetect_Multi();
+}
 void RawDataManager::SavePointCloud()
 {
 	#pragma region 創建 Array
@@ -444,9 +452,9 @@ void RawDataManager::SavePointCloud()
 			{
 				// ToDo 確認
 				QVector3D pointInSpace;
-				pointInSpace.setX(DManager.MappingMatrix[MapID + 0] * ratio + 0.2);
-				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio);
-				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2);
+				pointInSpace.setX(DManager.MappingMatrix[MapID + 0] * ratio + PanelPointOffset.x());
+				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio + PanelPointOffset.y());
+				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2 + PanelPointOffset.z());
 
 				// 加進 Point 陣列裡
 				info.Points.push_back(pointInSpace);
@@ -458,18 +466,26 @@ void RawDataManager::SavePointCloud()
 	// 加進陣列裡
 	PointCloudArray.push_back(info);
 	((QOpenGLWidget*)DisplayPanel)->update();
-	#pragma endregion
+	#pragma endregion 
 	#pragma region 刪除 Array
 	delete[] BorderData;
 	#pragma endregion
 }
-bool RawDataManager::ShakeDetect_Single(int* LastData)
+void RawDataManager::AlignmentPointCloud()
 {
-	return cudaV2.ShakeDetect_Single(LastData);
-}
-bool RawDataManager::ShakeDetect_Multi()
-{
-	return cudaV2.ShakeDetect_Multi();
+	// 點雲拼接
+	if (PointCloudArray.size() > 1)
+	{
+		// 拿最後一篇跟其他拼接
+		int LastID = PointCloudArray.size() - 1;
+		vector<GlobalRegistration::Point3D> NewPC = ConvertQVector2Point3D(PointCloudArray[LastID].Points);
+
+		// ToDo 以後會跟每一片拚拚看，拚完之後會比較
+		vector<GlobalRegistration::Point3D> LastPC = ConvertQVector2Point3D(PointCloudArray[LastID - 1].Points);
+
+		// 轉換 Matrix
+		PointCloudArray[LastID].TransforMatrix = super4PCS_Align(&NewPC, &LastPC);
+	}
 }
 
 // Helper Function
@@ -530,7 +546,7 @@ vector<GlobalRegistration::Point3D> RawDataManager::ConvertQVector2Point3D(QVect
 	}
 	return pc;
 }
-void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *PC1, std::vector<GlobalRegistration::Point3D> *PC2, int max_time_seconds)
+QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *PC1, vector<GlobalRegistration::Point3D> *PC2)
 {
 	clock_t t1, t2;
 	t1 = clock();
@@ -563,13 +579,14 @@ void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *P
 	// maximum per-dimension angle, check return value to detect invalid cases
 	double max_angle = 20;
 
+	int max_time_seconds = 1;
 	//==========//
 
 	//vector<Point3D> set1, set2;
-	vector<cv::Point2f> tex_coords1, tex_coords2;
-	vector<cv::Point3f> normals1, normals2;
+	vector<Point2f> tex_coords1, tex_coords2;
+	vector<Point3f> normals1, normals2;
 	vector<tripple> tris1, tris2;
-	vector<std::string> mtls1, mtls2;
+	vector<string> mtls1, mtls2;
 
 	IOManager iomananger;
 
@@ -585,7 +602,7 @@ void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *P
 
 	bool overlapOk = options.configureOverlap(overlap, 0.35f);
 	if (!overlapOk) {
-		std::cerr << "Invalid overlap configuration. ABORT" << std::endl;
+		cerr << "Invalid overlap configuration. ABORT" << endl;
 		/// TODO Add proper error codes
 
 	}
@@ -601,16 +618,15 @@ void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *P
 	GlobalRegistration::Match4PCSOptions::Scalar Estimation;
 
 	Estimation = options.getOverlapEstimation();
-	std::cout << "getOverlapEstimation:" << Estimation << std::endl;
+	cout << "getOverlapEstimation:" << Estimation << endl;
 	//// Match and return the score (estimated overlap or the LCP).  
 	typename GlobalRegistration::Point3D::Scalar score = 0;
 	int v;
 
 	constexpr GlobalRegistration::Utils::LogLevel loglvl = GlobalRegistration::Utils::Verbose;
-	//cv::Mat mat_rot(*mat);
 
 	//template <typename Visitor>
-	using TrVisitorType = typename std::conditional <loglvl == GlobalRegistration::Utils::NoLog,
+	using TrVisitorType = typename conditional <loglvl == GlobalRegistration::Utils::NoLog,
 		GlobalRegistration::Match4PCSBase::DummyTransformVisitor,
 		TransformVisitor>::type;
 
@@ -620,45 +636,38 @@ void RawDataManager::super4PCS_Align(std::vector<GlobalRegistration::Point3D> *P
 	matrix.setToIdentity();
 
 	try {
-
+		// 4PCS or Super4PCS
 		if (use_super4pcs) {
 			GlobalRegistration::MatchSuper4PCS *matcher;
 			matcher = new GlobalRegistration::MatchSuper4PCS(options, logger);
 
 			cout << "Use Super4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
-
-			//cout << "Mat Mat" << endl;
-			//cout << (*mat) << endl;
-
-			//for (int i = 0; i < 4; i++)
-			//	for (int j = 0; j < 4; j++)
-			//		matrix(i, j) = (*mat)(i, j);
-			//qDebug() << matrix << endl;
-
-			cout << std::endl;
-			cout << "score_in:" << score << std::endl;
 		}
 		else {
 			GlobalRegistration::Match4PCS *matcher;
 			matcher = new GlobalRegistration::Match4PCS(options, logger);
-			std::cout << "Use old 4PCS" << std::endl;
+			cout << "Use old 4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
-			std::cout << "score_in:" << score << std::endl;
+			cout << "score_in:" << score << std::endl;
 		}
+
+		// 矩陣轉換
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				matrix(i, j) = (*mat)(i, j);
 	}
 	catch (const std::exception& e) {
 		cout << "[Error]: " << e.what() << '\n';
 		cout << "Aborting with code -2 ..." << endl;
-		return;
+		return matrix;
 	}
 	catch (...) {
 		std::cout << "[Unknown Error]: Aborting with code -3 ..." << std::endl;
-		return;
+		return matrix;
 	}
 	t2 = clock();
-	//qDebug() << "Match done t: " << (t2 - t1) / (double)(CLOCKS_PER_SEC) << " s  ";
-	//final_score = score;
 	cout << "Score: " << score << endl;
 	//cerr << score << endl;
+	return matrix;
 }

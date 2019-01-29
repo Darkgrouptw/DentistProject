@@ -404,11 +404,15 @@ void OpenGLWidget::DrawPointCloud()
 		glBegin(GL_POINTS);
 		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
 		{
-			glColor4f(0, 0, 0, 1);
+			if (i == rawManager->PointCloudArray.size() - 1)
+				glColor4f(0, 0, 1, 1);
+			else
+				glColor4f(0, 0, 0, 1);
 			for (int j = 0; j < rawManager->PointCloudArray[i].Points.size(); j++)
 			{
-				QVector3D point = rawManager->PointCloudArray[i].Points[j];
-				glVertex3f(point.x(), point.y(), point.z());
+				QVector4D point = QVector4D(rawManager->PointCloudArray[i].Points[j], 1);
+				QVector4D rotationPoint = rawManager->PointCloudArray[i].TransforMatrix * point;
+				glVertex3f(rotationPoint.x(), rotationPoint.y(), rotationPoint.z());
 			}
 		}
 		glEnd();

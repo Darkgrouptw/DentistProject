@@ -9,6 +9,7 @@
 #include <QDir>
 #include <QDate>
 #include <QTime>
+#include <QVector>
 #include <QMessageBox>
 
 #include "GlobalDefine.h"
@@ -38,7 +39,30 @@ private:
 	RawDataManager	rawManager;													// 所有跟裝置有關的 (藍芽、OCT)
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 
+	//////////////////////////////////////////////////////////////////////////
+	// 藍芽相關參數
+	//////////////////////////////////////////////////////////////////////////
+	QString	RotationModeON_String = "Rotation Mode (ON)";
+	QString RotationModeOFF_String = "Rotation Mode (OFF)";
+	QString BLEDeviceName = "PenBLE";
+	QString BLEDeviceAddress = "88:C2:55:9D:05:67";
+	#ifdef TEST_NO_OCT
+	QVector<QString> ExceptCOMName = { "COM1" };
+	#else
+	#endif
+
 private slots:
+	//////////////////////////////////////////////////////////////////////////
+	// 藍芽
+	//////////////////////////////////////////////////////////////////////////
+	void SearchCOM();															// 找 COM
+	void ConnectCOM();															// 連結 COM
+	void ScanBLEDevice();														// 找可用的 BLE Device
+	void ConnectBLEDeivce();													// 連結
+	void SetRotationMode();														// Rotation 設定模式
+	void GyroResetToZero();														// 九軸歸零
+	void ConnectBLEDevice_OneBtn();												// 一鍵建立連結
+
 	//////////////////////////////////////////////////////////////////////////
 	// OCT 相關(主要)
 	//////////////////////////////////////////////////////////////////////////

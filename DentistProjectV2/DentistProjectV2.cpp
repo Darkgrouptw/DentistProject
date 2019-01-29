@@ -12,14 +12,15 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//connect(ui.RenderBorder_CheckBox,						SIGNAL(clicked()),				this,	SLOT(SetRenderBorderBool()));
 	//connect(ui.RenderPointDot_CheckBox,						SIGNAL(clicked()),				this,	SLOT(SetRenderPointCloudBool()));
 
-	//// 藍芽部分
-	//connect(ui.BtnSearchCom,								SIGNAL(clicked()),				this,	SLOT(SearchCOM()));
-	//connect(ui.BtnConnectCOM,								SIGNAL(clicked()),				this,	SLOT(ConnectCOM()));
-	//connect(ui.BtnScanBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ScanBLEDevice()));
-	//connect(ui.BtnConnectBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDeivce()));
-	//connect(ui.ResetRotationMode,							SIGNAL(clicked()),				this,	SLOT(SetRotationMode()));
-	//connect(ui.GyroscopeResetToZero,						SIGNAL(clicked()),				this,	SLOT(GyroResetToZero()));
-	//
+	// 藍芽部分
+	connect(ui.BtnSearchCom,								SIGNAL(clicked()),				this,	SLOT(SearchCOM()));
+	connect(ui.BtnConnectCOM,								SIGNAL(clicked()),				this,	SLOT(ConnectCOM()));
+	connect(ui.BtnScanBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ScanBLEDevice()));
+	connect(ui.BtnConnectBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDeivce()));
+	connect(ui.ResetRotationMode,							SIGNAL(clicked()),				this,	SLOT(SetRotationMode()));
+	connect(ui.GyroscopeResetToZero,						SIGNAL(clicked()),				this,	SLOT(GyroResetToZero()));
+	connect(ui.BLEConnect_OneBtn,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDevice_OneBtn()));
+	
 	//// 藍芽測試
 	//connect(ui.PointCloudAlignmentTestBtn,					SIGNAL(clicked()),				this,	SLOT(PointCloudAlignmentTest()));
 
@@ -68,6 +69,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	ui.NetworkResult->setEnabled(false);
 	ui.NetworkResultText->setEnabled(false);
 	ui.OCTTestingBox->setEnabled(false);
+
+	// BLE
+	ui.BLEDeviceBox->setEnabled(false);
 	#endif
 
 	// 創建資料夾
@@ -107,6 +111,73 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	// 傳送 rawManager 到 OpenGL Widget
 	ui.DisplayPanel->SetRawDataManager(&rawManager);
 	#pragma endregion
+}
+
+// 藍芽事件
+void DentistProjectV2::SearchCOM()
+{
+	QStringList COMListArray = rawManager.bleManager.GetCOMPortsArray();
+	ui.COMList->clear();
+	ui.COMList->addItems(COMListArray);
+}
+void DentistProjectV2::ConnectCOM()
+{
+	rawManager.bleManager.Initalize(ui.COMList->currentText());
+}
+void DentistProjectV2::ScanBLEDevice()
+{
+	if (rawManager.bleManager.IsInitialize())
+		rawManager.bleManager.Scan();
+}
+void DentistProjectV2::ConnectBLEDeivce()
+{
+	rawManager.bleManager.Connect(ui.BLEDeviceList->currentIndex());
+}
+void DentistProjectV2::SetRotationMode()
+{
+	if (ui.ResetRotationMode->text() == RotationModeOFF_String)
+	{
+		ui.DisplayPanel->SetRotationMode(true);
+		ui.ResetRotationMode->setText(RotationModeON_String);
+		ui.ResetRotationMode->setDefault(true);
+	}
+	else
+	{
+		ui.DisplayPanel->SetRotationMode(false);
+		ui.ResetRotationMode->setText(RotationModeOFF_String);
+		ui.ResetRotationMode->setDefault(false);
+	}
+}
+void DentistProjectV2::GyroResetToZero()
+{
+	rawManager.bleManager.SetOffsetQuat();
+}
+void DentistProjectV2::ConnectBLEDevice_OneBtn()
+{
+	#pragma region 預先設定
+	rawManager.bleManager.SetConnectDirectly(BLEDeviceName.toStdString(), BLEDeviceAddress.toStdString());
+	#pragma endregion
+	#pragma region COM
+	QStringList COMListArray = rawManager.bleManager.GetCOMPortsArray();
+	ui.COMList->addItems(COMListArray);
+	for (int i = 0; i < ExceptCOMName.size(); i++)
+		for (int j = 0; j < COMListArray.size(); j++)
+			if (ExceptCOMName[i] == COMListArray[j])
+			{
+				COMListArray.removeAt(j);
+				break;
+			}
+	
+	// 例外判斷
+	if (COMListArray.size() == 0)
+		assert(false && "COM 設定可能有錯誤!!");
+
+	ui.COMList->setCurrentText(COMListArray[0]);
+	#pragma endregion
+	#pragma region 連結 COM & 自動連結
+	rawManager.bleManager.Initalize(ui.COMList->currentText());
+	#pragma endregion
+
 }
 
 // OCT 相關(主要)
@@ -176,6 +247,7 @@ void DentistProjectV2::ReadRawDataToImage()
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
 			rawManager.SavePointCloud();
+			rawManager.AlignmentPointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
@@ -206,6 +278,7 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
 			rawManager.SavePointCloud();
+			rawManager.AlignmentPointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)

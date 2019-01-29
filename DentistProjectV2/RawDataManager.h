@@ -80,6 +80,8 @@ public:
 	// ReadRawDataFromFileV2			=> 讀檔，根據檔案大小來判斷是 Single 還是 Multi 的資料
 	// ScanSingleDataFromDeviceV2		=> 直接從 OCT 讀單張資料
 	// ScanMultiDataFromDeviceV2		=> 直接從 OCT 讀多張資料
+	//
+	// 註： 底下的 Function 排序 跟 ScanningWorkerThread Call 的順序一樣
 	//////////////////////////////////////////////////////////////////////////
 	RawDataType ReadRawDataFromFileV2(QString);									// 有修改的過後的 Raw Data Reader
 	void ScanSingleDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
@@ -90,6 +92,7 @@ public:
 	bool ShakeDetect_Single(int *);												// 有無晃動 (單)
 	bool ShakeDetect_Multi();													// 有無晃動 (多)
 	void SavePointCloud();														// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
+	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊														
 
 	//////////////////////////////////////////////////////////////////////////
 	// Netowrk 相關的 Function
@@ -101,7 +104,7 @@ public:
 	// 點雲資料
 	//////////////////////////////////////////////////////////////////////////
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
-	//int					SelectIndex = 0;										// 目前選擇地的片數
+	//int					SelectIndex = -1;										// 目前選擇地的片數
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
@@ -172,8 +175,11 @@ private:
 	string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
 	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
 	vector<GlobalRegistration::Point3D> ConvertQVector2Point3D(QVector<QVector3D>); // 轉換
-	void				super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *, int);	// Alignment
+	QMatrix4x4			super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *);	// Alignment
 
-
+	//////////////////////////////////////////////////////////////////////////
+	// 其他變數
+	//////////////////////////////////////////////////////////////////////////
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
+	QVector3D PanelPointOffset = QVector3D(0, 0, 0);
 };

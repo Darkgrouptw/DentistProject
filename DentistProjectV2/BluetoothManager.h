@@ -43,6 +43,7 @@ public:
 	void				Initalize(QString);
 	void				Scan();
 	void				Connect(int);
+	void				SetConnectDirectly(string, string);							// 一鍵連結會用到，直接給 Name & Mac Address 連結
 	bool				IsInitialize();
 	void				SetOffsetQuat();
 	QVector3D			GetAngle();
@@ -60,20 +61,28 @@ private:
 	void				Callback_TerminateLinkDone(LibGlove::DeviceInfo*, unsigned char, bool);
 	void				Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*, float[]);
 
+	//////////////////////////////////////////////////////////////////////////
 	// UI pointer
+	//////////////////////////////////////////////////////////////////////////
 	QLabel*				BLEStatus;
 	QLabel*				EularText;
 	QMainWindow*		MainWindow;
 	QComboBox*			bleTextList;
 
+	//////////////////////////////////////////////////////////////////////////
 	// 九軸相關
+	//////////////////////////////////////////////////////////////////////////
 	QQuaternion			CurrentQuat;
 	QQuaternion			OffsetQuat;
 	float				AngleX = 0;
 	float				AngleY = 0;
 	float				AngleZ = 0;
 
+	//////////////////////////////////////////////////////////////////////////
 	// Other
+	//////////////////////////////////////////////////////////////////////////
+	bool				IsDirectConnected = false;								// 這邊要做一件事是直接 Connect 當裝置 Init 完之後，但一般不會進這裡
+	LibBLE::DeviceInfo* BLEDirectInfo = new LibBLE::DeviceInfo;
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 
 	//////////////////////////////////////////////////////////////////////////

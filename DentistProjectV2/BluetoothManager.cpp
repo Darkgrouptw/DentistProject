@@ -35,6 +35,7 @@ BluetoothManager::~BluetoothManager()
 	if (device->IsInitialized())
 		device->Close();
 	delete device;
+	delete BLEDirectInfo;
 }
 
 void BluetoothManager::SendUIPointer(QVector<QObject*> objList)
@@ -95,6 +96,16 @@ void BluetoothManager::Connect(int index)
 	else if (device->IsInitialized())
 		device->Terminate();
 }
+void BluetoothManager::SetConnectDirectly(string deviceName, string macAddress)
+{
+	//device->ScanCancel();
+
+	IsDirectConnected = true;
+	BLEDirectInfo->DeviceName = deviceName;
+	BLEDirectInfo->DeviceAddress = macAddress;
+
+	bleTextList->addItem(QString::fromStdString(BLEDirectInfo->DeviceName + "(" + BLEDirectInfo->DeviceAddress + ")"));
+}
 
 bool BluetoothManager::IsInitialize()
 {
@@ -114,6 +125,14 @@ void BluetoothManager::Callback_DeviceInitDone(string com)
 {
 	cout << "藍芽初始化: " <<  com << " " << (device->IsInitialized()? "成功!": "失敗!") << endl;
 	BLEStatus->setText(codec->toUnicode("藍芽狀態：初始化成功"));
+
+	// 這部分是要不要直接 Connect 特定裝置
+	if (IsDirectConnected)
+	{
+		cout << "直接 Connect To: " << BLEDirectInfo->DeviceName << " " << BLEDirectInfo->DeviceAddress << endl;
+		device->Establish(BLEDirectInfo);
+		IsDirectConnected = false;
+	}
 }
 void BluetoothManager::Callback_DeviceCloseDone(string com)
 {
