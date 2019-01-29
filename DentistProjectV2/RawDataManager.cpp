@@ -1,4 +1,5 @@
-﻿#include "RawDataManager.h"
+﻿#include <QOpenGLWidget>				// 因為會跟 OpenCV 3 重圖
+#include "RawDataManager.h"
 
 RawDataManager::RawDataManager()
 {
@@ -48,7 +49,7 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 6);
+	assert(UIPointer.size() == 7);
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
@@ -57,6 +58,9 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 	QSlider* slider			= (QSlider*)UIPointer[3];
 	QPushButton* scanButton = (QPushButton*)UIPointer[4];
 	QLineEdit* saveLineEdt	= (QLineEdit*)UIPointer[5];
+	
+	// OpenGL
+	DisplayPanel			= UIPointer[6];
 	Worker->InitUIPointer(slider, scanButton, saveLineEdt);
 }
 void RawDataManager::ShowImageIndex(int index)
@@ -453,6 +457,7 @@ void RawDataManager::SavePointCloud()
 
 	// 加進陣列裡
 	PointCloudArray.push_back(info);
+	((QOpenGLWidget*)DisplayPanel)->update();
 	#pragma endregion
 	#pragma region 刪除 Array
 	delete[] BorderData;

@@ -111,7 +111,7 @@ void ScanningWorkerThread::ScanProcess()
 		else
 		{
 			// 有兩張以上，可以做比較
-			bool IsShake = (*ShakeDetect_Single)(Last_PointType_1D);
+			bool IsShake = (*ShakeDetect_Single)(Last_PointType_1D->TypeData);
 			if (IsShake)
 			{
 				// 如果有晃動，就要重新更新
@@ -135,6 +135,8 @@ void ScanningWorkerThread::ScanProcess()
 		// 晃到重掃
 		if (IsShake)
 			continue;
+
+		//SavePointCloud
 		#pragma endregion
 		#pragma region 8. 傳到 UI 告訴他要顯示
 		#pragma endregion

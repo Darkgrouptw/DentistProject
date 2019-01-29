@@ -4,8 +4,6 @@
 由於這邊是使用 clr (Manage 的物件)
 所以class 要用 public ref class (因為 clr 不支援 c++ thread & QThread)
 */
-//#include "DataManager.h"
-
 #include <iostream>
 #include <vector>
 #include <functional>

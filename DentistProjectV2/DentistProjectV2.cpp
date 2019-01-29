@@ -100,6 +100,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.ScanNumSlider);
 	objList.push_back(ui.ScanButton);
 	objList.push_back(ui.SaveLocationText);
+	objList.push_back(ui.DisplayPanel);
 
 	rawManager.SendUIPointer(objList);
 
@@ -174,7 +175,7 @@ void DentistProjectV2::ReadRawDataToImage()
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
-			//rawManager.SavePointCloud();
+			rawManager.SavePointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
@@ -203,7 +204,10 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
+		{
+			rawManager.SavePointCloud();
 			ui.ScanNumSlider->setEnabled(true);
+		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
 			ui.ScanNumSlider->setEnabled(false);
 

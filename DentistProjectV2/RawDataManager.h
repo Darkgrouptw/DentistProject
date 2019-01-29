@@ -162,6 +162,7 @@ private:
 	QLabel*				ImageResult;											// 外部的原圖 UI Pointer
 	QLabel*				BorderDetectionResult;									// 最後找出來的結果圖
 	QLabel*				NetworkResult;											// 同上，但目前是沒有用
+	QObject*			DisplayPanel;											// 畫圖的部分
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
@@ -176,4 +177,3 @@ private:
 
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 };
-
