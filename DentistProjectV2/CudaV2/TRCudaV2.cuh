@@ -56,8 +56,9 @@ public:
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
 	void CopySingleBorder(int*);												// Copy 單張 Border 的
 	void CopyBorder(int*);														// Copy 整段的 Border
-	bool ShakeDetect_Single(int*);												// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
-	bool ShakeDetect_Multi();													// 晃動偵測							=> True 代表有晃動
+	bool ShakeDetect_Single(int*, bool);										// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
+	bool ShakeDetect_Multi(bool);												// 晃動偵測						=> True 代表有晃動
+
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 圖片資料
@@ -97,7 +98,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 晃動 Threshold
 	//////////////////////////////////////////////////////////////////////////
-	const float OCT_Move_Threshold = 7;											// 晃動大於某一個值，代表不能用
+	const float OCT_Move_Threshold = 20;										// 晃動大於某一個值，代表不能用
 	const int	OCT_Valid_VoteNum = 10;											// 有效票數起碼要大於這個值
 
 	//////////////////////////////////////////////////////////////////////////

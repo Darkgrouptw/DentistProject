@@ -1423,7 +1423,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
-	totalTime = clock() - totalTime;
+	totalTime = clock() - totalTimeTransfromMatArray
 	cout << "轉換多張點雲: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 }
@@ -1484,7 +1484,7 @@ void TRCudaV2::CopyBorder(int* BorderArray)
 	assert(BorderArray != NULL && PointType_1D != NULL && size != 1 && "要先初始化 Array 和要做轉點雲的部分!!");	// assert 抓出 call 錯的可能性 (這邊要多張)
 	memcpy(BorderArray, PointType_1D, sizeof(int) * size * rows);
 }
-bool TRCudaV2::ShakeDetect_Single(int* LastArray)
+bool TRCudaV2::ShakeDetect_Single(int* LastArray, bool ShowDebugMessage)
 {
 	// 設定變數
 	int voteNum = 0;								// 有效票數
@@ -1504,7 +1504,10 @@ bool TRCudaV2::ShakeDetect_Single(int* LastArray)
 	if (voteNum > OCT_Valid_VoteNum)
 	{
 		MoveDis /= voteNum;
-		cout << "晃動距離(pixel): " << (float)MoveDis << endl;
+
+		// Debug Message
+		if(ShowDebugMessage)
+			cout << "晃動距離(pixel): " << (float)MoveDis << endl;
 
 		// 這邊是代表沒有晃動
 		if (MoveDis < OCT_Move_Threshold)
@@ -1512,7 +1515,7 @@ bool TRCudaV2::ShakeDetect_Single(int* LastArray)
 	}
 	return true;
 }
-bool TRCudaV2::ShakeDetect_Multi()
+bool TRCudaV2::ShakeDetect_Multi(bool ShowDebugMessage)
 {
 	// 找 60 ~ 200 裡面有效的有沒有斷層
 	int voteNum = 0;								// 有效票數
@@ -1561,7 +1564,10 @@ bool TRCudaV2::ShakeDetect_Multi()
 	if (voteNum > OCT_Valid_VoteNum)
 	{
 		MoveDis /= voteNum;
-		cout << "晃動距離(pixel): " << (float)MoveDis << endl;
+
+		// Debug Message
+		if (ShowDebugMessage)
+			cout << "晃動距離(pixel): " << (float)MoveDis << endl;
 
 		// 這邊是代表沒有晃動
 		if (MoveDis < OCT_Move_Threshold)

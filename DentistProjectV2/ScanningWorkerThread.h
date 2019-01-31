@@ -4,6 +4,8 @@
 由於這邊是使用 clr (Manage 的物件)
 所以class 要用 public ref class (因為 clr 不支援 c++ thread & QThread)
 */
+#include "GlobalDefine.h"
+
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -40,11 +42,12 @@ public:
 	);
 	void IntitShakeDetectFunctionPointer(
 		function<void(int*&)>*,													// Copy 單張資訊
-		function<bool(int*)>*,													// Shake Detect (Single)
-		function<bool()>*,														// Shake Detect (Multi)
-		function<void()>*														// Save 點雲
+		function<bool(int*, bool)>*,											// Shake Detect (Single)
+		function<bool(bool)>*													// Shake Detect (Multi)
 	);
 	void InitShowFunctionPointer(
+		function<void()>*,														// Save 點雲
+		function<void()>*,														// Align 點雲
 		function<void()>*														// ShowImageIndex
 	);
 	void InitUIPointer(QSlider*, QPushButton*, QLineEdit*);						// 初始化 UI Pointer (Thread 中，做完會去改圖，所以需要這個 Function Pointer)
@@ -67,7 +70,7 @@ private:
 	// 5. 開始掃描多個資料
 	// 6. 等待結果判斷
 	// 7. 驗證是否有晃動到
-	// 8. 傳到 UI 告訴他要顯示
+	// 8. 如果沒有晃到，那就儲存點雲 & 如果大於二就執行拼接
 	//////////////////////////////////////////////////////////////////////////
 	void ScanProcess();															// Thread 跑的 Function
 	bool IsEnd = true;															// 是否要結束
@@ -94,11 +97,12 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	function<void(QString, bool)>*	ScanSingleDataFromDeviceV2 = NULL;			// 掃描單張資料
 	function<void(QString, bool)>*	ScanMultiDataFromDeviceV2 = NULL;			// 掃描多張資料
-	function<void(bool)>*			TransformToIMG = NULL;						// 將資料轉成圖 (準備顯示前)
+	function<void(bool)>*			TransformToIMG = NULL;							// 將資料轉成圖 (準備顯示前)
 	function<void(int*&)>*			CopySingleBorder = NULL;					// 抓出單張資訊
-	function<bool(int*)>*			ShakeDetect_Single = NULL;					// 是否有晃動 (Single)
-	function<bool()>*				ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)
+	function<bool(int*, bool)>*		ShakeDetect_Single = NULL;					// 是否有晃動 (Single)
+	function<bool(bool)>*			ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)
 	function<void()>*				SavePointCloud = NULL;						// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
+	function<void()>*				AlignmentPointCloud = NULL;					// 拼接點雲的 Function
 	function<void()>*				ShowImageIndex = NULL;						// 顯示在畫面上
 };
 

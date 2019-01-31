@@ -299,7 +299,6 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 }
 void DentistProjectV2::ReadSingleRawDataForShakeTest()
 {
-	
 	QStringList RawFileName = QFileDialog::getOpenFileNames(this, codec->toUnicode("晃動測式"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName.count() == 2)
 	{
@@ -315,7 +314,7 @@ void DentistProjectV2::ReadSingleRawDataForShakeTest()
 		rawManager.TransformToIMG(false);
 
 		// 單張判斷
-		rawManager.ShakeDetect_Single(LastDataArray);
+		rawManager.ShakeDetect_Single(LastDataArray, true);
 		delete LastDataArray;
 	}
 	else

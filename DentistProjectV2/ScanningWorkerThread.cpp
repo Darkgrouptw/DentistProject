@@ -25,17 +25,20 @@ void ScanningWorkerThread::InitScanFunctionPointer(
 }
 void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
 	function<void(int*&)>* CopyBorderInfo,
-	function<bool(int*)>* ShakeDetectSingle,
-	function<bool()>* ShakeDetectMulti,
-	function<void()>* SavePC)
+	function<bool(int*, bool)>* ShakeDetectSingle,
+	function<bool(bool)>* ShakeDetectMulti)
 {
 	CopySingleBorder = CopyBorderInfo;
 	ShakeDetect_Single = ShakeDetectSingle;
 	ShakeDetect_Multi = ShakeDetectMulti;
-	SavePointCloud = SavePC;
 }
-void ScanningWorkerThread::InitShowFunctionPointer(function<void()>* showImage)
+void ScanningWorkerThread::InitShowFunctionPointer(
+	function<void()>* SavePC,
+	function<void()>* AlignPC,
+	function<void()>* showImage)
 {
+	SavePointCloud = SavePC;
+	AlignmentPointCloud = AlignPC;
 	ShowImageIndex = showImage;
 }
 void ScanningWorkerThread::InitUIPointer(QSlider* scanNumSlider, QPushButton* button, QLineEdit* lineEdt)
@@ -80,6 +83,16 @@ void ScanningWorkerThread::ScanProcess()
 {
 	// 掃描
 	// 這邊要改進讀條 & 顯示文字
+	bool ShowSingleScanDetail = false;
+	bool ShowMultiScanDetail = false;
+	#pragma region 關閉 Result 的 Define
+	#ifndef DISABLE_SINGLE_RESULT
+	ShowSingleScanDetail = true;
+	#endif
+	#ifndef DISABLE_MULTI_RESULT
+	ShowMultiScanDetail = true;
+	#endif
+	#pragma endregion
 	while (!IsEnd)
 	{
 		#pragma region 1. 開始掃描的初始化設定
@@ -88,7 +101,7 @@ void ScanningWorkerThread::ScanProcess()
 		QTime currentTime = QTime::currentTime();
 		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
 		SaveLocation = QDir(SaveLocationText->text()).absoluteFilePath(TimeFileName);
-		cout << "儲存位置: " << SaveLocation.toStdString() << endl;
+		//cout << "儲存位置: " << SaveLocation.toStdString() << endl;
 		#pragma endregion
 		#pragma region 2. 掃描單張資料
 		(*ScanSingleDataFromDeviceV2)(SaveLocation + "_single", NeedSave_Single_RawData);
@@ -111,7 +124,7 @@ void ScanningWorkerThread::ScanProcess()
 		else
 		{
 			// 有兩張以上，可以做比較
-			bool IsShake = (*ShakeDetect_Single)(Last_PointType_1D->TypeData);
+			bool IsShake = (*ShakeDetect_Single)(Last_PointType_1D->TypeData, ShowSingleScanDetail);
 			if (IsShake)
 			{
 				// 如果有晃動，就要重新更新
@@ -130,15 +143,15 @@ void ScanningWorkerThread::ScanProcess()
 		#pragma endregion
 		#pragma region 7. 驗證是否有晃動到
 		// 這裡只需要做一整片的驗證
-		bool IsShake = (*ShakeDetect_Multi)();
+		bool IsShake = (*ShakeDetect_Multi)(ShowMultiScanDetail);
 
 		// 晃到重掃
 		if (IsShake)
 			continue;
-
-		//SavePointCloud
 		#pragma endregion
-		#pragma region 8. 傳到 UI 告訴他要顯示
+		#pragma region 8. 如果沒有晃到，那就儲存點雲 & 如果大於二就執行拼接
+		(*SavePointCloud)();
+		(*AlignmentPointCloud)();
 		#pragma endregion
 	}
 

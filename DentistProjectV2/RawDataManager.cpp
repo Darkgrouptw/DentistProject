@@ -12,16 +12,17 @@ RawDataManager::RawDataManager()
 	ScanMulti_Pointer			= bind(&RawDataManager::ScanMultiDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
 	TransforImage_Pointer		= bind(&RawDataManager::TransformToIMG,					this, placeholders::_1);
 	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
+	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1, placeholders::_2);
+	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this, placeholders::_1);
 	SavePointCloud_Pointer		= bind(&RawDataManager::SavePointCloud,					this);
-	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1);
-	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this);
+	AlignmentPointCloud_Pointer = bind(&RawDataManager::AlignmentPointCloud,			this);
 	ShowImageIndex_Pointer		= bind(&RawDataManager::ShowImageIndex,					this, 60);
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread(DManager.prop.SizeX);
 	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
-	Worker->IntitShakeDetectFunctionPointer(&CopySingleBorder_Pointer, &ShakeDetect_Single_Pointer, &ShakeDetect_Multi_Pointer, &SavePointCloud_Pointer);
-	Worker->InitShowFunctionPointer(&ShowImageIndex_Pointer);
+	Worker->IntitShakeDetectFunctionPointer(&CopySingleBorder_Pointer, &ShakeDetect_Single_Pointer, &ShakeDetect_Multi_Pointer);
+	Worker->InitShowFunctionPointer(&SavePointCloud_Pointer, &AlignmentPointCloud_Pointer, &ShowImageIndex_Pointer);
 	#pragma endregion
 	#pragma region 初始化裝置
 	#ifndef TEST_NO_OCT
@@ -39,7 +40,6 @@ RawDataManager::RawDataManager()
 	for (int i = 0; i < testDir.size(); i++)
 		dir.mkpath("Images/OCTImages/" + testDir[i]);
 	#pragma endregion
-
 }
 RawDataManager::~RawDataManager()
 {
@@ -360,8 +360,10 @@ void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSa
 void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 {
 	#pragma region 開始時間
+	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
 	clock_t startT, endT;
 	startT = clock();
+	#endif
 	#pragma endregion
 	#pragma region 清空其他 Array
 	// 如果跑出結果是全黑的，那有可能是顯卡記憶體不夠的問題
@@ -401,6 +403,7 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 	}
 	#pragma endregion
 	#pragma region 結束時間
+	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
 	endT = clock();
 
 	if (NeedSave_Image)
@@ -408,6 +411,7 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 	else
 		cout << "無存出圖片";
 	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
+	#endif
 	#pragma endregion
 }
 void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData)
@@ -422,13 +426,13 @@ void RawDataManager::CopySingleBorder(int *&LastData_Pointer)
 		LastData_Pointer = new int[DManager.prop.SizeX];
 	cudaV2.CopySingleBorder(LastData_Pointer);
 }
-bool RawDataManager::ShakeDetect_Single(int* LastData)
+bool RawDataManager::ShakeDetect_Single(int* LastData, bool ShowDebugMessage)
 {
-	return cudaV2.ShakeDetect_Single(LastData);
+	return cudaV2.ShakeDetect_Single(LastData, ShowDebugMessage);
 }
-bool RawDataManager::ShakeDetect_Multi()
+bool RawDataManager::ShakeDetect_Multi(bool ShowDebugMessage)
 {
-	return cudaV2.ShakeDetect_Multi();
+	return cudaV2.ShakeDetect_Multi(ShowDebugMessage);
 }
 void RawDataManager::SavePointCloud()
 {

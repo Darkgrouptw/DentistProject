@@ -49,6 +49,8 @@ private:
 	#ifdef TEST_NO_OCT
 	QVector<QString> ExceptCOMName = { "COM1" };
 	#else
+	// 醫院那邊要例外排除的
+	QVector<QString> ExceptCOMName = { "COM1" };
 	#endif
 
 private slots:
