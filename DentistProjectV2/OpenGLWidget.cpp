@@ -188,7 +188,6 @@ float OpenGLWidget::CalcArea(QVector<float> LengthArray)
 	float s = (a + b + c) / 2;
 	return sqrt(s * (s - a) * (s - b) * (s - c));
 }
-
 QVector3D OpenGLWidget::SamplePoint(QVector<QVector3D> trianglePoints)
 {
 	QVector3D a = trianglePoints[0];
