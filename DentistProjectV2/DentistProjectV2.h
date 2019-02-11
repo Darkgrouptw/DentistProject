@@ -38,6 +38,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	RawDataManager	rawManager;													// 所有跟裝置有關的 (藍芽、OCT)
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
+	QTimer*	UpdateGLTimer = NULL;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽相關參數
@@ -84,4 +85,5 @@ private slots:
 	// 顯示部分的事件
 	//////////////////////////////////////////////////////////////////////////
 	void ScanNumSlider_Change(int);												// 這個是右邊視窗的顯示
+	void DisplayPanelUpdate();													// 這個是 GL 視窗的更新
 };

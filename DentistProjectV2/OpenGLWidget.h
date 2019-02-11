@@ -3,7 +3,9 @@
 #include <cmath>
 #include <time.h>
 
+#include <QMap>
 #include <QPoint>
+#include <QVector>
 #include <QVector2D>
 #include <QVector3D>
 #include <QVector4D>
@@ -24,6 +26,19 @@ typedef OpenMesh::TriMesh_ArrayKernelT<> MeshType;
 
 using namespace std;
 
+//////////////////////////////////////////////////////////////////////////
+// GL Program 相關資訊
+//////////////////////////////////////////////////////////////////////////
+struct ProgramInfo 
+{
+	QOpenGLShaderProgram *program;				// 繪畫的 Program
+
+	// 矩陣資訊
+	int					ProjectionMLoc = -1;
+	int					ViewMLoc = -1;
+	int					ModelMLoc = -1;
+};
+
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
 public:
@@ -43,7 +58,6 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Connection Funciton
 	//////////////////////////////////////////////////////////////////////////
-	bool		LoadSTLFile(QString);
 	void		SetRenderTriangleBool(bool);
 	void		SetRenderBorderBool(bool);
 	void		SetRenderPointCloudBool(bool);
@@ -59,7 +73,7 @@ private:
 	// 初始化
 	//////////////////////////////////////////////////////////////////////////
 	void		InitProgram();						// 初始化 Program
-
+	ProgramInfo	LinkProgram(QString);				// 連接相關
 	void		CalcMatrix();						// 重算矩陣
 	float		CalcArea(QVector<float>);			// 給三個邊長，算面積
 	QVector3D	SamplePoint(QVector<QVector3D>);
@@ -67,7 +81,6 @@ private:
 	#pragma region 畫畫 Function
 	void							DrawGround();
 	void							DrawPointCloud();
-	void							DrawSTL();
 	void							DrawResetRotation();
 
 	bool							RenderTriangle_bool = true;
@@ -80,23 +93,25 @@ private:
 
 	//////////////////////////////////////////////////////////////////////////
 	// Shader
+	// 1. 畫地板的 Shader
+	// 2. 模型的 Shader
+	// 3. 點的 Shader
+	// 4. 線的 Shader
 	//////////////////////////////////////////////////////////////////////////
-	QOpenGLShaderProgram			*program = NULL;
-	int								ProjectionMatrixLoc;
-	int								ViewMatrixLoc;
-	int								ModelMatrixLoc;
+	QVector<ProgramInfo>			ProgramList;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Data
 	//////////////////////////////////////////////////////////////////////////
-	QVector<QVector3D>				VertexData;
-	QVector<QVector3D>				BaryCentricData;
+	QVector<QVector3D>				GroundPoints;
+	QVector<QVector2D>				GroundUVs;
+	QMatrix4x4						GroundModelM;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Buffer
 	//////////////////////////////////////////////////////////////////////////
-	GLuint							VertexBuffer = -1;
-	GLuint							BaryCentricBuffer = -1;
+	GLuint							GroundVertexBuffer = -1;
+	GLuint							GroundUVBuffer = -1;
 
 	//////////////////////////////////////////////////////////////////////////
 	// MVP 矩陣
@@ -115,7 +130,7 @@ private:
 	int								ElevationAngle = 30;			// 仰角
 	int								TempElevationAngle = 0;
 
-	int								ArcAngle = 0;					// 角度
+	int								ArcAngle = 90;					// 角度
 	int								TempArcAngle = 0;				// 暫存角度 (For 滑鼠滑動使用)
 
 	//////////////////////////////////////////////////////////////////////////
@@ -128,8 +143,6 @@ private:
 	QVector3D						BoundingBox[2];					// 最大的點 & 最小的點
 	QMatrix4x4						TransformMatrix;				// 這邊是在做當 Load 進來的模型很大的時候，會做一個縮放的動作
 	QVector3D						OffsetToCenter;					// 這邊是位移
-
-	bool							IsLoaded = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Reset Rotation Mode

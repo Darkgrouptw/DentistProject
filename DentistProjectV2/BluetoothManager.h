@@ -12,6 +12,7 @@
 
 #include <QtMath>
 #include <QVector3D>
+#include <QMatrix4x4>
 #include <QQuaternion>
 #include <QTextCodec>
 #include <QString>
@@ -46,7 +47,7 @@ public:
 	void				SetConnectDirectly(string, string);							// 一鍵連結會用到，直接給 Name & Mac Address 連結
 	bool				IsInitialize();
 	void				SetOffsetQuat();
-	QVector3D			GetAngle();
+	QMatrix4x4			GetAngle();
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -74,9 +75,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QQuaternion			CurrentQuat;
 	QQuaternion			OffsetQuat;
-	float				AngleX = 0;
-	float				AngleY = 0;
-	float				AngleZ = 0;
+	bool				NeedReset = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Other

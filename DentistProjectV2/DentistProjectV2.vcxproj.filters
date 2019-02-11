@@ -43,6 +43,9 @@
     <Filter Include="Source Files\Display">
       <UniqueIdentifier>{c904cca0-862f-4a0f-af68-b4c19cc6d3d3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{a1717c30-e224-46f6-8186-85e8d6f976d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DentistProjectV2.cpp">
@@ -121,5 +124,13 @@
     <CudaCompile Include="CudaV2\TRCudaV2.cu">
       <Filter>CudaV2</Filter>
     </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\DrawGound.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\DrawGound.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

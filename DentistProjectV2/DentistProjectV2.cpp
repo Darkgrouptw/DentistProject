@@ -3,6 +3,9 @@
 DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 {
 	ui.setupUi(this);
+	#pragma region UpdateGLTimer
+	UpdateGLTimer = new QTimer();
+	#pragma endregion
 	#pragma region 事件連結
 	// 事件連結
 	//connect(ui.actionLoadSTL,								SIGNAL(triggered()),			this,	SLOT(LoadSTL()));
@@ -46,6 +49,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
+	connect(UpdateGLTimer,									SIGNAL(timeout()),				this,	SLOT(DisplayPanelUpdate()));
 	#pragma endregion
 	#pragma region 初始化參數
 	// UI 文字 & Scan Thread
@@ -84,6 +88,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	//	"./SegNetModel/Models_iter_10000.caffemodel"			// caffemodel
 	//);
 	//segNetModel.ReshapeToMultiBatch(GPUBatchSize);
+
+	// 更新 GL
+	UpdateGLTimer->start(1.0f / 60);
 	#pragma endregion
 	#pragma region 傳 UI 指標進去
 	// 藍芽的部分
@@ -335,4 +342,8 @@ void DentistProjectV2::ScanNumSlider_Change(int value)
 {
 	rawManager.ShowImageIndex(value);
 	ui.ScanNum_Value->setText(QString::number(value));
+}
+void DentistProjectV2::DisplayPanelUpdate()
+{
+	ui.DisplayPanel->update();
 }

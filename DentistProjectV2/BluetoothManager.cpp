@@ -113,11 +113,15 @@ bool BluetoothManager::IsInitialize()
 }
 void BluetoothManager::SetOffsetQuat()
 {
-	OffsetQuat = CurrentQuat;
+	NeedReset = true;
+	CurrentQuat = QQuaternion();
 }
-QVector3D BluetoothManager::GetAngle()
+QMatrix4x4 BluetoothManager::GetAngle()
 {
-	return QVector3D(AngleX, AngleY, AngleZ);
+	QMatrix4x4 rotationMatrix;
+	rotationMatrix.setToIdentity();
+	rotationMatrix.rotate(CurrentQuat);
+	return rotationMatrix;
 }
 
 // 藍芽 & Callback
@@ -171,13 +175,24 @@ void BluetoothManager::Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*,
 	BLEStatus->setText(codec->toUnicode("藍芽狀態：傳輸資料中"));
 
 	// 旋轉結果
-	 CurrentQuat = QQuaternion(quat[0], quat[3], quat[2], quat[1]);
-	//CurrentQuat = QQuaternion(quat[0], quat[1], quat[2], quat[3]);
-	QQuaternion qtQuat = OffsetQuat.inverted() * CurrentQuat;
-	QVector3D EularAngle = qtQuat.toEulerAngles();
-	AngleX = EularAngle.x();
-	AngleY = EularAngle.y();
-	AngleZ = EularAngle.z();
+	QQuaternion TempQuat = QQuaternion(quat[0], quat[2], -quat[1], quat[3]);
+	TempQuat.normalize();
+
+	// 是否需要更新
+	if (NeedReset)
+	{
+		OffsetQuat = TempQuat;
+		NeedReset = false;
+	}
+
+	// 根據以前的 Offset 畫到 OpenGL 上
+	CurrentQuat = CurrentQuat * (OffsetQuat.inverted() * TempQuat);
+	OffsetQuat = TempQuat;
+
+	QVector3D EularAngle = CurrentQuat.toEulerAngles();
+	float AngleX = EularAngle.x();
+	float AngleY = EularAngle.y();
+	float AngleZ = EularAngle.z();
 	string Eular_Output = "Ｘ： " + to_string(AngleX) + "\nＹ： " + to_string(AngleY) + "\nＺ： " + to_string(AngleZ);
 	EularText->setText(codec->toUnicode(Eular_Output.c_str()));
 }
