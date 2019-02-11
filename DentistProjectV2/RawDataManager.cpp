@@ -11,6 +11,7 @@ RawDataManager::RawDataManager()
 	ScanSingle_Pointer			= bind(&RawDataManager::ScanSingleDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
 	ScanMulti_Pointer			= bind(&RawDataManager::ScanMultiDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
 	TransforImage_Pointer		= bind(&RawDataManager::TransformToIMG,					this, placeholders::_1);
+	GetQuaternion_Pointer		= bind(&RawDataManager::GetQuaternion,					this);
 	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
 	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1, placeholders::_2);
 	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this, placeholders::_1);
@@ -20,7 +21,7 @@ RawDataManager::RawDataManager()
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread(DManager.prop.SizeX);
-	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer);
+	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer, &GetQuaternion_Pointer);
 	Worker->IntitShakeDetectFunctionPointer(&CopySingleBorder_Pointer, &ShakeDetect_Single_Pointer, &ShakeDetect_Multi_Pointer);
 	Worker->InitShowFunctionPointer(&SavePointCloud_Pointer, &AlignmentPointCloud_Pointer, &ShowImageIndex_Pointer);
 	#pragma endregion
@@ -414,9 +415,13 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 	#endif
 	#pragma endregion
 }
-void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData)
+QQuaternion RawDataManager::GetQuaternion()
 {
-	Worker->SetParams(EndText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData);
+	return bleManager.GetQuaternionFromDevice();
+}
+void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData, bool AutoDelete_ShakeData)
+{
+	Worker->SetParams(EndText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDelete_ShakeData);
 	Worker->SetScanModel(IsStart);
 }
 void RawDataManager::CopySingleBorder(int *&LastData_Pointer)

@@ -116,12 +116,9 @@ void BluetoothManager::SetOffsetQuat()
 	NeedReset = true;
 	CurrentQuat = QQuaternion();
 }
-QMatrix4x4 BluetoothManager::GetAngle()
+QQuaternion BluetoothManager::GetQuaternionFromDevice()
 {
-	QMatrix4x4 rotationMatrix;
-	rotationMatrix.setToIdentity();
-	rotationMatrix.rotate(CurrentQuat);
-	return rotationMatrix;
+	return CurrentQuat;
 }
 
 // 藍芽 & Callback

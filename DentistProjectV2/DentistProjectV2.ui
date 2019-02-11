@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -582,6 +582,22 @@
        </property>
        <property name="text">
         <string>掃描時自動儲存立體 Raw Data</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="AutoDeleteShakeData_CheckBox">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>160</y>
+         <width>191</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>自動刪除晃動資料</string>
        </property>
        <property name="checked">
         <bool>true</bool>

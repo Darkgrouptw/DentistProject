@@ -17,11 +17,13 @@ ScanningWorkerThread::~ScanningWorkerThread()
 void ScanningWorkerThread::InitScanFunctionPointer(
 	function<void(QString, bool)>* ScanSingle,
 	function<void(QString, bool)>* ScanMulti,
-	function<void(bool)>* ToImage)
+	function<void(bool)>* ToImage,
+	function<QQuaternion()>* Quaternion)
 {
 	ScanSingleDataFromDeviceV2 = ScanSingle;
 	ScanMultiDataFromDeviceV2 = ScanMulti;
 	TransformToIMG = ToImage;
+	GetQuaternionFromDevice = Quaternion;
 }
 void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
 	function<void(int*&)>* CopyBorderInfo,
@@ -49,12 +51,13 @@ void ScanningWorkerThread::InitUIPointer(QSlider* scanNumSlider, QPushButton* bu
 }
 
 // 外部掃描的 Function
-void ScanningWorkerThread::SetParams(QString* EndText, bool Save_Single_RawData, bool Save_Multi_RawData, bool Save_ImageData)
+void ScanningWorkerThread::SetParams(QString* EndText, bool Save_Single_RawData, bool Save_Multi_RawData, bool Save_ImageData, bool Delete_ShakeData)
 {
 	EndScanText = EndText;
 	NeedSave_Multi_RawData = Save_Single_RawData;
 	NeedSave_Multi_RawData = Save_Multi_RawData;
-	NeedSave_ImageData = Save_ImageData;
+ 	NeedSave_ImageData = Save_ImageData;
+	AutoDelete_ShakeData = Delete_ShakeData;
 }
 void ScanningWorkerThread::SetScanModel(bool IsStart)
 {
@@ -136,6 +139,10 @@ void ScanningWorkerThread::ScanProcess()
 		#pragma region 5. 開始掃描多個資料
 		(*ScanMultiDataFromDeviceV2)(SaveLocation + "_Multi", NeedSave_Multi_RawData);
 		(*TransformToIMG)(NeedSave_ImageData);
+
+		// 拿旋轉矩陣
+		//QMatrix4x4 rotationM = //(*Getq)();
+		QQuaternion currentQuat = (*GetQuaternionFromDevice)();
 		#pragma endregion
 		#pragma region 6. 顯示
 		(*ShowImageIndex)();
@@ -147,9 +154,20 @@ void ScanningWorkerThread::ScanProcess()
 
 		// 晃到重掃
 		if (IsShake)
+		{
+			if (NeedSave_Multi_RawData && AutoDelete_ShakeData)
+			{
+				QFile file(SaveLocation + "_Multi");
+				file.remove();
+			}
 			continue;
+		}
 		#pragma endregion
 		#pragma region 8. 如果沒有晃到，那就儲存點雲 & 如果大於二就執行拼接
+		QMatrix4x4 rotationMatrix;
+		rotationMatrix.setToIdentity();
+		rotationMatrix.rotate(currentQuat);
+
 		(*SavePointCloud)();
 		(*AlignmentPointCloud)();
 		#pragma endregion

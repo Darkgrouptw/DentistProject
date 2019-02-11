@@ -12,7 +12,6 @@
 
 #include <QtMath>
 #include <QVector3D>
-#include <QMatrix4x4>
 #include <QQuaternion>
 #include <QTextCodec>
 #include <QString>
@@ -47,7 +46,7 @@ public:
 	void				SetConnectDirectly(string, string);							// 一鍵連結會用到，直接給 Name & Mac Address 連結
 	bool				IsInitialize();
 	void				SetOffsetQuat();
-	QMatrix4x4			GetAngle();
+	QQuaternion			GetQuaternionFromDevice();
 
 private:
 	//////////////////////////////////////////////////////////////////////////

@@ -229,15 +229,16 @@ void DentistProjectV2::ScanOCTMode()
 	bool NeedSave_Single_RawData = ui.AutoSaveSingleRawDataWhileScan_CheckBox->isChecked();
 	bool NeedSave_Multi_RawData = ui.AutoSaveMultiRawDataWhileScan_CheckBox->isChecked();
 	bool NeedSave_ImageData = ui.AutoSaveImageWhileScan_CheckBox->isChecked();
+	bool AutoDeleteShakeData = ui.AutoDeleteShakeData_CheckBox->isChecked();
 
 	// 判斷
 	if (ui.ScanButton->text() == EndScanText)
 	{
 		ui.ScanButton->setText(StartScanText);
-		rawManager.SetScanOCTMode(true, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData);
+		rawManager.SetScanOCTMode(true, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDeleteShakeData);
 	}
 	else
-		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData);		// 設定只掃完最後一張就停止了
+		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDeleteShakeData);		// 設定只掃完最後一張就停止了
 	#endif
 }
 
@@ -334,7 +335,7 @@ void DentistProjectV2::ReadSingleRawDataForShakeTest()
 }
 void DentistProjectV2::ReadMultiRawDataForShakeTest()
 {
-
+	//QMessageBox:: "未連結!!");
 }
 
 // 顯示部分的事件

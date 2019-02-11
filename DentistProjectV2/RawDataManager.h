@@ -29,6 +29,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QMessageBox>
+#include <QQuaternion>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -87,7 +88,8 @@ public:
 	void ScanSingleDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void TransformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
-	void SetScanOCTMode(bool, QString*, bool, bool, bool);						// 開始掃描 OCT
+	QQuaternion GetQuaternion();												// 從藍芽中拿資料出來
+	void SetScanOCTMode(bool, QString*, bool, bool, bool, bool);				// 開始掃描 OCT
 	void CopySingleBorder(int *&);												// 存單張 Border
 	bool ShakeDetect_Single(int *, bool);										// 有無晃動 (單)
 	bool ShakeDetect_Multi(bool);												// 有無晃動 (多)
@@ -135,6 +137,7 @@ private:
 	function<void(QString, bool)>	ScanSingle_Pointer;
 	function<void(QString, bool)>	ScanMulti_Pointer;
 	function<void(bool)>			TransforImage_Pointer;
+	function<QQuaternion()>			GetQuaternion_Pointer;
 	function<void(int*&)>			CopySingleBorder_Pointer;
 	function<bool(int*, bool)>		ShakeDetect_Single_Pointer;
 	function<bool(bool)>			ShakeDetect_Multi_Pointer;
