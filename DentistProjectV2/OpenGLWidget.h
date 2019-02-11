@@ -21,6 +21,7 @@
 #include "OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh"
 
 #include "RawDataManager.h"
+#include "OBJLoader.h"
 
 typedef OpenMesh::TriMesh_ArrayKernelT<> MeshType;
 
@@ -94,7 +95,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Shader
 	// 1. 畫地板的 Shader
-	// 2. 模型的 Shader
+	// 2. 九軸的 Shader
 	// 3. 點的 Shader
 	// 4. 線的 Shader
 	//////////////////////////////////////////////////////////////////////////
@@ -103,15 +104,18 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Render Data
 	//////////////////////////////////////////////////////////////////////////
-	QVector<QVector3D>				GroundPoints;
+	QVector<QVector3D>				GroundPoints;								// 地板
 	QVector<QVector2D>				GroundUVs;
 	QMatrix4x4						GroundModelM;
+	QVector<QVector3D>				GyroModelPoints;							// OCT
+	QMatrix4x4						GyroTranslateM;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Buffer
 	//////////////////////////////////////////////////////////////////////////
 	GLuint							GroundVertexBuffer = -1;
 	GLuint							GroundUVBuffer = -1;
+	GLuint							GyroModelVertexBuffer = -1;
 
 	//////////////////////////////////////////////////////////////////////////
 	// MVP 矩陣
@@ -130,7 +134,7 @@ private:
 	int								ElevationAngle = 30;			// 仰角
 	int								TempElevationAngle = 0;
 
-	int								ArcAngle = 90;					// 角度
+	int								ArcAngle = 0;					// 角度
 	int								TempArcAngle = 0;				// 暫存角度 (For 滑鼠滑動使用)
 
 	//////////////////////////////////////////////////////////////////////////

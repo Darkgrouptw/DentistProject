@@ -5,7 +5,7 @@ in vec2 UV;
 // Const
 const vec4 TriangleColor	= vec4(0.7,	0.7f,	0.7f, 	1);
 const vec4 BorderColor		= vec4(1,	1,		1,		1);
-const int SplitNum = 100;
+const int SplitNum = 50;
 const int GapNum = 2;
 
 // Helper Function

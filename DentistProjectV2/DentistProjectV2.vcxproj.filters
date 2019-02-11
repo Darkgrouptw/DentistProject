@@ -75,6 +75,9 @@
     <ClCompile Include="ScanningWorkerThread.cpp">
       <Filter>Source Files\RawDataManager</Filter>
     </ClCompile>
+    <ClCompile Include="OBJLoader.cpp">
+      <Filter>Source Files\Display</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DentistProjectV2.h">
@@ -119,6 +122,9 @@
     <ClInclude Include="ScanningWorkerThread.h">
       <Filter>Header Files\RawDataManager</Filter>
     </ClInclude>
+    <ClInclude Include="OBJLoader.h">
+      <Filter>Header Files\Display</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaV2\TRCudaV2.cu">
@@ -130,6 +136,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\x64\Release\DentistProjectV2\Shaders\DrawGound.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\Model.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\Model.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

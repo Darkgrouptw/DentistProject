@@ -2,6 +2,15 @@
 
 OpenGLWidget::OpenGLWidget(QWidget* parent = 0) : QOpenGLWidget(parent)
 {
+	#pragma region 讀模型
+	QVector<QVector2D>	GyroModelUVs;
+	QVector<QVector3D>	GyroModelNormals;
+	QVector<unsigned int> MaterialIndex;
+	QVector<QString> MaterialName;
+	OBJLoader::loadOBJ("./Models/handpiece.obj", GyroModelPoints, GyroModelUVs, GyroModelNormals, MaterialIndex, MaterialName);
+	cout << "讀取九軸矯正模型!!" << endl;
+	#pragma endregion
+
 }
 OpenGLWidget::~OpenGLWidget()
 {
@@ -114,7 +123,6 @@ void OpenGLWidget::InitProgram()
 	ProgramInfo tempInfo = LinkProgram("./Shaders/DrawGound");
 
 	// 點 & UV
-	float lowerY = -0.01f;
 	GroundPoints.push_back(QVector3D(GridMin.x(), 0, GridMin.y()));
 	GroundPoints.push_back(QVector3D(GridMax.x(), 0, GridMin.y()));
 	GroundPoints.push_back(QVector3D(GridMin.x(), 0, GridMax.y()));
@@ -125,6 +133,7 @@ void OpenGLWidget::InitProgram()
 	GroundUVs.push_back(QVector2D(0, 1));
 	GroundUVs.push_back(QVector2D(1, 1));
 
+	float lowerY = -0.01f;
 	GroundModelM.setToIdentity();
 	GroundModelM.translate(0, lowerY, 0);
 
@@ -143,7 +152,23 @@ void OpenGLWidget::InitProgram()
 
 	ProgramList.push_back(tempInfo);
 	#pragma endregion
+	#pragma region Model
+	tempInfo = LinkProgram("./Shaders/Model");
+	GyroTranslateM.setToIdentity();
+	GyroTranslateM.translate(0, 5, 0);
+	GyroTranslateM.scale(1.2f);
 
+	// 上傳
+	tempInfo.program->bind();
+
+	glGenBuffers(1, &GyroModelVertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, GyroModelVertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, GyroModelPoints.size() * sizeof(QVector3D), GyroModelPoints.constData(), GL_STATIC_DRAW);
+
+	tempInfo.program->release();
+
+	ProgramList.push_back(tempInfo);
+	#pragma endregion
 }
 ProgramInfo OpenGLWidget::LinkProgram(QString path)
 {
@@ -203,7 +228,7 @@ QVector3D OpenGLWidget::SamplePoint(QVector<QVector3D> trianglePoints)
 // 畫畫的 Function
 void OpenGLWidget::DrawGround()
 {
-	assert(ProgramList.size() > 0);
+	assert(ProgramList.size() >= 1);
 
 	QOpenGLShaderProgram* program = ProgramList[0].program;
 	program->bind();
@@ -248,37 +273,20 @@ void OpenGLWidget::DrawPointCloud()
 }
 void OpenGLWidget::DrawResetRotation()
 {
-	glPushMatrix();
-	glLoadIdentity();
-	glTranslatef(0, 2, 0);
+	assert(ProgramList.size() >= 2);
+	QOpenGLShaderProgram* program = ProgramList[1].program;
+	program->bind();
 
-	glLineWidth(10);
+	QMatrix4x4 rotation = rawManager->bleManager.GetAngle();
+	program->setUniformValue(ProgramList[0].ProjectionMLoc, ProjectionMatrix);
+	program->setUniformValue(ProgramList[0].ViewMLoc,		ViewMatrix);
+	program->setUniformValue(ProgramList[0].ModelMLoc,		GyroTranslateM * rotation);
 
-	// 旋轉
-	QMatrix4x4 dir = rawManager->bleManager.GetAngle();
-	glMultMatrixf(dir.constData());
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, GyroModelVertexBuffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	// X 
-	glColor4f(1, 0, 0, 1);
-	glBegin(GL_LINES);
-	glVertex3f(0, 0, 0);
-	glVertex3f(5, 0, 0);
-	glEnd();
+	glDrawArrays(GL_TRIANGLES, 0, GyroModelPoints.size());
 
-	// Y
-	glColor4f(0, 1, 0, 1);
-	glBegin(GL_LINES);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 5, 0);
-	glEnd();
-
-	// Z 
-	glColor4f(0, 0, 1, 1);
-	glBegin(GL_LINES);
-	glVertex3f(0, 0, 0);
-	glVertex3f(0, 0, 5);
-	glEnd();
-
-	glLineWidth(1);
-	glPopMatrix();
+	program->release();
 }
