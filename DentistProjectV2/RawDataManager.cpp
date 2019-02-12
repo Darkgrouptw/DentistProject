@@ -15,7 +15,7 @@ RawDataManager::RawDataManager()
 	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
 	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1, placeholders::_2);
 	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this, placeholders::_1);
-	SavePointCloud_Pointer		= bind(&RawDataManager::SavePointCloud,					this);
+	SavePointCloud_Pointer		= bind(&RawDataManager::SavePointCloud,					this, placeholders::_1);
 	AlignmentPointCloud_Pointer = bind(&RawDataManager::AlignmentPointCloud,			this);
 	ShowImageIndex_Pointer		= bind(&RawDataManager::ShowImageIndex,					this, 60);
 
@@ -439,7 +439,7 @@ bool RawDataManager::ShakeDetect_Multi(bool ShowDebugMessage)
 {
 	return cudaV2.ShakeDetect_Multi(ShowDebugMessage);
 }
-void RawDataManager::SavePointCloud()
+void RawDataManager::SavePointCloud(QQuaternion quat)
 {
 	#pragma region 創建 Array
 	// 邊界 & 其他資訊

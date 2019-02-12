@@ -44,7 +44,8 @@ public:
 	void				Scan();
 	void				Connect(int);
 	void				SetConnectDirectly(string, string);							// 一鍵連結會用到，直接給 Name & Mac Address 連結
-	bool				IsInitialize();
+	bool				IsInitialize();												// 是否初始化 Port
+	bool				IsEstablished();											// 是否建立連線
 	void				SetOffsetQuat();
 	QQuaternion			GetQuaternionFromDevice();
 

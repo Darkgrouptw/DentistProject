@@ -48,7 +48,7 @@ public:
 		function<bool(bool)>*													// Shake Detect (Multi)
 	);
 	void InitShowFunctionPointer(
-		function<void()>*,														// Save 點雲
+		function<void(QQuaternion)>*,											// Save 點雲
 		function<void()>*,														// Align 點雲
 		function<void()>*														// ShowImageIndex
 	);
@@ -105,7 +105,7 @@ private:
 	function<void(int*&)>*			CopySingleBorder = NULL;					// 抓出單張資訊
 	function<bool(int*, bool)>*		ShakeDetect_Single = NULL;					// 是否有晃動 (Single)
 	function<bool(bool)>*			ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)
-	function<void()>*				SavePointCloud = NULL;						// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
+	function<void(QQuaternion)>*	SavePointCloud = NULL;						// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
 	function<void()>*				AlignmentPointCloud = NULL;					// 拼接點雲的 Function
 	function<void()>*				ShowImageIndex = NULL;						// 顯示在畫面上
 };

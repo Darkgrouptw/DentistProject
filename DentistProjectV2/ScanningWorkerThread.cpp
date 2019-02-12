@@ -35,7 +35,7 @@ void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
 	ShakeDetect_Multi = ShakeDetectMulti;
 }
 void ScanningWorkerThread::InitShowFunctionPointer(
-	function<void()>* SavePC,
+	function<void(QQuaternion)>* SavePC,
 	function<void()>* AlignPC,
 	function<void()>* showImage)
 {
@@ -141,7 +141,6 @@ void ScanningWorkerThread::ScanProcess()
 		(*TransformToIMG)(NeedSave_ImageData);
 
 		// 拿旋轉矩陣
-		//QMatrix4x4 rotationM = //(*Getq)();
 		QQuaternion currentQuat = (*GetQuaternionFromDevice)();
 		#pragma endregion
 		#pragma region 6. 顯示
@@ -164,11 +163,7 @@ void ScanningWorkerThread::ScanProcess()
 		}
 		#pragma endregion
 		#pragma region 8. 如果沒有晃到，那就儲存點雲 & 如果大於二就執行拼接
-		QMatrix4x4 rotationMatrix;
-		rotationMatrix.setToIdentity();
-		rotationMatrix.rotate(currentQuat);
-
-		(*SavePointCloud)();
+		(*SavePointCloud)(currentQuat);
 		(*AlignmentPointCloud)();
 		#pragma endregion
 	}

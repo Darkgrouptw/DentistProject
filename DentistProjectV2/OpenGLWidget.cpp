@@ -280,6 +280,7 @@ void OpenGLWidget::DrawResetRotation()
 	QMatrix4x4 rotationM;
 	rotationM.setToIdentity();
 	rotationM.rotate(rawManager->bleManager.GetQuaternionFromDevice());
+
 	program->setUniformValue(ProgramList[0].ProjectionMLoc, ProjectionMatrix);
 	program->setUniformValue(ProgramList[0].ViewMLoc,		ViewMatrix);
 	program->setUniformValue(ProgramList[0].ModelMLoc,		GyroTranslateM * rotationM);

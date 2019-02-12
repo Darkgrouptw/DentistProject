@@ -28,7 +28,6 @@
 #include <QByteArray>
 #include <QPixmap>
 #include <QImage>
-#include <QMessageBox>
 #include <QQuaternion>
 
 #include <opencv2/core/core.hpp>
@@ -93,7 +92,7 @@ public:
 	void CopySingleBorder(int *&);												// 存單張 Border
 	bool ShakeDetect_Single(int *, bool);										// 有無晃動 (單)
 	bool ShakeDetect_Multi(bool);												// 有無晃動 (多)
-	void SavePointCloud();														// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
+	void SavePointCloud(QQuaternion);											// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
 	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊														
 
 	//////////////////////////////////////////////////////////////////////////
@@ -141,7 +140,7 @@ private:
 	function<void(int*&)>			CopySingleBorder_Pointer;
 	function<bool(int*, bool)>		ShakeDetect_Single_Pointer;
 	function<bool(bool)>			ShakeDetect_Multi_Pointer;
-	function<void()>				SavePointCloud_Pointer;
+	function<void(QQuaternion)>		SavePointCloud_Pointer;
 	function<void()>				AlignmentPointCloud_Pointer;
 	function<void()>				ShowImageIndex_Pointer;
 

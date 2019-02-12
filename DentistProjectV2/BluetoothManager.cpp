@@ -111,6 +111,10 @@ bool BluetoothManager::IsInitialize()
 {
 	return device->IsInitialized();
 }
+bool BluetoothManager::IsEstablished()
+{
+	return device->IsEstablished();
+}
 void BluetoothManager::SetOffsetQuat()
 {
 	NeedReset = true;

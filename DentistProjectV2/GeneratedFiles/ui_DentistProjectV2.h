@@ -268,7 +268,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(0);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 

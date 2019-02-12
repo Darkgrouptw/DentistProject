@@ -14,4 +14,7 @@ ToDo
 4. Alignment 的部分要做成動畫，然後慢慢 align 起來
 5. 九軸的資訊要算到點雲內
 6. 測試的部分， shake multi 還沒出來
+
+2019/02/12
+7. 測試藍芽的 Establish
 */

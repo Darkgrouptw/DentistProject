@@ -234,6 +234,11 @@ void DentistProjectV2::ScanOCTMode()
 	// 判斷
 	if (ui.ScanButton->text() == EndScanText)
 	{
+		if (!rawManager.bleManager.IsEstablished())
+		{
+			QMessageBox::information(this, tr("注意視窗"), tr("沒有連結九軸資訊!!"));
+			return;
+		}
 		ui.ScanButton->setText(StartScanText);
 		rawManager.SetScanOCTMode(true, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDeleteShakeData);
 	}
@@ -254,7 +259,8 @@ void DentistProjectV2::ReadRawDataToImage()
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
-			rawManager.SavePointCloud();
+			QQuaternion quat;
+			rawManager.SavePointCloud(quat);
 			rawManager.AlignmentPointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
@@ -285,7 +291,8 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
-			rawManager.SavePointCloud();
+			QQuaternion quat;
+			rawManager.SavePointCloud(quat);
 			rawManager.AlignmentPointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
