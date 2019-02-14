@@ -16,5 +16,6 @@ ToDo
 6. 測試的部分， shake multi 還沒出來
 
 2019/02/12
-7. 測試藍芽的 Establish
+7. 測試藍芽的 Establish (x)
+8. 在拚時候，要停止 GL 更新
 */

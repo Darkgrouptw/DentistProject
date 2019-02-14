@@ -96,6 +96,12 @@ void ScanningWorkerThread::ScanProcess()
 	ShowMultiScanDetail = true;
 	#endif
 	#pragma endregion
+	#pragma region 掃描的九軸的檔案
+	GyroFile = new QFile(QDir(SaveLocationText->text()).absoluteFilePath("Gyro.txt"));
+	GyroFile->open(QIODevice::WriteOnly);
+
+	QTextStream ss(GyroFile);
+	#pragma endregion
 	while (!IsEnd)
 	{
 		#pragma region 1. 開始掃描的初始化設定
@@ -157,18 +163,31 @@ void ScanningWorkerThread::ScanProcess()
 			if (NeedSave_Multi_RawData && AutoDelete_ShakeData)
 			{
 				QFile file(SaveLocation + "_Multi");
+				cout << "刪除檔案 " << (SaveLocation + "_Multi").toStdString() << endl;
 				file.remove();
 			}
 			continue;
 		}
 		#pragma endregion
 		#pragma region 8. 如果沒有晃到，那就儲存點雲 & 如果大於二就執行拼接
+		cout << "可用資料!!" << endl;
+
+		// 寫出九軸資訊
+		ss << TimeFileName << " " << currentQuat.scalar() << " " << currentQuat.x() << " " << currentQuat.y() << " " << currentQuat.z() << endl;
+
 		(*SavePointCloud)(currentQuat);
 		(*AlignmentPointCloud)();
 		#pragma endregion
 	}
 
-	// 結束
+	#pragma region 結束按鈕設定
 	ScanButton->setText(*EndScanText);
 	ScanThread = nullptr;
+	#pragma endregion
+	#pragma region 清除資料
+	// 關閉資料
+	GyroFile->close();
+
+	delete GyroFile;
+	#pragma endregion
 }

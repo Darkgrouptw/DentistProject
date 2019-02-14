@@ -252,7 +252,7 @@ void OpenGLWidget::DrawPointCloud()
 {
 	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
 	{
-		/*float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 0.1f;
+		float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 0.1f;
 		glPointSize(pointSize);
 		glBegin(GL_POINTS);
 		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
@@ -268,7 +268,7 @@ void OpenGLWidget::DrawPointCloud()
 				glVertex3f(rotationPoint.x(), rotationPoint.y(), rotationPoint.z());
 			}
 		}
-		glEnd();*/
+		glEnd();
 	}
 }
 void OpenGLWidget::DrawResetRotation()

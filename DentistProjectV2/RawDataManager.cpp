@@ -451,6 +451,11 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	PointCloudInfo info;
 	#pragma endregion
 	#pragma region 轉成點雲
+	// 產生 Rotation Matrix;
+	QMatrix4x4 rotationMatrix;
+	rotationMatrix.setToIdentity();
+	rotationMatrix.rotate(quat);
+
 	float ratio = 1;
 	for (int y = 0; y < prop.SizeY; y++)
 		for (int x = 0; x < prop.SizeX; x++)
@@ -459,18 +464,20 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 			int MapID = (y * prop.SizeX + x) * 2;	// 對應到 Mapping Matrix，在讀取的時候他是兩筆為一個單位
 			if (BorderData[index] != -1)
 			{
-				// ToDo 確認
+				// 轉到 3d 座標
 				QVector3D pointInSpace;
-				pointInSpace.setX(DManager.MappingMatrix[MapID + 0] * ratio + PanelPointOffset.x());
-				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio + PanelPointOffset.y());
-				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2 + PanelPointOffset.z());
+				pointInSpace.setX(DManager.MappingMatrix[MapID + 0] * ratio);
+				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio);
+				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2);
+
+				// 加入九軸資訊
+				pointInSpace = rotationMatrix * pointInSpace;
 
 				// 加進 Point 陣列裡
-				info.Points.push_back(pointInSpace);
+				info.Points.push_back(pointInSpace + PanelPointOffset);
 			}
 		}
 
-	// ToDo 加入九軸資訊
 
 	// 加進陣列裡
 	PointCloudArray.push_back(info);

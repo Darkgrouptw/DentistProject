@@ -51,7 +51,7 @@ private:
 	QVector<QString> ExceptCOMName = { "COM1" };
 	#else
 	// 醫院那邊要例外排除的
-	QVector<QString> ExceptCOMName = { "COM1" };
+	QVector<QString> ExceptCOMName = { "COM1", "COM6" };
 	#endif
 
 private slots:

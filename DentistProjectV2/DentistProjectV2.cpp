@@ -236,7 +236,7 @@ void DentistProjectV2::ScanOCTMode()
 	{
 		if (!rawManager.bleManager.IsEstablished())
 		{
-			QMessageBox::information(this, tr("注意視窗"), tr("沒有連結九軸資訊!!"));
+			QMessageBox::information(this, codec->toUnicode("注意視窗"), codec->toUnicode("沒有連結九軸資訊!!"));
 			return;
 		}
 		ui.ScanButton->setText(StartScanText);
