@@ -109,6 +109,29 @@ void OpenGLWidget::SetRotationMode(bool SetBool)
 	RotationMode = SetBool;
 	this->update();
 }
+void OpenGLWidget::UpdatePC()
+{
+	// 刪除 Buffer
+	for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, PointCloudVertexBufferList[i]);
+		glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_STATIC_DRAW);
+	}
+	PointCloudVertexBufferList.clear();
+
+	// 加資料
+	for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
+	{
+		QVector<QVector3D> &tempPC = rawManager->PointCloudArray[i].Points;
+
+		GLuint VBuffer;
+		glGenBuffers(1, &VBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, VBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * tempPC.size(), tempPC.constData(), GL_STATIC_DRAW);
+
+		PointCloudVertexBufferList.push_back(VBuffer);
+	}
+}
 
 // 其他元件的 Function
 void OpenGLWidget::SetRawDataManager(RawDataManager* raw)
@@ -164,6 +187,19 @@ void OpenGLWidget::InitProgram()
 	glGenBuffers(1, &GyroModelVertexBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, GyroModelVertexBuffer);
 	glBufferData(GL_ARRAY_BUFFER, GyroModelPoints.size() * sizeof(QVector3D), GyroModelPoints.constData(), GL_STATIC_DRAW);
+
+	tempInfo.program->release();
+
+	ProgramList.push_back(tempInfo);
+	#pragma endregion
+	#pragma region Point
+	tempInfo = LinkProgram("./Shaders/PointCloud");
+
+	tempInfo.program->bind();
+
+	// Location
+	PointSizeLoc = tempInfo.program->uniformLocation("pointSize");
+	IsCrurrentPCLoc = tempInfo.program->uniformLocation("IsCurrentPC");
 
 	tempInfo.program->release();
 
@@ -252,23 +288,36 @@ void OpenGLWidget::DrawPointCloud()
 {
 	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
 	{
+		assert(ProgramList.size() >= 3);
+
+		QOpenGLShaderProgram* program = ProgramList[2].program;
+		program->bind();
+
+		QMatrix4x4 modelM;
+		modelM.setToIdentity();
+		program->setUniformValue(ProgramList[2].ProjectionMLoc, ProjectionMatrix);
+		program->setUniformValue(ProgramList[2].ViewMLoc,		ViewMatrix);
+
 		float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 0.1f;
-		glPointSize(pointSize);
-		glBegin(GL_POINTS);
+		program->setUniformValue(PointSizeLoc, pointSize);
+
+		// 畫
 		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
 		{
+			program->setUniformValue(ProgramList[2].ModelMLoc, rawManager->PointCloudArray[i].TransforMatrix);
 			if (i == rawManager->PointCloudArray.size() - 1)
-				glColor4f(0, 0, 1, 1);
+				program->setUniformValue(IsCrurrentPCLoc, true);
 			else
-				glColor4f(0, 0, 0, 1);
-			for (int j = 0; j < rawManager->PointCloudArray[i].Points.size(); j++)
-			{
-				QVector4D point = QVector4D(rawManager->PointCloudArray[i].Points[j], 1);
-				QVector4D rotationPoint = rawManager->PointCloudArray[i].TransforMatrix * point;
-				glVertex3f(rotationPoint.x(), rotationPoint.y(), rotationPoint.z());
-			}
+				program->setUniformValue(IsCrurrentPCLoc, false);
+
+			glBindBuffer(GL_ARRAY_BUFFER, PointCloudVertexBufferList[i]);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+			
+			glDrawArrays(GL_POINTS, 0, rawManager->PointCloudArray[i].Points.size());
 		}
-		glEnd();
+
+		program->release();
 	}
 }
 void OpenGLWidget::DrawResetRotation()
@@ -281,9 +330,9 @@ void OpenGLWidget::DrawResetRotation()
 	rotationM.setToIdentity();
 	rotationM.rotate(rawManager->bleManager.GetQuaternionFromDevice());
 
-	program->setUniformValue(ProgramList[0].ProjectionMLoc, ProjectionMatrix);
-	program->setUniformValue(ProgramList[0].ViewMLoc,		ViewMatrix);
-	program->setUniformValue(ProgramList[0].ModelMLoc,		GyroTranslateM * rotationM);
+	program->setUniformValue(ProgramList[1].ProjectionMLoc, ProjectionMatrix);
+	program->setUniformValue(ProgramList[1].ViewMLoc,		ViewMatrix);
+	program->setUniformValue(ProgramList[1].ModelMLoc,		GyroTranslateM * rotationM);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, GyroModelVertexBuffer);

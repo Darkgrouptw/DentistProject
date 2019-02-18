@@ -173,7 +173,7 @@ void ScanningWorkerThread::ScanProcess()
 		cout << "可用資料!!" << endl;
 
 		// 寫出九軸資訊
-		ss << TimeFileName << " " << currentQuat.scalar() << " " << currentQuat.x() << " " << currentQuat.y() << " " << currentQuat.z() << endl;
+		ss << (TimeFileName + "_Multi") << " " << currentQuat.scalar() << " " << currentQuat.x() << " " << currentQuat.y() << " " << currentQuat.z() << endl;
 
 		(*SavePointCloud)(currentQuat);
 		(*AlignmentPointCloud)();

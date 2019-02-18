@@ -144,5 +144,11 @@
     <None Include="..\x64\Release\DentistProjectV2\Shaders\Model.vert">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\PointCloud.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\PointCloud.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,4 +1,5 @@
 ﻿#include <QOpenGLWidget>				// 因為會跟 OpenCV 3 重圖
+#include "OpenGLWidget.h"				// 住要是怕互 Call，Include 會成為無限遞迴
 #include "RawDataManager.h"
 
 RawDataManager::RawDataManager()
@@ -457,6 +458,7 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	rotationMatrix.rotate(quat);
 
 	float ratio = 1;
+	QVector3D MidPoint;
 	for (int y = 0; y < prop.SizeY; y++)
 		for (int x = 0; x < prop.SizeX; x++)
 		{
@@ -470,18 +472,24 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio);
 				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2);
 
-				// 加入九軸資訊
-				pointInSpace = rotationMatrix * pointInSpace;
+				MidPoint += pointInSpace;
+
 
 				// 加進 Point 陣列裡
-				info.Points.push_back(pointInSpace + PanelPointOffset);
+				info.Points.push_back(pointInSpace);
 			}
 		}
 
+	// 中心的點 & 加入九軸資訊
+	MidPoint /= info.Points.size();
+	for (int i = 0; i < info.Points.size(); i++)
+		info.Points[i] = (rotationMatrix * QVector4D(info.Points[i] - MidPoint, 1)).toVector3D() + QVector3D(0, MidPoint.y(), 0);
 
 	// 加進陣列裡
 	PointCloudArray.push_back(info);
-	((QOpenGLWidget*)DisplayPanel)->update();
+
+	// DisplayPanel
+	((OpenGLWidget*)DisplayPanel)->UpdatePC();
 	#pragma endregion 
 	#pragma region 刪除 Array
 	delete[] BorderData;
@@ -500,7 +508,16 @@ void RawDataManager::AlignmentPointCloud()
 		vector<GlobalRegistration::Point3D> LastPC = ConvertQVector2Point3D(PointCloudArray[LastID - 1].Points);
 
 		// 轉換 Matrix
-		PointCloudArray[LastID].TransforMatrix = super4PCS_Align(&NewPC, &LastPC);
+		float score = 0;
+		while (score < 0.2f)
+		{
+			PointCloudArray[LastID].TransforMatrix = super4PCS_Align(&NewPC, &LastPC, score);
+		}
+
+		const float* d = PointCloudArray[LastID].TransforMatrix.constData();
+		for (int i = 0; i < 16; i++)
+			cout << d[i] << " ";
+		cout << endl;
 	}
 }
 
@@ -562,7 +579,7 @@ vector<GlobalRegistration::Point3D> RawDataManager::ConvertQVector2Point3D(QVect
 	}
 	return pc;
 }
-QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *PC1, vector<GlobalRegistration::Point3D> *PC2)
+QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *PC1, vector<GlobalRegistration::Point3D> *PC2, float& FinalScore)
 {
 	clock_t t1, t2;
 	t1 = clock();
@@ -571,7 +588,8 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	double delta = 0.1;
 
 	// Estimated overlap (see the paper).
-	double overlap = 0.40;
+	//double overlap = 0.40;
+	double overlap = 0.30;
 
 	// Threshold of the computed overlap for termination. 1.0 means don't terminate
 	// before the end.
@@ -586,10 +604,7 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 
 	// Maximum angle (degrees) between corresponded normals.
 	double norm_diff = 20;
-
-	// Maximum allowed computation time.
-	//max_time_seconds = 1;//500
-
+	
 	bool use_super4pcs = true;
 
 	// maximum per-dimension angle, check return value to detect invalid cases
@@ -616,7 +631,7 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	mat = new GlobalRegistration::Match4PCSBase::MatrixType;
 
 
-	bool overlapOk = options.configureOverlap(overlap, 0.35f);
+	bool overlapOk = options.configureOverlap(overlap, thr);
 	if (!overlapOk) {
 		cerr << "Invalid overlap configuration. ABORT" << endl;
 		/// TODO Add proper error codes
@@ -669,9 +684,7 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 		}
 
 		// 矩陣轉換
-		for (int i = 0; i < 4; i++)
-			for (int j = 0; j < 4; j++)
-				matrix(i, j) = (*mat)(i, j);
+		matrix = QMatrix4x4((*mat).data());
 	}
 	catch (const std::exception& e) {
 		cout << "[Error]: " << e.what() << '\n';
@@ -684,6 +697,7 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	}
 	t2 = clock();
 	cout << "Score: " << score << endl;
+	FinalScore = score;
 	//cerr << score << endl;
 	return matrix;
 }

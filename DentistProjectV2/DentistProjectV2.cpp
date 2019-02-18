@@ -24,8 +24,8 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.GyroscopeResetToZero,						SIGNAL(clicked()),				this,	SLOT(GyroResetToZero()));
 	connect(ui.BLEConnect_OneBtn,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDevice_OneBtn()));
 	
-	//// 藍芽測試
-	//connect(ui.PointCloudAlignmentTestBtn,					SIGNAL(clicked()),				this,	SLOT(PointCloudAlignmentTest()));
+	// 藍芽測試
+	connect(ui.PointCloudAlignmentTestBtn,					SIGNAL(clicked()),				this,	SLOT(PointCloudAlignmentTest()));
 
 	// OCT 相關(主要)
 	connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
@@ -185,6 +185,60 @@ void DentistProjectV2::ConnectBLEDevice_OneBtn()
 	rawManager.bleManager.Initalize(ui.COMList->currentText());
 	#pragma endregion
 
+}
+
+// 藍芽、九軸測試
+void DentistProjectV2::PointCloudAlignmentTest()
+{
+	QVector<QString> FileInfo;
+	QString GyroFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("Gyro 檔案"), "D:/Dentist/Data/ScanData/", "Gyro.txt", nullptr, QFileDialog::DontUseNativeDialog);
+	if (GyroFileName != "")
+	{
+		QFile GyroFile(GyroFileName);
+		GyroFile.open(QIODevice::ReadOnly);
+
+		QTextStream ss(&GyroFile);
+		QString TempFile;
+
+		QDir currentDir(GyroFileName + "/../");
+
+		float w, x, y, z;
+		while (!ss.atEnd())
+		{
+			// 讀一條
+			TempFile = ss.readLine();
+			if(TempFile == "")
+				break;
+
+			// 拆開來 
+			QStringList TempStr = TempFile.split(' ');
+			cout << currentDir.absoluteFilePath(TempStr[0] + "_Multi").toStdString() << endl;
+			RawDataType type = rawManager.ReadRawDataFromFileV2(currentDir.absoluteFilePath(TempStr[0]));
+			rawManager.TransformToIMG(false);
+
+			// Quat
+			assert(TempStr.size() == 5 && "讀取的資料有誤!!");
+			w = TempStr[1].toFloat();
+			x = TempStr[2].toFloat();
+			y = TempStr[3].toFloat();
+			z = TempStr[4].toFloat();
+			
+			QQuaternion quat(w, x, y, z);
+			rawManager.SavePointCloud(quat);
+			//rawManager.AlignmentPointCloud();
+		}
+		GyroFile.close();
+
+		// 換圖片
+		ui.ScanNumSlider->setEnabled(true);
+		if (ui.ScanNumSlider->value() == 60)
+			ScanNumSlider_Change(60);
+		else
+			ui.ScanNumSlider->setValue(60);
+
+		// 更新面板
+		ui.DisplayPanel->update();
+	};
 }
 
 // OCT 相關(主要)
