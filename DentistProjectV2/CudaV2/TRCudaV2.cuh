@@ -93,7 +93,8 @@ private:
 	const float GoThroughThreshold = 0.0032f;									// 要多少在走過去
 	const int ChooseBestN = 3;
 	const int StartIndex = 10;													// 從這裡開始找有效的資料
-	const int ConnectRadius = 25;												// 連結半徑
+	//const int ConnectRadius = 25;												// 連結半徑
+	const int ConnectRadius = 200;												// 連結半徑
 
 	//////////////////////////////////////////////////////////////////////////
 	// 晃動 Threshold

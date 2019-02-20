@@ -10,7 +10,6 @@
 #include <QTextStream>
 #include <QIODevice>
 #include <QVector>
-#include <QVector3D>
 #include <QMatrix4x4>
 
 using namespace std;
@@ -30,7 +29,6 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	QVector<QVector3D>	Points;							// 點 (這邊的點)
 	QQuaternion			Gyro;							// 陀螺儀的資訊
-	QMatrix4x4			TransforMatrix;					// 對於第一片點雲的轉至矩陣
 	QVector3D			CenterPoint;					// 中心點，用於以後再做縫合的時候，可以根據與這個點的距離
 
 private:

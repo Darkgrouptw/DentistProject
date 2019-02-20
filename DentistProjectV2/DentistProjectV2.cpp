@@ -7,14 +7,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	UpdateGLTimer = new QTimer();
 	#pragma endregion
 	#pragma region 事件連結
-	// 事件連結
-	//connect(ui.actionLoadSTL,								SIGNAL(triggered()),			this,	SLOT(LoadSTL()));
-
-	//// 顯示事件
-	//connect(ui.RenderTriangle_CheckBox,						SIGNAL(clicked()),				this,	SLOT(SetRenderTriangleBool()));
-	//connect(ui.RenderBorder_CheckBox,						SIGNAL(clicked()),				this,	SLOT(SetRenderBorderBool()));
-	//connect(ui.RenderPointDot_CheckBox,						SIGNAL(clicked()),				this,	SLOT(SetRenderPointCloudBool()));
-
 	// 藍芽部分
 	connect(ui.BtnSearchCom,								SIGNAL(clicked()),				this,	SLOT(SearchCOM()));
 	connect(ui.BtnConnectCOM,								SIGNAL(clicked()),				this,	SLOT(ConnectCOM()));
@@ -39,13 +31,16 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.EasyBorderDetect,							SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
 	connect(ui.SingleImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadSingleRawDataForShakeTest()));
 	connect(ui.MultiImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadMultiRawDataForShakeTest()));
-	//connect(ui.BeepSoundTestButton,							SIGNAL(clicked()),				this,	SLOT(BeepSoundTest()));
-	//connect(ui.ShakeTestButton,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataForShakeTest()));
-	//connect(ui.SegNetTestButton,							SIGNAL(clicked()),				this,	SLOT(SegNetTest()));
 
-	//// 點雲 Render 相關
-	//connect(ui.PrePCBtn,									SIGNAL(clicked()),				this,	SLOT(PrePointCloudClick()));
-	//connect(ui.NextPCBtn,									SIGNAL(clicked()),				this,	SLOT(NextPointCloudClick()));
+	// 點雲操作
+	connect(ui.QuaternionWValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
+	connect(ui.QuaternionXValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
+	connect(ui.QuaternionYValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
+	connect(ui.QuaternionZValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
+	connect(ui.EulerBarX,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
+	connect(ui.EulerBarY,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
+	connect(ui.EulerBarZ,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
+	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoEvent()));
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
@@ -112,6 +107,17 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.ScanButton);
 	objList.push_back(ui.SaveLocationText);
 	objList.push_back(ui.DisplayPanel);
+	objList.push_back(ui.PCIndex);
+	objList.push_back(ui.QuaternionXValue);
+	objList.push_back(ui.QuaternionYValue);
+	objList.push_back(ui.QuaternionZValue);
+	objList.push_back(ui.QuaternionWValue);
+	objList.push_back(ui.EulerBarX);
+	objList.push_back(ui.EulerBarY);
+	objList.push_back(ui.EulerBarZ);
+	objList.push_back(ui.EulerXValueText);
+	objList.push_back(ui.EulerYValueText);
+	objList.push_back(ui.EulerZValueText);
 
 	rawManager.SendUIPointer(objList);
 
@@ -212,7 +218,6 @@ void DentistProjectV2::PointCloudAlignmentTest()
 
 			// 拆開來 
 			QStringList TempStr = TempFile.split(' ');
-			cout << currentDir.absoluteFilePath(TempStr[0] + "_Multi").toStdString() << endl;
 			RawDataType type = rawManager.ReadRawDataFromFileV2(currentDir.absoluteFilePath(TempStr[0]));
 			rawManager.TransformToIMG(false);
 
@@ -225,7 +230,12 @@ void DentistProjectV2::PointCloudAlignmentTest()
 			
 			QQuaternion quat(w, x, y, z);
 			rawManager.SavePointCloud(quat);
-			//rawManager.AlignmentPointCloud();
+			rawManager.AlignmentPointCloud();
+
+			if (rawManager.PointCloudArray.size() == 2)
+			{
+				break;
+			}
 		}
 		GyroFile.close();
 
@@ -315,7 +325,6 @@ void DentistProjectV2::ReadRawDataToImage()
 		{
 			QQuaternion quat;
 			rawManager.SavePointCloud(quat);
-			rawManager.AlignmentPointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
@@ -347,7 +356,6 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 		{
 			QQuaternion quat;
 			rawManager.SavePointCloud(quat);
-			rawManager.AlignmentPointCloud();
 			ui.ScanNumSlider->setEnabled(true);
 		}
 		else if (type == RawDataType::SINGLE_DATA_TYPE)
@@ -399,6 +407,21 @@ void DentistProjectV2::ReadMultiRawDataForShakeTest()
 	//QMessageBox:: "未連結!!");
 }
 
+// 點雲操作
+void DentistProjectV2::QuaternionChangeEvent()
+{
+
+}
+void DentistProjectV2::EulerChangeEvent(int)
+{
+
+}
+void DentistProjectV2::AlignLastTwoEvent()
+{
+	if (rawManager.PointCloudArray.size() >= 2)
+		rawManager.AlignmentPointCloud();
+}
+
 // 顯示部分的事件
 void DentistProjectV2::ScanNumSlider_Change(int value)
 {
@@ -407,5 +430,6 @@ void DentistProjectV2::ScanNumSlider_Change(int value)
 }
 void DentistProjectV2::DisplayPanelUpdate()
 {
-	ui.DisplayPanel->update();
+	if(!rawManager.IsLockPC)
+		ui.DisplayPanel->update();
 }

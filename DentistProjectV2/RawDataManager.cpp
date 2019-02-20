@@ -51,7 +51,7 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 7);
+	assert(UIPointer.size() == 18 && "UI 對應有問題!!");
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
@@ -63,6 +63,25 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 	
 	// OpenGL
 	DisplayPanel			= UIPointer[6];
+
+	// 角度顯示
+	// 8  ~ 11	=>	Quaternion
+	// 12 ~ 14	=>	QSlider
+	// 15 ~ 17	=>	QLabel
+	PCIndex					= (QComboBox*)UIPointer[7];
+	for (int i = 0; i < 4; i++)
+	{
+		QLineEdit* tempQuaternion = (QLineEdit*)UIPointer[8 + i];
+		QuaternionLinEditArray.push_back(tempQuaternion);
+	}
+	for (int i = 0; i < 3;i++)
+	{
+		QSlider* tempSlider = (QSlider*)UIPointer[12 + i];
+		QLabel* tempLabel	= (QLabel*)UIPointer[15 + i];
+		EulerBarArray.push_back(tempSlider);
+		EulerTextArray.push_back(tempLabel);
+	}
+
 	Worker->InitUIPointer(slider, scanButton, saveLineEdt);
 }
 void RawDataManager::ShowImageIndex(int index)
@@ -100,11 +119,11 @@ RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
 	QFile inputFile(FileName);
 	if (!inputFile.open(QIODevice::ReadOnly))
 	{
-		cout << "Raw Data 讀取錯誤" << endl;
+ 		cout << "Raw Data 讀取錯誤" << endl;
 		return RawDataType::ERROR_TYPE;
 	}
 	else
-		cout << "讀取 Raw Data: " << FileName.toLocal8Bit().constData() << endl;
+		cout << "讀取 Raw Data: " << FileName.toLocal8Bit().toStdString() << endl;
 
 	int bufferSize = inputFile.size() / sizeof(quint8);
 
@@ -443,6 +462,9 @@ bool RawDataManager::ShakeDetect_Multi(bool ShowDebugMessage)
 void RawDataManager::SavePointCloud(QQuaternion quat)
 {
 	#pragma region 創建 Array
+	// 更新
+	IsLockPC = true;
+
 	// 邊界 & 其他資訊
 	RawDataProperty prop = DManager.prop;
 	int* BorderData = new int[prop.SizeX *DManager.prop.SizeY];
@@ -455,9 +477,9 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	// 產生 Rotation Matrix;
 	QMatrix4x4 rotationMatrix;
 	rotationMatrix.setToIdentity();
+	rotationMatrix.rotate(90, 1, 0, 0);
 	rotationMatrix.rotate(quat);
 
-	float ratio = 1;
 	QVector3D MidPoint;
 	for (int y = 0; y < prop.SizeY; y++)
 		for (int x = 0; x < prop.SizeX; x++)
@@ -468,8 +490,8 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 			{
 				// 轉到 3d 座標
 				QVector3D pointInSpace;
-				pointInSpace.setX(DManager.MappingMatrix[MapID + 0] * ratio);
-				pointInSpace.setY(DManager.MappingMatrix[MapID + 1] * ratio);
+				pointInSpace.setX(DManager.MappingMatrix[MapID + 0]);
+				pointInSpace.setY(DManager.MappingMatrix[MapID + 1]);
 				pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2);
 
 				MidPoint += pointInSpace;
@@ -479,6 +501,13 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 				info.Points.push_back(pointInSpace);
 			}
 		}
+
+	// 如果讀到是空的，就跳過
+	if (info.Points.size() == 0)
+	{
+		delete[] BorderData;
+		return;
+	}
 
 	// 中心的點 & 加入九軸資訊
 	MidPoint /= info.Points.size();
@@ -494,6 +523,42 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	#pragma region 刪除 Array
 	delete[] BorderData;
 	#pragma endregion
+	#pragma region 改 UI & Index
+	// 先重新設定 PCIndex
+	PCIndex->clear();
+	for (int i = 0; i < PointCloudArray.size(); i++)
+	{
+		QString tempText = QString::number(i) + " (" + QString::number(PointCloudArray[i].Points.size()) + ")";
+		PCIndex->addItem(tempText);
+	}
+
+	if (SelectIndex == PointCloudArray.size() - 2)
+	{
+		// 讓他往前
+		SelectIndex++;
+
+		// 重新設定 Rotation
+		QuaternionLinEditArray[0]->setText(QString::number(quat.x()));
+		QuaternionLinEditArray[1]->setText(QString::number(quat.y()));
+		QuaternionLinEditArray[2]->setText(QString::number(quat.z()));
+		QuaternionLinEditArray[3]->setText(QString::number(quat.scalar()));
+
+		QVector3D angle = quat.toEulerAngles();
+		int AngleX = (int)(angle[0] + 360) % 360;
+		int AngleY = (int)(angle[1] + 360) % 360;
+		int AngleZ = (int)(angle[2] + 360) % 360;
+		EulerBarArray[0]->setValue(AngleX);
+		EulerBarArray[1]->setValue(AngleY);
+		EulerBarArray[2]->setValue(AngleZ);
+
+		EulerTextArray[0]->text() = AngleX;
+		EulerTextArray[1]->text() = AngleY;
+		EulerTextArray[2]->text() = AngleZ;
+	}
+	
+	// 結束
+	IsLockPC = false;
+	#pragma endregion
 }
 void RawDataManager::AlignmentPointCloud()
 {
@@ -502,22 +567,18 @@ void RawDataManager::AlignmentPointCloud()
 	{
 		// 拿最後一篇跟其他拼接
 		int LastID = PointCloudArray.size() - 1;
-		vector<GlobalRegistration::Point3D> NewPC = ConvertQVector2Point3D(PointCloudArray[LastID].Points);
-
-		// ToDo 以後會跟每一片拚拚看，拚完之後會比較
-		vector<GlobalRegistration::Point3D> LastPC = ConvertQVector2Point3D(PointCloudArray[LastID - 1].Points);
+		vector<Point3D> NewPC, LastPC;
+		ConvertQVector2Point3D(PointCloudArray[LastID].Points, NewPC);
+		ConvertQVector2Point3D(PointCloudArray[LastID - 1].Points, LastPC);
 
 		// 轉換 Matrix
 		float score = 0;
-		while (score < 0.2f)
-		{
-			PointCloudArray[LastID].TransforMatrix = super4PCS_Align(&NewPC, &LastPC, score);
-		}
+		super4PCS_Align(&LastPC, &NewPC, score);
+		ConvertPoint3D2QVector(NewPC, PointCloudArray[LastID].Points);
 
-		const float* d = PointCloudArray[LastID].TransforMatrix.constData();
-		for (int i = 0; i < 16; i++)
-			cout << d[i] << " ";
-		cout << endl;
+		IsLockPC = true;
+		((OpenGLWidget*)DisplayPanel)->UpdatePC();
+		IsLockPC = false;
 	}
 }
 
@@ -565,21 +626,33 @@ void RawDataManager::OCT_DataType_Transfrom(unsigned short *input, int inputlen,
 		outputlen_tmp++;
 	}
 }
-vector<GlobalRegistration::Point3D> RawDataManager::ConvertQVector2Point3D(QVector<QVector3D> PointArray)
+void RawDataManager::ConvertQVector2Point3D(QVector<QVector3D>& q3DList, vector<Point3D>& pc)
 {
-	vector<GlobalRegistration::Point3D> pc;
-	for (int i = 0; i < PointArray.size(); i++)
+	pc.clear();
+	for (int i = 0; i < q3DList.size(); i++)
 	{
-		GlobalRegistration::Point3D point3D;
-		QVector3D currentP = PointArray[i];
+		Point3D point3D;
+		QVector3D currentP = q3DList[i];
 		point3D.x() = currentP.x();
 		point3D.y() = currentP.y();
 		point3D.z() = currentP.z();
 		pc.push_back(point3D);
 	}
-	return pc;
 }
-QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *PC1, vector<GlobalRegistration::Point3D> *PC2, float& FinalScore)
+void RawDataManager::ConvertPoint3D2QVector(vector<Point3D>& pc, QVector<QVector3D>& q3DList)
+{
+	q3DList.clear();
+	for (int i = 0 ; i< pc.size(); i++)
+	{
+		QVector3D p(
+			pc[i].x(),
+			pc[i].y(),
+			pc[i].z()
+		);
+		q3DList.push_back(p);
+	}
+}
+QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D> *PC2, float& FinalScore)
 {
 	clock_t t1, t2;
 	t1 = clock();
@@ -588,8 +661,7 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	double delta = 0.1;
 
 	// Estimated overlap (see the paper).
-	//double overlap = 0.40;
-	double overlap = 0.30;
+	double overlap = 0.40;
 
 	// Threshold of the computed overlap for termination. 1.0 means don't terminate
 	// before the end.
@@ -623,22 +695,21 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 
 
 	// super4pcs matcher
-	GlobalRegistration::Match4PCSOptions options;
+	Match4PCSOptions options;
 
 
-	//cv::Mat mat_rot = cv::Mat::eye(3, 3, CV_64F);
-	GlobalRegistration::Match4PCSBase::MatrixType *mat;
-	mat = new GlobalRegistration::Match4PCSBase::MatrixType;
+	Match4PCSBase::MatrixType *mat;
+	mat = new Match4PCSBase::MatrixType;
 
 
+	//bool overlapOk = options.configureOverlap(overlap, thr);
 	bool overlapOk = options.configureOverlap(overlap, thr);
-	if (!overlapOk) {
+	/*if (!overlapOk) {
 		cerr << "Invalid overlap configuration. ABORT" << endl;
 		/// TODO Add proper error codes
 
-	}
+	}*/
 
-	//overlap = options.getOverlapEstimation();
 	options.sample_size = n_points;
 	options.max_normal_difference = norm_diff;
 	options.max_color_distance = max_color;
@@ -646,22 +717,23 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	options.delta = delta;
 	options.max_angle = max_angle;
 
-	GlobalRegistration::Match4PCSOptions::Scalar Estimation;
+	Match4PCSOptions::Scalar Estimation;
 
 	Estimation = options.getOverlapEstimation();
 	cout << "getOverlapEstimation:" << Estimation << endl;
+
 	//// Match and return the score (estimated overlap or the LCP).  
-	typename GlobalRegistration::Point3D::Scalar score = 0;
+	typename Point3D::Scalar score = 0;
 	int v;
 
-	constexpr GlobalRegistration::Utils::LogLevel loglvl = GlobalRegistration::Utils::Verbose;
+	constexpr Utils::LogLevel loglvl = Utils::Verbose;
 
 	//template <typename Visitor>
-	using TrVisitorType = typename conditional <loglvl == GlobalRegistration::Utils::NoLog,
-		GlobalRegistration::Match4PCSBase::DummyTransformVisitor,
+	using TrVisitorType = typename conditional <loglvl == Utils::NoLog,
+		Match4PCSBase::DummyTransformVisitor,
 		TransformVisitor>::type;
 
-	GlobalRegistration::Utils::Logger logger(loglvl);
+	Utils::Logger logger(loglvl);
 
 	QMatrix4x4 matrix;
 	matrix.setToIdentity();
@@ -669,18 +741,17 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	try {
 		// 4PCS or Super4PCS
 		if (use_super4pcs) {
-			GlobalRegistration::MatchSuper4PCS *matcher;
-			matcher = new GlobalRegistration::MatchSuper4PCS(options, logger);
+			MatchSuper4PCS *matcher;
+			matcher = new MatchSuper4PCS(options, logger);
 
 			cout << "Use Super4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
 		}
 		else {
-			GlobalRegistration::Match4PCS *matcher;
-			matcher = new GlobalRegistration::Match4PCS(options, logger);
+			Match4PCS *matcher;
+			matcher = new Match4PCS(options, logger);
 			cout << "Use old 4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
-			cout << "score_in:" << score << std::endl;
 		}
 
 		// 矩陣轉換
@@ -698,6 +769,5 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<GlobalRegistration::Point3D> *
 	t2 = clock();
 	cout << "Score: " << score << endl;
 	FinalScore = score;
-	//cerr << score << endl;
 	return matrix;
 }

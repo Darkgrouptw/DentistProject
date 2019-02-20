@@ -15,12 +15,14 @@
 #include "super4pcs/io/io.h"
 
 #include <vcclr.h>								// 要使用 Manage 的 Class，要拿這個使用 gcroot
+#include <functional>
 
 #include <cmath>
 #include <vector>
 
 #include <QFile>
 #include <QIODevice>
+#include <QComboBox>
 #include <QLineEdit>
 #include <QTextStream>
 #include <QDataStream>
@@ -55,6 +57,8 @@ struct TransformVisitor {
 	constexpr bool needsGlobalTransformation() const { return false; }
 };
 
+using namespace GlobalRegistration;
+
 class RawDataManager
 {
 public:
@@ -62,7 +66,6 @@ public:
 	~RawDataManager();
 
 	/////////////////////////////////////////////////////////////////////////
-	// UI 相關
 	//////////////////////////////////////////////////////////////////////////
 	void SendUIPointer(QVector<QObject*>);
 	void ShowImageIndex(int);
@@ -105,8 +108,9 @@ public:
 	// 點雲資料
 	//////////////////////////////////////////////////////////////////////////
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
-	//int					SelectIndex = -1;										// 目前選擇地的片數
-
+	int					SelectIndex = -1;										// 目前選擇地的片數
+	bool				IsLockPC = false;										// 在畫 PC 的時候，為了怕跟 UI Change Event 衝突，用這個 Bool 來判斷要不要更新
+    
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
 	//////////////////////////////////////////////////////////////////////////
@@ -147,8 +151,13 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 網路
 	//////////////////////////////////////////////////////////////////////////
-	const int			NetworkCutRow = 50;
-	const int			NetworkCutCol = 500;
+	// const int			NetworkCutRow = 50;
+	// const int			NetworkCutCol = 500;
+
+	//////////////////////////////////////////////////////////////////////////
+	// 4PCS 常數
+	//////////////////////////////////////////////////////////////////////////
+	const float			AlignScoreThrshold = 0.2f;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
@@ -169,6 +178,10 @@ private:
 	QLabel*				BorderDetectionResult;									// 最後找出來的結果圖
 	QLabel*				NetworkResult;											// 同上，但目前是沒有用
 	QObject*			DisplayPanel;											// 畫圖的部分
+	QComboBox*			PCIndex;												// 選擇 PC 的 Index
+	QVector<QLineEdit*> QuaternionLinEditArray;									// Quaternion 的文字
+	QVector<QSlider*>	EulerBarArray;											// Eular 的值
+	QVector<QLabel*>	EulerTextArray;											// Eular 文字
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
@@ -177,8 +190,10 @@ private:
 	QImage				Mat2QImage(Mat const &, int);
 	string				MarshalString(System::String^);							// 這邊跟 藍芽 Function裡面做的一樣，只是不想開 public
 	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
-	vector<GlobalRegistration::Point3D> ConvertQVector2Point3D(QVector<QVector3D>); // 轉換
-	QMatrix4x4			super4PCS_Align(vector<GlobalRegistration::Point3D>*, vector<GlobalRegistration::Point3D> *, float&);	// Alignment
+	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
+	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
+
+	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數

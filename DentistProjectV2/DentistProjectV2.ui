@@ -223,7 +223,7 @@
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
-      <string>藍芽裝置</string>
+      <string>藍芽裝置設定</string>
      </attribute>
      <widget class="QGroupBox" name="BLEDeviceBox">
       <property name="enabled">
@@ -727,7 +727,7 @@
       <property name="title">
        <string>Align 相關</string>
       </property>
-      <widget class="QPushButton" name="AlignFirstTwoPCButton">
+      <widget class="QPushButton" name="AlignLastTwoPCButton">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -737,7 +737,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>拼接前兩片點雲</string>
+        <string>拼接後面兩片點雲</string>
        </property>
       </widget>
      </widget>
@@ -883,7 +883,7 @@
        <property name="title">
         <string>Euler角度相關</string>
        </property>
-       <widget class="QLabel" name="EularXText">
+       <widget class="QLabel" name="EulerXText">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -896,7 +896,7 @@
          <string>X</string>
         </property>
        </widget>
-       <widget class="QLabel" name="EularYText">
+       <widget class="QLabel" name="EulerYText">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -909,7 +909,7 @@
          <string>Y</string>
         </property>
        </widget>
-       <widget class="QLabel" name="EularZText">
+       <widget class="QLabel" name="EulerZText">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -922,7 +922,7 @@
          <string>Z</string>
         </property>
        </widget>
-       <widget class="QSlider" name="EularBarX">
+       <widget class="QSlider" name="EulerBarX">
         <property name="geometry">
          <rect>
           <x>30</x>
@@ -941,7 +941,7 @@
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
-       <widget class="QSlider" name="EularBarY">
+       <widget class="QSlider" name="EulerBarY">
         <property name="geometry">
          <rect>
           <x>30</x>
@@ -960,7 +960,7 @@
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
-       <widget class="QSlider" name="EularBarZ">
+       <widget class="QSlider" name="EulerBarZ">
         <property name="geometry">
          <rect>
           <x>30</x>
@@ -979,7 +979,7 @@
          <enum>Qt::Horizontal</enum>
         </property>
        </widget>
-       <widget class="QLabel" name="EularZText_2">
+       <widget class="QLabel" name="EulerZValueText">
         <property name="geometry">
          <rect>
           <x>290</x>
@@ -995,7 +995,7 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QLabel" name="EularYValueText">
+       <widget class="QLabel" name="EulerYValueText">
         <property name="geometry">
          <rect>
           <x>290</x>
@@ -1011,7 +1011,7 @@
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
-       <widget class="QLabel" name="EularXValueText">
+       <widget class="QLabel" name="EulerXValueText">
         <property name="geometry">
          <rect>
           <x>290</x>

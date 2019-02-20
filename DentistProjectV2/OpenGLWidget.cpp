@@ -15,7 +15,7 @@ OpenGLWidget::OpenGLWidget(QWidget* parent = 0) : QOpenGLWidget(parent)
 OpenGLWidget::~OpenGLWidget()
 {
 	// 刪除 Program
-	for (int i =0; i < ProgramList.count(); i++)
+	for (int i = 0; i < ProgramList.count(); i++)
 		delete ProgramList[i].program;
 }
 
@@ -136,7 +136,7 @@ void OpenGLWidget::UpdatePC()
 // 其他元件的 Function
 void OpenGLWidget::SetRawDataManager(RawDataManager* raw)
 {
-	this->rawManager = raw;
+	rawManager = raw;
 }
 
 // 初始化
@@ -198,8 +198,8 @@ void OpenGLWidget::InitProgram()
 	tempInfo.program->bind();
 
 	// Location
-	PointSizeLoc = tempInfo.program->uniformLocation("pointSize");
-	IsCrurrentPCLoc = tempInfo.program->uniformLocation("IsCurrentPC");
+	PointSizeLoc        = tempInfo.program->uniformLocation("pointSize");
+	IsCrurrentPCLoc     = tempInfo.program->uniformLocation("IsCurrentPC");
 
 	tempInfo.program->release();
 
@@ -286,7 +286,7 @@ void OpenGLWidget::DrawGround()
 }
 void OpenGLWidget::DrawPointCloud()
 {
-	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
+	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0 && !rawManager->IsLockPC)
 	{
 		assert(ProgramList.size() >= 3);
 
@@ -304,8 +304,7 @@ void OpenGLWidget::DrawPointCloud()
 		// 畫
 		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
 		{
-			program->setUniformValue(ProgramList[2].ModelMLoc, rawManager->PointCloudArray[i].TransforMatrix);
-			if (i == rawManager->PointCloudArray.size() - 1)
+			if (rawManager->SelectIndex == i)
 				program->setUniformValue(IsCrurrentPCLoc, true);
 			else
 				program->setUniformValue(IsCrurrentPCLoc, false);
@@ -316,7 +315,6 @@ void OpenGLWidget::DrawPointCloud()
 			
 			glDrawArrays(GL_POINTS, 0, rawManager->PointCloudArray[i].Points.size());
 		}
-
 		program->release();
 	}
 }
