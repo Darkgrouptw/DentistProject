@@ -111,6 +111,12 @@ void OpenGLWidget::SetRotationMode(bool SetBool)
 }
 void OpenGLWidget::UpdatePC()
 {
+	// Prgram 設定
+	assert(ProgramList.size() >= 3);
+
+	QOpenGLShaderProgram* program = ProgramList[2].program;
+	program->bind();
+
 	// 刪除 Buffer
 	for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
 	{
@@ -131,6 +137,8 @@ void OpenGLWidget::UpdatePC()
 
 		PointCloudVertexBufferList.push_back(VBuffer);
 	}
+
+	program->release();
 }
 
 // 其他元件的 Function
