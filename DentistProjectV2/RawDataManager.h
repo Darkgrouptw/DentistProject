@@ -96,7 +96,7 @@ public:
 	bool ShakeDetect_Single(int *, bool);										// 有無晃動 (單)
 	bool ShakeDetect_Multi(bool);												// 有無晃動 (多)
 	void SavePointCloud(QQuaternion);											// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
-	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊														
+	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊	
 
 	//////////////////////////////////////////////////////////////////////////
 	// Netowrk 相關的 Function
@@ -110,6 +110,7 @@ public:
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
 	int					SelectIndex = -1;										// 目前選擇地的片數
 	bool				IsLockPC = false;										// 在畫 PC 的時候，為了怕跟 UI Change Event 衝突，用這個 Bool 來判斷要不要更新
+	QVector<QQuaternion> QuaternionList;										// 修改用
     
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
@@ -157,7 +158,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
 	//////////////////////////////////////////////////////////////////////////
-	const float			AlignScoreThrshold = 0.2f;
+	const float			AlignScoreThrshold = 0.15f;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列
@@ -192,8 +193,8 @@ private:
 	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
 	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
-
-	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
+	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment			
+	void				PCWidgetUpdate();										// 更新點部分的資料
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數

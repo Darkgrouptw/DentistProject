@@ -89,6 +89,7 @@ private slots:
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲操作相關
 	//////////////////////////////////////////////////////////////////////////
+	void PCIndexChangeEvnet(int);												// 更換 PC Index 的 Function
 	void QuaternionChangeEvent();												// 四個 Quaternion 修正
 	void EulerChangeEvent(int);													// 三個由拉角度修正
 	void AlignLastTwoEvent();													// 拚前兩塊

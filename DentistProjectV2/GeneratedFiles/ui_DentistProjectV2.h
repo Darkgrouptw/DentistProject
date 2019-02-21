@@ -82,6 +82,7 @@ public:
     QWidget *Tab_PC;
     QGroupBox *AlignBox;
     QPushButton *AlignLastTwoPCButton;
+    QPushButton *CombinePCButton;
     QGroupBox *PCInfoBox;
     QLabel *ChoosePCIndexText;
     QGroupBox *QuaternionBox;
@@ -104,6 +105,10 @@ public:
     QLabel *EulerYValueText;
     QLabel *EulerXValueText;
     QComboBox *PCIndex;
+    QGroupBox *PCOperationBox;
+    QPushButton *LoadPCButton;
+    QPushButton *SavePCButton;
+    QPushButton *DeletePCButton;
 
     void setupUi(QMainWindow *DentistProjectV2Class)
     {
@@ -301,6 +306,9 @@ public:
         AlignLastTwoPCButton = new QPushButton(AlignBox);
         AlignLastTwoPCButton->setObjectName(QStringLiteral("AlignLastTwoPCButton"));
         AlignLastTwoPCButton->setGeometry(QRect(10, 20, 131, 23));
+        CombinePCButton = new QPushButton(AlignBox);
+        CombinePCButton->setObjectName(QStringLiteral("CombinePCButton"));
+        CombinePCButton->setGeometry(QRect(10, 50, 131, 23));
         PCInfoBox = new QGroupBox(Tab_PC);
         PCInfoBox->setObjectName(QStringLiteral("PCInfoBox"));
         PCInfoBox->setGeometry(QRect(10, 10, 521, 281));
@@ -379,6 +387,18 @@ public:
         PCIndex = new QComboBox(PCInfoBox);
         PCIndex->setObjectName(QStringLiteral("PCIndex"));
         PCIndex->setGeometry(QRect(80, 20, 131, 22));
+        PCOperationBox = new QGroupBox(PCInfoBox);
+        PCOperationBox->setObjectName(QStringLiteral("PCOperationBox"));
+        PCOperationBox->setGeometry(QRect(180, 170, 301, 61));
+        LoadPCButton = new QPushButton(PCOperationBox);
+        LoadPCButton->setObjectName(QStringLiteral("LoadPCButton"));
+        LoadPCButton->setGeometry(QRect(10, 20, 81, 31));
+        SavePCButton = new QPushButton(PCOperationBox);
+        SavePCButton->setObjectName(QStringLiteral("SavePCButton"));
+        SavePCButton->setGeometry(QRect(100, 20, 91, 31));
+        DeletePCButton = new QPushButton(PCOperationBox);
+        DeletePCButton->setObjectName(QStringLiteral("DeletePCButton"));
+        DeletePCButton->setGeometry(QRect(200, 20, 91, 31));
         tabWidget->addTab(Tab_PC, QString());
         DentistProjectV2Class->setCentralWidget(centralWidget);
 
@@ -441,6 +461,7 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistProjectV2Class", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
         AlignBox->setTitle(QApplication::translate("DentistProjectV2Class", "Align \347\233\270\351\227\234", nullptr));
         AlignLastTwoPCButton->setText(QApplication::translate("DentistProjectV2Class", "\346\213\274\346\216\245\345\276\214\351\235\242\345\205\251\347\211\207\351\273\236\351\233\262", nullptr));
+        CombinePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\220\210\344\275\265\346\211\200\346\234\211\351\273\236\351\233\262", nullptr));
         PCInfoBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\350\263\207\350\250\212", nullptr));
         ChoosePCIndexText->setText(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262Index", nullptr));
         QuaternionBox->setTitle(QApplication::translate("DentistProjectV2Class", "Quaternion \347\233\270\351\227\234", nullptr));
@@ -455,6 +476,10 @@ public:
         EulerZValueText->setText(QApplication::translate("DentistProjectV2Class", "0", nullptr));
         EulerYValueText->setText(QApplication::translate("DentistProjectV2Class", "0", nullptr));
         EulerXValueText->setText(QApplication::translate("DentistProjectV2Class", "0", nullptr));
+        PCOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\345\204\262\345\255\230\345\222\214\350\256\200\345\217\226", nullptr));
+        LoadPCButton->setText(QApplication::translate("DentistProjectV2Class", "\350\256\200\345\217\226\351\273\236\351\233\262", nullptr));
+        SavePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\351\273\236\351\233\262", nullptr));
+        DeletePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\210\252\351\231\244\351\273\236\351\233\262", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_PC), QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\346\223\215\344\275\234", nullptr));
     } // retranslateUi
 

@@ -477,7 +477,7 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	// 產生 Rotation Matrix;
 	QMatrix4x4 rotationMatrix;
 	rotationMatrix.setToIdentity();
-	rotationMatrix.rotate(90, 1, 0, 0);
+	//rotationMatrix.rotate(90, 1, 0, 0);
 	rotationMatrix.rotate(quat);
 
 	QVector3D MidPoint;
@@ -523,39 +523,15 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	#pragma region 刪除 Array
 	delete[] BorderData;
 	#pragma endregion
-	#pragma region 改 UI & Index
+	#pragma region PC Index
 	// 先重新設定 PCIndex
-	PCIndex->clear();
-	for (int i = 0; i < PointCloudArray.size(); i++)
-	{
-		QString tempText = QString::number(i) + " (" + QString::number(PointCloudArray[i].Points.size()) + ")";
-		PCIndex->addItem(tempText);
-	}
+	QuaternionList.push_back(quat);
 
+	// 讓他往前
 	if (SelectIndex == PointCloudArray.size() - 2)
-	{
-		// 讓他往前
 		SelectIndex++;
+	PCWidgetUpdate();
 
-		// 重新設定 Rotation
-		QuaternionLinEditArray[0]->setText(QString::number(quat.x()));
-		QuaternionLinEditArray[1]->setText(QString::number(quat.y()));
-		QuaternionLinEditArray[2]->setText(QString::number(quat.z()));
-		QuaternionLinEditArray[3]->setText(QString::number(quat.scalar()));
-
-		QVector3D angle = quat.toEulerAngles();
-		int AngleX = (int)(angle[0] + 360) % 360;
-		int AngleY = (int)(angle[1] + 360) % 360;
-		int AngleZ = (int)(angle[2] + 360) % 360;
-		EulerBarArray[0]->setValue(AngleX);
-		EulerBarArray[1]->setValue(AngleY);
-		EulerBarArray[2]->setValue(AngleZ);
-
-		EulerTextArray[0]->text() = AngleX;
-		EulerTextArray[1]->text() = AngleY;
-		EulerTextArray[2]->text() = AngleZ;
-	}
-	
 	// 結束
 	IsLockPC = false;
 	#pragma endregion
@@ -577,6 +553,16 @@ void RawDataManager::AlignmentPointCloud()
 		ConvertPoint3D2QVector(NewPC, PointCloudArray[LastID].Points);
 
 		IsLockPC = true;
+
+		// 這邊再去做判斷
+		// 如果分數小於一個 Threshold 那就丟掉
+		if (score < AlignScoreThrshold)
+		{
+			PointCloudArray.removeLast();
+			SelectIndex--;
+			PCWidgetUpdate();
+		}
+
 		((OpenGLWidget*)DisplayPanel)->UpdatePC();
 		IsLockPC = false;
 	}
@@ -661,7 +647,8 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 	double delta = 0.1;
 
 	// Estimated overlap (see the paper).
-	double overlap = 0.40;
+	//double overlap = 0.40;
+	double overlap = 0.30;
 
 	// Threshold of the computed overlap for termination. 1.0 means don't terminate
 	// before the end.
@@ -770,4 +757,32 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 	cout << "Score: " << score << endl;
 	FinalScore = score;
 	return matrix;
+}
+void RawDataManager::PCWidgetUpdate()
+{
+	PCIndex->clear();
+	for (int i = 0; i < PointCloudArray.size(); i++)
+	{
+		QString tempText = QString::number(i) + " (" + QString::number(PointCloudArray[i].Points.size()) + ")";
+		PCIndex->addItem(tempText);
+	}
+
+	// 重新設定 Rotation
+	QQuaternion quat = QuaternionList[SelectIndex];
+	QuaternionLinEditArray[0]->setText(QString::number(quat.x()));
+	QuaternionLinEditArray[1]->setText(QString::number(quat.y()));
+	QuaternionLinEditArray[2]->setText(QString::number(quat.z()));
+	QuaternionLinEditArray[3]->setText(QString::number(quat.scalar()));
+
+	QVector3D angle = quat.toEulerAngles();
+	int AngleX = (int)(angle[0] + 360) % 360;
+	int AngleY = (int)(angle[1] + 360) % 360;
+	int AngleZ = (int)(angle[2] + 360) % 360;
+	EulerBarArray[0]->setValue(AngleX);
+	EulerBarArray[1]->setValue(AngleY);
+	EulerBarArray[2]->setValue(AngleZ);
+
+	EulerTextArray[0]->setText(QString::number(AngleX));
+	EulerTextArray[1]->setText(QString::number(AngleY));
+	EulerTextArray[2]->setText(QString::number(AngleZ));
 }

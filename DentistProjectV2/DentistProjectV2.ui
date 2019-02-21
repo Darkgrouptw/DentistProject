@@ -740,6 +740,19 @@
         <string>拼接後面兩片點雲</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="CombinePCButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>合併所有點雲</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="PCInfoBox">
       <property name="geometry">
@@ -1037,6 +1050,58 @@
          <height>22</height>
         </rect>
        </property>
+      </widget>
+      <widget class="QGroupBox" name="PCOperationBox">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>170</y>
+         <width>301</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>點雲儲存和讀取</string>
+       </property>
+       <widget class="QPushButton" name="LoadPCButton">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>81</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>讀取點雲</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="SavePCButton">
+        <property name="geometry">
+         <rect>
+          <x>100</x>
+          <y>20</y>
+          <width>91</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>儲存點雲</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="DeletePCButton">
+        <property name="geometry">
+         <rect>
+          <x>200</x>
+          <y>20</y>
+          <width>91</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>刪除點雲</string>
+        </property>
+       </widget>
       </widget>
      </widget>
     </widget>

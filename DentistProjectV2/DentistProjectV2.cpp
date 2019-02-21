@@ -33,13 +33,14 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.MultiImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadMultiRawDataForShakeTest()));
 
 	// 點雲操作
-	connect(ui.QuaternionWValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
+	connect(ui.PCIndex,										SIGNAL(currentIndexChanged(int)),this,	SLOT(PCIndexChangeEvnet(int)));
+	/*connect(ui.QuaternionWValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
 	connect(ui.QuaternionXValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
 	connect(ui.QuaternionYValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
 	connect(ui.QuaternionZValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
 	connect(ui.EulerBarX,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
 	connect(ui.EulerBarY,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
-	connect(ui.EulerBarZ,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
+	connect(ui.EulerBarZ,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));*/
 	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoEvent()));
 
 	// 顯示部分
@@ -231,11 +232,6 @@ void DentistProjectV2::PointCloudAlignmentTest()
 			QQuaternion quat(w, x, y, z);
 			rawManager.SavePointCloud(quat);
 			rawManager.AlignmentPointCloud();
-
-			if (rawManager.PointCloudArray.size() == 2)
-			{
-				break;
-			}
 		}
 		GyroFile.close();
 
@@ -408,6 +404,14 @@ void DentistProjectV2::ReadMultiRawDataForShakeTest()
 }
 
 // 點雲操作
+void DentistProjectV2::PCIndexChangeEvnet(int)
+{
+	if (!rawManager.IsLockPC)
+	{
+		int index = ui.PCIndex->currentIndex();
+		cout << index << endl;
+	}
+}
 void DentistProjectV2::QuaternionChangeEvent()
 {
 
