@@ -118,10 +118,10 @@ void OpenGLWidget::UpdatePC()
 	program->bind();
 
 	// 刪除 Buffer
-	for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
+	for (int i = 0; i < PointCloudVertexBufferList.size(); i++)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, PointCloudVertexBufferList[i]);
-		glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_STATIC_DRAW);
+		glDeleteBuffers(1, &PointCloudVertexBufferList[i]);
 	}
 	PointCloudVertexBufferList.clear();
 
