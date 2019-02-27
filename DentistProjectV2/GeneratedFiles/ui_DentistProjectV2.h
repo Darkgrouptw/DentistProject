@@ -109,6 +109,8 @@ public:
     QPushButton *LoadPCButton;
     QPushButton *SavePCButton;
     QPushButton *DeletePCButton;
+    QWidget *StateWidget;
+    QLabel *OtherSideResult;
 
     void setupUi(QMainWindow *DentistProjectV2Class)
     {
@@ -168,7 +170,7 @@ public:
         NetworkResult->setScaledContents(true);
         tabWidget = new QTabWidget(centralWidget);
         tabWidget->setObjectName(QStringLiteral("tabWidget"));
-        tabWidget->setGeometry(QRect(900, 570, 710, 320));
+        tabWidget->setGeometry(QRect(900, 570, 710, 331));
         QSizePolicy sizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
@@ -400,11 +402,22 @@ public:
         DeletePCButton->setObjectName(QStringLiteral("DeletePCButton"));
         DeletePCButton->setGeometry(QRect(200, 20, 91, 31));
         tabWidget->addTab(Tab_PC, QString());
+        StateWidget = new QWidget(centralWidget);
+        StateWidget->setObjectName(QStringLiteral("StateWidget"));
+        StateWidget->setGeometry(QRect(10, 590, 300, 300));
+        StateWidget->setFont(font);
+        StateWidget->setStyleSheet(QStringLiteral("background:rgba(21, 79, 255, 150)"));
+        OtherSideResult = new QLabel(StateWidget);
+        OtherSideResult->setObjectName(QStringLiteral("OtherSideResult"));
+        OtherSideResult->setEnabled(true);
+        OtherSideResult->setGeometry(QRect(0, 0, 300, 300));
+        OtherSideResult->setStyleSheet(QStringLiteral(""));
+        OtherSideResult->setScaledContents(true);
         DentistProjectV2Class->setCentralWidget(centralWidget);
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(0);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -481,6 +494,7 @@ public:
         SavePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\351\273\236\351\233\262", nullptr));
         DeletePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\210\252\351\231\244\351\273\236\351\233\262", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_PC), QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\346\223\215\344\275\234", nullptr));
+        OtherSideResult->setText(QString());
     } // retranslateUi
 
 };

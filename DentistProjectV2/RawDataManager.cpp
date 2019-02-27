@@ -51,10 +51,11 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 18 && "UI 對應有問題!!");
+	assert(UIPointer.size() == 19 && "UI 對應有問題!!");
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
+	OtherSideResult			= (QLabel*)UIPointer[18];
 
 	// 後面兩個是 給 ScanThread
 	QSlider* slider			= (QSlider*)UIPointer[3];
@@ -432,6 +433,27 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 	else
 		cout << "無存出圖片";
 	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
+	#endif
+	#pragma endregion
+}
+void RawDataManager::TransformToOtherSideView()
+{
+	assert(ImageResultArray.size() > 1 && "呼叫此函式必須要有多張圖才可以呼叫");
+	#pragma region 開始時間
+	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
+	clock_t startT, endT;
+	startT = clock();
+	#endif
+	#pragma endregion
+	#pragma region 材扁圖
+	Mat result = cudaV2.TransformToOtherSideView();
+	QImage qreulst = Mat2QImage(result, CV_8UC3);
+	OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
+	#pragma endregion
+	#pragma region 結束時間
+	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
+	endT = clock();
+	cout << "材扁圖轉換時間: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#endif
 	#pragma endregion
 }

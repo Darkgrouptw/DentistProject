@@ -556,6 +556,48 @@ __global__ static void ConnectPointsStatus(int* PointType_BestN, int* ConnectSta
 	}
 }
 
+// 這邊是例外，只有 Multi 才有材扁圖
+__global__ static void GetOtherSideView(float* Data, float* OtherSideData, int SizeX, int SizeY, int FinalSizeZ)
+{
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= SizeX * SizeY)
+	{
+		printf("範圍有錯!!\n");
+		return;
+	}
+
+	// id 換算
+	int idX = id / SizeY;
+	int idY = id % SizeY;
+	int DataOffsetIndex = idX * SizeY * FinalSizeZ + idY * FinalSizeZ;
+
+	// 總和一個 SizeZ
+	float totalZ = 0;
+	for (int i = 0; i < FinalSizeZ; i++)
+		totalZ += Data[DataOffsetIndex + i];
+
+
+	// 這邊的單位要調整一下
+	// rows => 是張樹 (SizeY)
+	// cols => 是 SizeX
+	int offsetIndex = idY * SizeX + idX;
+	OtherSideData[offsetIndex] = totalZ;
+}
+__global__ static void TransformOtherSideDataToImage(float* OtherSideData, uchar* UintOtherSideData, int SizeX, int SizeY)
+{
+	int id = blockDim.x * blockIdx.x + threadIdx.x;
+	if (id >= SizeX * SizeY)								// 判斷是否超出大小
+		return;
+
+	float data = OtherSideData[id] * 255;
+	if (data >= 255)
+		UintOtherSideData[id] = 255;
+	else if (data <= 0)
+		UintOtherSideData[id] = 0;
+	else
+		UintOtherSideData[id] = (uchar)data;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // CPU
 //////////////////////////////////////////////////////////////////////////
@@ -680,7 +722,9 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	// 先算平均
 	int* FirstSizeZData = new int[SizeZ];
 	cudaMemcpy(FirstSizeZData, GPU_OCTRawData, sizeof(int) * SizeZ, cudaMemcpyDeviceToHost);
-	float average = std::accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
+	cudaDeviceSynchronize();
+
+	float average = accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
 	delete[] FirstSizeZData;
 
 	// 取得 Matrix
@@ -692,6 +736,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	float* MatrixB = new float[(NumPolynomial + 1)];
 	cudaMemcpy(MatrixA, GPU_MatrixA, sizeof(float) * (NumPolynomial + 1) *(NumPolynomial + 1), cudaMemcpyDeviceToHost);
 	cudaMemcpy(MatrixB, GPU_MatrixB, sizeof(float) * (NumPolynomial + 1), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
 
 	// 解 Eigen 找 Fitting Function
 	EigenUtility eigen;
@@ -1001,6 +1046,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 4. λ Space 轉成 K Space
 	// 5. cuFFT
 	// 6. 位移 Data
+	// 6.5 要找出材扁圖 (這邊有多一個要找出材扁圖)
 	// 7. 根據最大最小值來 Normalize 資料
 	// 8. 轉成圖
 	// 9. 邊界判斷
@@ -1012,6 +1058,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 3. K_Step		=> 深度(14.多mm對應 2.5的k step；可以考慮之後用2)(k step越大，z軸越深，但資料精細度越差；1~2.5)
 	// 4. CutValue		=> OCT每個z軸，前面數據減去多少。原因是開頭的laser弱，干涉訊號不明顯，拿掉的資料會比較美。 (東元那邊的變數是 cuteValue XD)
 	// 5. 只是這邊比上方的 Function 多了 SizeY 個
+	// 6. 有多一個 找出材扁圖
 	//////////////////////////////////////////////////////////////////////////
 	#pragma region 1. 上傳 GPU Data
 	// 初始
@@ -1101,7 +1148,9 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 先算平均
 	int* FirstSizeZData = new int[SizeZ];
 	cudaMemcpy(FirstSizeZData, GPU_OCTRawData, sizeof(int) * SizeZ, cudaMemcpyDeviceToHost);
-	float average = std::accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
+	cudaDeviceSynchronize();
+
+	float average = accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
 	delete[] FirstSizeZData;
 
 	// 取得 Matrix
@@ -1113,6 +1162,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	float* MatrixB = new float[(NumPolynomial + 1)];
 	cudaMemcpy(MatrixA, GPU_MatrixA, sizeof(float) * (NumPolynomial + 1) *(NumPolynomial + 1), cudaMemcpyDeviceToHost);
 	cudaMemcpy(MatrixB, GPU_MatrixB, sizeof(float) * (NumPolynomial + 1), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
 
 	// 解 Eigen 找 Fitting Function
 	EigenUtility eigen;
@@ -1257,6 +1307,43 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	cout << "6. 搬移資料: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 	#pragma endregion
+	#pragma region 6.5 材扁圖
+	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
+	time = clock();
+	#endif
+
+	// 這邊會抓出材扁圖
+	float* GPU_OtherSideData;
+	cudaMalloc(&GPU_OtherSideData, sizeof(float) * OCTDataSize / 2);
+	GetOtherSideView << <SizeX, SizeY >> > (GPU_ShiftData, GPU_OtherSideData, SizeX, SizeY, SizeZ / 2);
+	CheckCudaError();
+	cudaDeviceSynchronize();
+
+	// 找最大值
+	float MaxValue = 0, MinValue = 0;
+	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY);
+	float *GPU_MinElement = thrust::min_element(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY);
+	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&MinValue, GPU_MinElement, sizeof(float), cudaMemcpyDeviceToHost);
+
+	NormalizeData << < SizeX, SizeY >> > (GPU_OtherSideData, MaxValue, MinValue, SizeX * SizeY);
+	CheckCudaError();
+
+	uchar* GPU_UintOtherSideData;
+	cudaMalloc(&GPU_UintOtherSideData, sizeof(uchar) * SizeX * SizeY);
+	TransformOtherSideDataToImage << <SizeX, SizeY >> > (GPU_OtherSideData, GPU_UintOtherSideData, SizeX, SizeY);
+	CheckCudaError();
+
+	// 刪除記憶體
+	cudaFree(GPU_OtherSideData);
+
+	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
+	time = clock() - time;
+	cout << "7. Normalize Data: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
+	#pragma endregion
 	#pragma region 7. Normalize Data
 	// 開始
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -1264,10 +1351,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	#endif
 	
 	// 算最大值
-	float MaxValue = 0;
-	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
+	cudaDeviceSynchronize();
+
+	MaxValue = 0;
+	GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
 	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
 	CheckCudaError();
+	cudaDeviceSynchronize();
 
 	// 最小值 (拿一塊不會使用的 GPU 部分，來做 Normalize)
 	// 拿一個正方形的區塊
@@ -1275,7 +1365,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// ｜　　　｜
 	// ｜　　　｜
 	// ｘ－－－BR
-	float MinValue = 0;
+	MinValue = 0;
 	for (int i = MinValuePixel_TL; i <= MinValuePixel_BR; i++)
 	{
 		// [first, last)
@@ -1411,8 +1501,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	VolumeData = new uchar[SizeX * SizeY * SizeZ / 2];
 	cudaMemcpy(VolumeData, GPU_UintDataArray, sizeof(uchar) * SizeX * SizeY * SizeZ / 2, cudaMemcpyDeviceToHost);
 
+	SaveDelete(VolumeData_OtherSide);
+	VolumeData_OtherSide = new uchar[SizeX * SizeY];
+	cudaMemcpy(VolumeData_OtherSide, GPU_UintOtherSideData, sizeof(uchar) * SizeX * SizeY, cudaMemcpyDeviceToHost);
+
 	// 刪除 GPU
 	cudaFree(GPU_UintDataArray);
+	cudaFree(GPU_UintOtherSideData);
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -1474,6 +1569,14 @@ vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 	}
 	return ImgArray;
 }
+Mat TRCudaV2::TransformToOtherSideView()
+{
+	assert(size > 1 && "這段一定要大於一張圖");
+
+	Mat img(rows, size, CV_8U, VolumeData_OtherSide);
+	cvtColor(img, img, CV_GRAY2BGR);
+	return img;
+}
 void TRCudaV2::CopySingleBorder(int* LastArray)
 {
 	assert(LastArray != NULL && PointType_1D != NULL && size == 1 && "要先初始化 Array 和要做轉點雲的部分!!");	// assert 抓出 call 錯的可能性 (這邊只能單張)
@@ -1532,7 +1635,7 @@ bool TRCudaV2::ShakeDetect_Multi(bool ShowDebugMessage)
 
 		// 從中間往前找
 		for (int j = size / 2 - 1; j >= 0; j--)
-			if (!PointType_1D[j * rows + i] != -1)
+			if (PointType_1D[j * rows + i] != -1)
 			{
 				leftIndex = j * rows + i;
 				break;

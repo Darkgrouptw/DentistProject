@@ -119,6 +119,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.EulerXValueText);
 	objList.push_back(ui.EulerYValueText);
 	objList.push_back(ui.EulerZValueText);
+	objList.push_back(ui.OtherSideResult);
 
 	rawManager.SendUIPointer(objList);
 
@@ -319,6 +320,8 @@ void DentistProjectV2::ReadRawDataToImage()
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
+			rawManager.TransformToOtherSideView();
+
 			QQuaternion quat;
 			rawManager.SavePointCloud(quat);
 			ui.ScanNumSlider->setEnabled(true);
@@ -350,6 +353,8 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 		// UI 更改
 		if (type == RawDataType::MULTI_DATA_TYPE)
 		{
+			rawManager.TransformToOtherSideView();
+
 			QQuaternion quat;
 			rawManager.SavePointCloud(quat);
 			ui.ScanNumSlider->setEnabled(true);

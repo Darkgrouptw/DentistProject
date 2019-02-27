@@ -209,7 +209,7 @@
       <x>900</x>
       <y>570</y>
       <width>710</width>
-      <height>320</height>
+      <height>331</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -1104,6 +1104,46 @@
        </widget>
       </widget>
      </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="StateWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>590</y>
+      <width>300</width>
+      <height>300</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background:rgba(21, 79, 255, 150)</string>
+    </property>
+    <widget class="QLabel" name="OtherSideResult">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>300</width>
+       <height>300</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
     </widget>
    </widget>
   </widget>
