@@ -294,8 +294,18 @@ void OpenGLWidget::DrawGround()
 }
 void OpenGLWidget::DrawPointCloud()
 {
-	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0 && !rawManager->IsLockPC)
+	if (rawManager != NULL && rawManager->PointCloudArray.size() > 0)
 	{
+		// 這邊是要先判斷有沒有 Lock
+		// 如果有 Lock 代表說，要更新
+		// 但由於 OpenGL 只能有單一一個 Thread 去呼叫
+		// 其他 Thread 去呼叫此 Class 的 Function 都會出現 1282 (GL_INVALID_OPERATION)
+		if (rawManager->IsLockPC)
+		{
+			UpdatePC();
+			rawManager->IsLockPC = false;
+		}
+
 		assert(ProgramList.size() >= 3);
 
 		QOpenGLShaderProgram* program = ProgramList[2].program;
@@ -310,7 +320,7 @@ void OpenGLWidget::DrawPointCloud()
 		program->setUniformValue(PointSizeLoc, pointSize);
 
 		// 畫
-		for (int i = 0; i < rawManager->PointCloudArray.size(); i++)
+		for (int i = 0; i < PointCloudVertexBufferList.size(); i++)
 		{
 			if (rawManager->SelectIndex == i)
 				program->setUniformValue(IsCrurrentPCLoc, true);
@@ -320,7 +330,7 @@ void OpenGLWidget::DrawPointCloud()
 			glBindBuffer(GL_ARRAY_BUFFER, PointCloudVertexBufferList[i]);
 			glEnableVertexAttribArray(0);
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-			
+
 			glDrawArrays(GL_POINTS, 0, rawManager->PointCloudArray[i].Points.size());
 		}
 		program->release();

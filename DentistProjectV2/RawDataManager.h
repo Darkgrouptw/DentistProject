@@ -110,7 +110,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
 	int					SelectIndex = -1;										// 目前選擇地的片數
-	bool				IsLockPC = false;										// 在畫 PC 的時候，為了怕跟 UI Change Event 衝突，用這個 Bool 來判斷要不要更新
+	bool				IsLockPC = false;										// Lock PC 是來判斷是否有新資料，有新資料就會 Lock，更新結束，就會取消 Lock
 	QVector<QQuaternion> QuaternionList;										// 修改用
     
 	//////////////////////////////////////////////////////////////////////////

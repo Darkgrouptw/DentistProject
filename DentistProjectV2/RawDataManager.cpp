@@ -484,9 +484,6 @@ bool RawDataManager::ShakeDetect_Multi(bool ShowDebugMessage)
 void RawDataManager::SavePointCloud(QQuaternion quat)
 {
 	#pragma region 創建 Array
-	// 更新
-	IsLockPC = true;
-
 	// 邊界 & 其他資訊
 	RawDataProperty prop = DManager.prop;
 	int* BorderData = new int[prop.SizeX *DManager.prop.SizeY];
@@ -499,7 +496,6 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	// 產生 Rotation Matrix;
 	QMatrix4x4 rotationMatrix;
 	rotationMatrix.setToIdentity();
-	//rotationMatrix.rotate(90, 1, 0, 0);
 	rotationMatrix.rotate(quat);
 
 	QVector3D MidPoint;
@@ -539,8 +535,6 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	// 加進陣列裡
 	PointCloudArray.push_back(info);
 
-	// DisplayPanel
-	((OpenGLWidget*)DisplayPanel)->UpdatePC();
 	#pragma endregion 
 	#pragma region 刪除 Array
 	delete[] BorderData;
@@ -554,8 +548,8 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 		SelectIndex++;
 	PCWidgetUpdate();
 
-	// 結束
-	IsLockPC = false;
+	// 需更新
+	IsLockPC = true;
 	#pragma endregion
 }
 void RawDataManager::AlignmentPointCloud()
@@ -574,8 +568,6 @@ void RawDataManager::AlignmentPointCloud()
 		super4PCS_Align(&LastPC, &NewPC, score);
 		ConvertPoint3D2QVector(NewPC, PointCloudArray[LastID].Points);
 
-		IsLockPC = true;
-
 		// 這邊再去做判斷
 		// 如果分數小於一個 Threshold 那就丟掉
 		if (score < AlignScoreThrshold)
@@ -585,8 +577,8 @@ void RawDataManager::AlignmentPointCloud()
 			PCWidgetUpdate();
 		}
 
-		((OpenGLWidget*)DisplayPanel)->UpdatePC();
-		IsLockPC = false;
+		// 需更新
+		IsLockPC = true;
 	}
 }
 
