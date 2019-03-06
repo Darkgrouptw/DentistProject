@@ -12,6 +12,7 @@ RawDataManager::RawDataManager()
 	ScanSingle_Pointer			= bind(&RawDataManager::ScanSingleDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
 	ScanMulti_Pointer			= bind(&RawDataManager::ScanMultiDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
 	TransforImage_Pointer		= bind(&RawDataManager::TransformToIMG,					this, placeholders::_1);
+	TransformToOtherSideView_Pointer = bind(&RawDataManager::TransformToOtherSideView,	this);
 	GetQuaternion_Pointer		= bind(&RawDataManager::GetQuaternion,					this);
 	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
 	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1, placeholders::_2);
@@ -22,7 +23,7 @@ RawDataManager::RawDataManager()
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread(DManager.prop.SizeX);
-	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer, &GetQuaternion_Pointer);
+	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer, &TransformToOtherSideView_Pointer, &GetQuaternion_Pointer);
 	Worker->IntitShakeDetectFunctionPointer(&CopySingleBorder_Pointer, &ShakeDetect_Single_Pointer, &ShakeDetect_Multi_Pointer);
 	Worker->InitShowFunctionPointer(&SavePointCloud_Pointer, &AlignmentPointCloud_Pointer, &ShowImageIndex_Pointer);
 	#pragma endregion
@@ -570,7 +571,7 @@ void RawDataManager::AlignmentPointCloud()
 
 		// 這邊再去做判斷
 		// 如果分數小於一個 Threshold 那就丟掉
-		if (score < AlignScoreThrshold)
+		if (score < AlignScoreThreshold)
 		{
 			PointCloudArray.removeLast();
 			SelectIndex--;

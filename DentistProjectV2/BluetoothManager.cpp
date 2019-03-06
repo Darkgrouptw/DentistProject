@@ -176,7 +176,7 @@ void BluetoothManager::Callback_QuaternionRotationChanged(LibGlove::DeviceInfo*,
 	BLEStatus->setText(codec->toUnicode("藍芽狀態：傳輸資料中"));
 
 	// 旋轉結果
-	QQuaternion TempQuat = QQuaternion(quat[0], quat[2], -quat[1], quat[3]);
+	QQuaternion TempQuat = QQuaternion(quat[0], quat[2], -quat[1], quat[3]) * QQuaternion::fromEulerAngles(0, -90, 0);
 	TempQuat.normalize();
 
 	// 是否需要更新

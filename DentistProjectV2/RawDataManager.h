@@ -142,6 +142,7 @@ private:
 	function<void(QString, bool)>	ScanSingle_Pointer;
 	function<void(QString, bool)>	ScanMulti_Pointer;
 	function<void(bool)>			TransforImage_Pointer;
+	function<void()>				TransformToOtherSideView_Pointer;
 	function<QQuaternion()>			GetQuaternion_Pointer;
 	function<void(int*&)>			CopySingleBorder_Pointer;
 	function<bool(int*, bool)>		ShakeDetect_Single_Pointer;
@@ -159,7 +160,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
 	//////////////////////////////////////////////////////////////////////////
-	const float			AlignScoreThrshold = 0.15f;
+	const float			AlignScoreThreshold = 0.15f;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列

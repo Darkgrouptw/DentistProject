@@ -414,7 +414,7 @@ void DentistProjectV2::PCIndexChangeEvnet(int)
 	if (!rawManager.IsLockPC)
 	{
 		int index = ui.PCIndex->currentIndex();
-		cout << index << endl;
+		//cout << index << endl;
 	}
 }
 void DentistProjectV2::QuaternionChangeEvent()

@@ -18,11 +18,13 @@ void ScanningWorkerThread::InitScanFunctionPointer(
 	function<void(QString, bool)>* ScanSingle,
 	function<void(QString, bool)>* ScanMulti,
 	function<void(bool)>* ToImage,
+	function<void()>* ToOtherSide,
 	function<QQuaternion()>* Quaternion)
 {
 	ScanSingleDataFromDeviceV2 = ScanSingle;
 	ScanMultiDataFromDeviceV2 = ScanMulti;
 	TransformToIMG = ToImage;
+	TransformToOtherSideView = ToOtherSide;
 	GetQuaternionFromDevice = Quaternion;
 }
 void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
@@ -102,6 +104,7 @@ void ScanningWorkerThread::ScanProcess()
 
 	QTextStream ss(GyroFile);
 	#pragma endregion
+	#pragma region 整個掃描流程
 	while (!IsEnd)
 	{
 		#pragma region 1. 開始掃描的初始化設定
@@ -145,6 +148,7 @@ void ScanningWorkerThread::ScanProcess()
 		#pragma region 5. 開始掃描多個資料
 		(*ScanMultiDataFromDeviceV2)(SaveLocation + "_Multi", NeedSave_Multi_RawData);
 		(*TransformToIMG)(NeedSave_ImageData);
+		(*TransformToOtherSideView)();
 
 		// 拿旋轉矩陣
 		QQuaternion currentQuat = (*GetQuaternionFromDevice)();
@@ -179,7 +183,7 @@ void ScanningWorkerThread::ScanProcess()
 		(*AlignmentPointCloud)();
 		#pragma endregion
 	}
-
+	#pragma endregion
 	#pragma region 結束按鈕設定
 	ScanButton->setText(*EndScanText);
 	ScanThread = nullptr;
