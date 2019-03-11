@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -704,6 +704,25 @@
        </property>
        <property name="text">
         <string>多張晃動偵測</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="SlimLabViewRawData">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>180</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>縮減 Labview Data</string>
        </property>
        <property name="checkable">
         <bool>false</bool>

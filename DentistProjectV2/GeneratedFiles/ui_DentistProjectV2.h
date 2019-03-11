@@ -79,6 +79,7 @@ public:
     QPushButton *SegNetTestButton;
     QPushButton *BeepSoundTestButton;
     QPushButton *MultiImageShakeTestButton;
+    QPushButton *SlimLabViewRawData;
     QWidget *Tab_PC;
     QGroupBox *AlignBox;
     QPushButton *AlignLastTwoPCButton;
@@ -299,6 +300,11 @@ public:
         MultiImageShakeTestButton->setEnabled(false);
         MultiImageShakeTestButton->setGeometry(QRect(10, 110, 131, 23));
         MultiImageShakeTestButton->setCheckable(false);
+        SlimLabViewRawData = new QPushButton(OCTTestingBox);
+        SlimLabViewRawData->setObjectName(QStringLiteral("SlimLabViewRawData"));
+        SlimLabViewRawData->setEnabled(true);
+        SlimLabViewRawData->setGeometry(QRect(10, 180, 131, 23));
+        SlimLabViewRawData->setCheckable(false);
         tabWidget->addTab(Tab_OCT, QString());
         Tab_PC = new QWidget();
         Tab_PC->setObjectName(QStringLiteral("Tab_PC"));
@@ -417,7 +423,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(1);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -471,6 +477,7 @@ public:
         SegNetTestButton->setText(QApplication::translate("DentistProjectV2Class", "SegNet \351\240\220\346\270\254", nullptr));
         BeepSoundTestButton->setText(QApplication::translate("DentistProjectV2Class", "Beep Sound \346\270\254\350\251\246", nullptr));
         MultiImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\244\232\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
+        SlimLabViewRawData->setText(QApplication::translate("DentistProjectV2Class", "\347\270\256\346\270\233 Labview Data", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistProjectV2Class", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
         AlignBox->setTitle(QApplication::translate("DentistProjectV2Class", "Align \347\233\270\351\227\234", nullptr));
         AlignLastTwoPCButton->setText(QApplication::translate("DentistProjectV2Class", "\346\213\274\346\216\245\345\276\214\351\235\242\345\205\251\347\211\207\351\273\236\351\233\262", nullptr));

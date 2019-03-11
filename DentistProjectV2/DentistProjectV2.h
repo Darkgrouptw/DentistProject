@@ -85,6 +85,7 @@ private slots:
 	void ReadRawDataForBorderTest();											// 邊界測試 & 不儲存
 	void ReadSingleRawDataForShakeTest();										// 偵測是否有晃動
 	void ReadMultiRawDataForShakeTest();										// 偵測是否有晃動
+	void SlimLabviewRawData();													// 縮小 Labview 掃出來的 Data
 
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲操作相關

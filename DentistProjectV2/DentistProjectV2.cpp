@@ -31,6 +31,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.EasyBorderDetect,							SIGNAL(clicked()),				this,	SLOT(ReadRawDataForBorderTest()));
 	connect(ui.SingleImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadSingleRawDataForShakeTest()));
 	connect(ui.MultiImageShakeTestButton,					SIGNAL(clicked()),				this,	SLOT(ReadMultiRawDataForShakeTest()));
+	connect(ui.SlimLabViewRawData,							SIGNAL(clicked()),				this,	SLOT(SlimLabviewRawData()));
 
 	// 點雲操作
 	connect(ui.PCIndex,										SIGNAL(currentIndexChanged(int)),this,	SLOT(PCIndexChangeEvnet(int)));
@@ -406,6 +407,41 @@ void DentistProjectV2::ReadSingleRawDataForShakeTest()
 void DentistProjectV2::ReadMultiRawDataForShakeTest()
 {
 	//QMessageBox:: "未連結!!");
+}
+void DentistProjectV2::SlimLabviewRawData()
+{
+	QStringList RawFileNameList = QFileDialog::getOpenFileNames(this, codec->toUnicode("縮減 Labview 掃描的資料 (可 Shift 選取多筆資料)"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+
+	for (int i = 0; i < RawFileNameList.count(); i++)
+	{
+		// 開檔案
+		QFile inputFile(RawFileNameList[i]);
+		inputFile.open(QIODevice::ReadOnly);
+
+		QFile slimFile(RawFileNameList[i] + "_slim");
+		slimFile.open(QIODevice::WriteOnly);
+
+		// 測試
+		cout << RawFileNameList[i].toLocal8Bit().toStdString() << " "  << (inputFile.size()) << endl;
+		QByteArray data = inputFile.readAll();
+
+
+		// 錯誤判斷
+		if (inputFile.size() != 819200000)
+		{
+			inputFile.close();
+			slimFile.close();
+			cout << "並非 Labview 掃描的檔案" << endl;
+			continue;
+		}
+
+		QDataStream stream(&slimFile);
+		stream.writeBytes(data, 512000000 - 4);
+
+		//QDataStream
+		inputFile.close();
+		slimFile.close();
+	}
 }
 
 // 點雲操作
