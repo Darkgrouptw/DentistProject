@@ -9,7 +9,7 @@ import numpy as np
 tf.set_random_seed(1)
 
 class Network3D():
-    def __init__(self, sizeX, sizeY, sizeZ, OutClass, IsDebugGraph = False):
+    def __init__(self, sizeX, sizeY, sizeZ, OutClass, lr = 1e-3, kernelSize = 3, logdir = "./logs", IsDebugGraph = False):
         # 神經網路大小
         self.SizeX = sizeX
         self.SizeY = sizeY
@@ -17,26 +17,25 @@ class Network3D():
         self.OutClass = OutClass
 
         # 初始化網路
-        self.InitNetwork()
+        self.InitNetwork(lr, kernelSize)
         self.Session = tf.Session()
         self.Session.run(tf.global_variables_initializer())
 
         # 寫檔
-        self.LogWriter = tf.summary.FileWriter("./logs")
+        self.LogWriter = tf.summary.FileWriter(logdir)
         if IsDebugGraph:
             self.LogWriter.add_graph(self.Session.graph)
             print("Debug Output")
 
 
     # 初始化網路
-    def InitNetwork(self):
+    def InitNetwork(self, lr, kernelSize):
         # 常數設定
         layer1_Units = 16
         layer2_Units = 32
-        layer3_Units = 32
-        layer1_KernelSize = layer2_KernelSize = layer3_KernelSize = 3
-        layer1_PaddingCount = layer2_PaddingCount = layer3_PaddingCount = 1
-        layer1_MaxpoolCount = layer2_MaxpoolCount = layer3_MaxpoolCount = 2
+        layer1_KernelSize = layer2_KernelSize = kernelSize
+        layer1_PaddingCount = layer2_PaddingCount = 1
+        layer1_MaxpoolCount = layer2_MaxpoolCount = 2
 
         # 輸入
         self.InputData = tf.placeholder(tf.float32, [None, self.SizeZ, self.SizeY, self.SizeX, 1], name="InputLayer")
@@ -45,24 +44,22 @@ class Network3D():
         # Conv
         layer1 = self._AddConvoluationLayer(self.InputData, layer1_Units, layer1_KernelSize, layer1_PaddingCount, layer1_MaxpoolCount, "Layer1")
         layer2 = self._AddConvoluationLayer(layer1, layer2_Units, layer2_KernelSize, layer2_PaddingCount, layer2_MaxpoolCount, "Layer2")
-        layer3 = self._AddConvoluationLayer(layer2, layer3_Units, layer3_KernelSize, layer3_PaddingCount, layer3_MaxpoolCount, "Layer3")
 
         # 中間
-        layer_mid = self._MidTo2D(layer3, int(self.SizeZ / 2 / 2 / 2))
+        layer_mid = self._MidTo2D(layer2, int(self.SizeZ / 2 / 2))
 
         # DeConv
-        layer1_Upsample = self._AddUpSampleLayer(layer_mid, layer3_Units, layer3_KernelSize, layer3_MaxpoolCount, "Layer1Up")
-        layer2_Upsample = self._AddUpSampleLayer(layer1_Upsample, layer2_Units, layer2_KernelSize, layer2_MaxpoolCount, "Layer2Up")
-        layer3_Upsample = self._AddUpSampleLayer(layer2_Upsample, layer1_Units, layer1_KernelSize, layer1_MaxpoolCount, "Layer3Up")
+        layer1_Upsample = self._AddUpSampleLayer(layer_mid, layer2_Units, layer2_KernelSize, layer2_MaxpoolCount, "Layer1Up")
+        layer2_Upsample = self._AddUpSampleLayer(layer1_Upsample, layer1_Units, layer1_KernelSize, layer1_MaxpoolCount, "Layer2Up")
 
         # 預測
-        predict = conv2d(layer3_Upsample, self.OutClass, 3, 1, 'same', name="Predict")
+        predict = conv2d(layer2_Upsample, self.OutClass, 3, 1, 'same', name="Predict")
         predictImgProb = tf.nn.softmax(predict, axis=3, name= "PredictProb")
         self.PredictImg = tf.cast(tf.reshape(tf.argmax(predictImgProb, axis=3, name="PredictImg"), [-1, self.SizeY, self.SizeX, 1]), tf.uint8) * 255
 
         with tf.name_scope("Loss"):
             loss = tf.losses.softmax_cross_entropy(self.LabeledData, predict)
-            self.Optimzer = tf.train.AdamOptimizer(1e-3).minimize(loss)
+            self.Optimzer = tf.train.AdamOptimizer(lr).minimize(loss)
 
         # Log
         self.LossTensor = tf.summary.scalar("Loss", loss)
@@ -104,10 +101,16 @@ class Network3D():
         return self.Session.run(self.PredictImg, feed_dict=feed_dict)
 
 
+    # 清除記憶體
+    def Release(self):
+        # 清除之前的 Graph
+        self.Session.close()
+        tf.reset_default_graph()
+
     # 存 Weight
-    def SaveWeight(self):
+    def SaveWeight(self, logdir="./logs"):
         saver = tf.train.Saver()
-        saver.save(self.Session, "./logs/Model.ckpt")
+        saver.save(self.Session, logdir + "/Model.ckpt")
 
     # Helper Function
     def _AddConvoluationLayer(self, inpuTensor, units, kernel_size, padding, maxpoolSize, name):
