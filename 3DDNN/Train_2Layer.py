@@ -1,6 +1,3 @@
-from Utils import notebook_util
-notebook_util.pick_gpu_lowest_memory()
-
 from Network import Network3D_2Layer
 from DataManager import DataManager
 

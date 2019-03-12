@@ -1,5 +1,6 @@
 # @package 3DNetwork
 # 用來 3D Convolution 的捲機神經網路
+import setGPU
 import tensorflow as tf
 from tensorflow.layers import conv3d, batch_normalization, max_pooling3d, dropout, conv2d_transpose, conv2d
 from tensorflow.nn import relu
