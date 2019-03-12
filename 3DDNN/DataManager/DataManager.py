@@ -50,7 +50,7 @@ class DataManager:
                     y = int(data[1])
                     z = int(data[2])
                     self.Data[i, z, y, x] = 1
-        print("讀取完 csv!")
+        print("Finish Load csv!")
 
         # 讀取圖片
         for i in range(self.DataSize):
@@ -69,7 +69,7 @@ class DataManager:
             LabelImg_OneHot[LabelImg_Temp0[0], LabelImg_Temp0[1], 0] = 1
             LabelImg_OneHot[LabelImg_Temp1[0], LabelImg_Temp1[1], 1] = 1
             self.LabelData[i] = LabelImg_OneHot
-        print("讀取完圖片")
+        print("Fininsh Load Image")
 
 
     # 拿一部分的 Train Data
