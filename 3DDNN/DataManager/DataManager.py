@@ -83,5 +83,9 @@ class DataManager:
         return self.Data[choice].reshape(size, self.Depth, self.Rows, self.Cols, 1), self.LabelData[choice].reshape(size, self.Rows, self.Cols, 1)
 
     # 測試一張圖
-    def TestFirstBoxOfData(self, size):
+    def TestFirstNBoxOfTrainData(self, size):
         return self.Data[:size].reshape(size, self.Depth, self.Rows, self.Cols, 1)
+
+    def TestFirstNBoxOfValidData(self, size):
+        offset = int(self.DataSize * self.TrainValidRatio)
+        return self.Data[offset:offset + size].reshape(size, self.Depth, self.Rows, self.Cols, 1)

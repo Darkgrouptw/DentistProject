@@ -1,6 +1,9 @@
 # @package 3DNetwork
 # 用來 3D Convolution 的捲機神經網路
-import setGPU
+
+import sys
+if sys.platform != "win32":
+    import setGPU
 import tensorflow as tf
 from tensorflow.layers import conv3d, batch_normalization, max_pooling3d, dropout, conv2d_transpose, conv2d
 from tensorflow.nn import relu
@@ -82,7 +85,7 @@ class Network3D():
             # 紀錄 Train 的結果
             if i % 100 == 0:
                 feed_dict_FirstN = {
-                    self.InputData: DM.TestFirstBoxOfData(3),
+                    self.InputData: DM.TestFirstNBoxOfTrainData(3),
                 }
                 lossSummary = self.Session.run(self.LossTensor, feed_dict=feed_dict)
                 exampleSummary = self.Session.run(self.ExampleTensor, feed_dict=feed_dict_FirstN)
@@ -109,6 +112,11 @@ class Network3D():
     def SaveWeight(self,  logdir="./logs"):
         saver = tf.train.Saver()
         saver.save(self.Session, logdir + "/Model.ckpt")
+
+    # Load Weight
+    def LoadWeight(self, logdir="./logs"):
+        saver = tf.train.Saver()
+        saver.restore(self.Session, logdir + "/Model.ckpt")
 
     # 清除記憶體
     def Release(self):
