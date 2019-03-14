@@ -44,6 +44,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.EulerBarZ,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));*/
 	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoEvent()));
 
+	// Network 相關
+	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
+
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
 	connect(UpdateGLTimer,									SIGNAL(timeout()),				this,	SLOT(DisplayPanelUpdate()));
@@ -465,6 +468,13 @@ void DentistProjectV2::AlignLastTwoEvent()
 {
 	if (rawManager.PointCloudArray.size() >= 2)
 		rawManager.AlignmentPointCloud();
+}
+
+// Network 相關
+void DentistProjectV2::NetworkDataGenerateV2()
+{
+	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	rawManager.NetworkDataGenerateV2(RawFileName);
 }
 
 // 顯示部分的事件

@@ -110,6 +110,9 @@ public:
     QPushButton *LoadPCButton;
     QPushButton *SavePCButton;
     QPushButton *DeletePCButton;
+    QWidget *Tab_Network;
+    QGroupBox *NetworkDataOperationBox;
+    QPushButton *DataGenerationBtn;
     QWidget *StateWidget;
     QLabel *OtherSideResult;
 
@@ -408,6 +411,15 @@ public:
         DeletePCButton->setObjectName(QStringLiteral("DeletePCButton"));
         DeletePCButton->setGeometry(QRect(200, 20, 91, 31));
         tabWidget->addTab(Tab_PC, QString());
+        Tab_Network = new QWidget();
+        Tab_Network->setObjectName(QStringLiteral("Tab_Network"));
+        NetworkDataOperationBox = new QGroupBox(Tab_Network);
+        NetworkDataOperationBox->setObjectName(QStringLiteral("NetworkDataOperationBox"));
+        NetworkDataOperationBox->setGeometry(QRect(10, 10, 151, 281));
+        DataGenerationBtn = new QPushButton(NetworkDataOperationBox);
+        DataGenerationBtn->setObjectName(QStringLiteral("DataGenerationBtn"));
+        DataGenerationBtn->setGeometry(QRect(10, 30, 131, 23));
+        tabWidget->addTab(Tab_Network, QString());
         StateWidget = new QWidget(centralWidget);
         StateWidget->setObjectName(QStringLiteral("StateWidget"));
         StateWidget->setGeometry(QRect(10, 590, 300, 300));
@@ -423,7 +435,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(3);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -501,6 +513,9 @@ public:
         SavePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\351\273\236\351\233\262", nullptr));
         DeletePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\210\252\351\231\244\351\273\236\351\233\262", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_PC), QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\346\223\215\344\275\234", nullptr));
+        NetworkDataOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237\350\263\207\346\226\231\347\233\270\351\227\234", nullptr));
+        DataGenerationBtn->setText(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237Trainning\347\232\204\350\263\207\346\226\231", nullptr));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_Network), QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\347\233\270\351\227\234", nullptr));
         OtherSideResult->setText(QString());
     } // retranslateUi
 

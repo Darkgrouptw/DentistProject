@@ -19,7 +19,7 @@ void EigenUtility::SolveByEigen(float* MatrixA, float* MatrixB, int NumPolynomia
 {
 	MatrixXf EigenMatrixA = Map<MatrixXf>(MatrixA, NumPolynomial + 1, NumPolynomial + 1);
 	MatrixXf EigenMatrixB = Map<MatrixXf>(MatrixB, NumPolynomial + 1, 1);
-	MatrixXf X = EigenMatrixA.ldlt().solve(EigenMatrixB);
+	MatrixXf X = EigenMatrixA.householderQr().solve(EigenMatrixB);
 	params = X.data();
 
 	// 設定原本的變數

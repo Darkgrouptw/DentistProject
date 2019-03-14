@@ -583,6 +583,23 @@ void RawDataManager::AlignmentPointCloud()
 	}
 }
 
+// Network 相關
+void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
+{
+	RawDataType t = ReadRawDataFromFileV2(rawDataPath);
+	if (RawDataType::MULTI_DATA_TYPE == t)
+	{
+		// 轉成圖片並儲存
+		TransformToIMG(true);
+
+		Mat result = cudaV2.TransformToOtherSideView();
+		cv::imwrite("Images/OCTImages/OtherSide.png", result);
+		cout << "儲存完成!!" << endl;
+	}
+	else
+		cout << "不能使用單層資料的資料!!" << endl;
+}
+
 // Helper Function
 int RawDataManager::LerpFunction(int lastIndex, int lastValue, int nextIndex, int nextValue, int index)
 {

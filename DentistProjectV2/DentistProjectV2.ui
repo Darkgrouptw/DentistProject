@@ -1124,6 +1124,37 @@
       </widget>
      </widget>
     </widget>
+    <widget class="QWidget" name="Tab_Network">
+     <attribute name="title">
+      <string>網路相關</string>
+     </attribute>
+     <widget class="QGroupBox" name="NetworkDataOperationBox">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>151</width>
+        <height>281</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>產生資料相關</string>
+      </property>
+      <widget class="QPushButton" name="DataGenerationBtn">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>產生Trainning的資料</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
    </widget>
    <widget class="QWidget" name="StateWidget" native="true">
     <property name="geometry">
