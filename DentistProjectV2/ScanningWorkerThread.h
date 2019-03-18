@@ -109,7 +109,7 @@ private:
 	function<void(QString, bool)>*	ScanSingleDataFromDeviceV2 = NULL;			// 掃描單張資料
 	function<void(QString, bool)>*	ScanMultiDataFromDeviceV2 = NULL;			// 掃描多張資料
 	function<void(bool)>*			TransformToIMG = NULL;						// 將資料轉成圖 (準備顯示前)
-	function<void()>*				TransformToOtherSideView = NULL;			// 材扁圖
+	function<void()>*				TransformToOtherSideView = NULL;			// TopView 
 	function<QQuaternion()>*		GetQuaternionFromDevice = NULL;				// 從裝置拿旋轉量
 	function<void(int*&)>*			CopySingleBorder = NULL;					// 抓出單張資訊
 	function<bool(int*, bool)>*		ShakeDetect_Single = NULL;					// 是否有晃動 (Single)

@@ -90,7 +90,7 @@ public:
 	void ScanSingleDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void TransformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
-	void TransformToOtherSideView();											// 轉出材扁圖
+	void TransformToOtherSideView();											// 轉出TopView 
 	QQuaternion GetQuaternion();												// 從藍芽中拿資料出來
 	void SetScanOCTMode(bool, QString*, bool, bool, bool, bool);				// 開始掃描 OCT
 	void CopySingleBorder(int *&);												// 存單張 Border
@@ -179,7 +179,7 @@ private:
 	QLabel*				ImageResult;											// 外部的原圖 UI Pointer
 	QLabel*				BorderDetectionResult;									// 最後找出來的結果圖
 	QLabel*				NetworkResult;											// 同上，但目前是沒有用
-	QLabel*				OtherSideResult;										// 材扁圖
+	QLabel*				OtherSideResult;										// TopView 
 	QObject*			DisplayPanel;											// 畫圖的部分
 	QComboBox*			PCIndex;												// 選擇 PC 的 Index
 	QVector<QLineEdit*> QuaternionLinEditArray;									// Quaternion 的文字

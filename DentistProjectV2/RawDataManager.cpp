@@ -446,7 +446,7 @@ void RawDataManager::TransformToOtherSideView()
 	startT = clock();
 	#endif
 	#pragma endregion
-	#pragma region 材扁圖
+	#pragma region TopView
 	Mat result = cudaV2.TransformToOtherSideView();
 	QImage qreulst = Mat2QImage(result, CV_8UC3);
 	OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
@@ -454,7 +454,7 @@ void RawDataManager::TransformToOtherSideView()
 	#pragma region 結束時間
 	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
 	endT = clock();
-	cout << "材扁圖轉換時間: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
+	cout << "TopView 轉換時間: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#endif
 	#pragma endregion
 }
@@ -592,6 +592,7 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 		// 轉成圖片並儲存
 		TransformToIMG(true);
 
+		// Top View
 		Mat result = cudaV2.TransformToOtherSideView();
 		cv::imwrite("Images/OCTImages/OtherSide.png", result);
 		cout << "儲存完成!!" << endl;

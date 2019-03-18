@@ -54,18 +54,18 @@ public:
 	// 拿出圖片
 	//////////////////////////////////////////////////////////////////////////
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
-	Mat TransformToOtherSideView();												// 材扁圖
+	Mat TransformToOtherSideView();												// TopView 
 	void CopySingleBorder(int*);												// Copy 單張 Border 的
 	void CopyBorder(int*);														// Copy 整段的 Border
 	bool ShakeDetect_Single(int*, bool);										// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
-	bool ShakeDetect_Multi(bool);												// 晃動偵測						=> True 代表有晃動
+	bool ShakeDetect_Multi(bool);												// 晃動偵測							=> True 代表有晃動
 
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 圖片資料
 	//////////////////////////////////////////////////////////////////////////
 	uchar *VolumeData = NULL;													// 圖片資訊
-	uchar *VolumeData_OtherSide = NULL;											// 材扁圖
+	uchar *VolumeData_OtherSide = NULL;											// TopView 
 	uchar* PointType = NULL;													// 存成 2D 每個點是什麼 Type (0 無、1 Max Peak、 2 Min Peak)
 	int* PointType_1D = NULL;													// 存哪一個為 Border
 	int size;																	// 慢軸 (SizeY)

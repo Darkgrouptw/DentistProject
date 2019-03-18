@@ -46,6 +46,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{a1717c30-e224-46f6-8186-85e8d6f976d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TensorflowNet">
+      <UniqueIdentifier>{cd18bff5-5467-4197-bd93-0398561665b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DentistProjectV2.cpp">
@@ -77,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="OBJLoader.cpp">
       <Filter>Source Files\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="TensorflowNet.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="OBJLoader.h">
       <Filter>Header Files\Display</Filter>
+    </ClInclude>
+    <ClInclude Include="TensorflowNet.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

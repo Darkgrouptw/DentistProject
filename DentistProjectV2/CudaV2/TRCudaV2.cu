@@ -556,7 +556,7 @@ __global__ static void ConnectPointsStatus(int* PointType_BestN, int* ConnectSta
 	}
 }
 
-// 這邊是例外，只有 Multi 才有材扁圖
+// 這邊是例外，只有 Multi 才有TopView 
 __global__ static void GetOtherSideView(float* Data, float* OtherSideData, int SizeX, int SizeY, int FinalSizeZ)
 {
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
@@ -1046,7 +1046,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 4. λ Space 轉成 K Space
 	// 5. cuFFT
 	// 6. 位移 Data
-	// 6.5 要找出材扁圖 (這邊有多一個要找出材扁圖)
+	// 6.5 要找出TopView  (這邊有多一個要找出TopView )
 	// 7. 根據最大最小值來 Normalize 資料
 	// 8. 轉成圖
 	// 9. 邊界判斷
@@ -1058,7 +1058,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 3. K_Step		=> 深度(14.多mm對應 2.5的k step；可以考慮之後用2)(k step越大，z軸越深，但資料精細度越差；1~2.5)
 	// 4. CutValue		=> OCT每個z軸，前面數據減去多少。原因是開頭的laser弱，干涉訊號不明顯，拿掉的資料會比較美。 (東元那邊的變數是 cuteValue XD)
 	// 5. 只是這邊比上方的 Function 多了 SizeY 個
-	// 6. 有多一個 找出材扁圖
+	// 6. 有多一個 找出TopView 
 	//////////////////////////////////////////////////////////////////////////
 	#pragma region 1. 上傳 GPU Data
 	// 初始
@@ -1307,13 +1307,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	cout << "6. 搬移資料: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 	#pragma endregion
-	#pragma region 6.5 材扁圖
+	#pragma region 6.5 TopView 
 	// 開始
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock();
 	#endif
 
-	// 這邊會抓出材扁圖
+	// 這邊會抓出TopView 
 	float* GPU_OtherSideData;
 	cudaMalloc(&GPU_OtherSideData, sizeof(float) * OCTDataSize / 2);
 	GetOtherSideView << <SizeX, SizeY >> > (GPU_ShiftData, GPU_OtherSideData, SizeX, SizeY, SizeZ / 2);
