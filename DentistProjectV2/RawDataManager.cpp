@@ -16,7 +16,7 @@ RawDataManager::RawDataManager()
 	GetQuaternion_Pointer		= bind(&RawDataManager::GetQuaternion,					this);
 	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
 	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1, placeholders::_2);
-	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this, placeholders::_1);
+	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this, placeholders::_1, placeholders::_2);
 	SavePointCloud_Pointer		= bind(&RawDataManager::SavePointCloud,					this, placeholders::_1);
 	AlignmentPointCloud_Pointer = bind(&RawDataManager::AlignmentPointCloud,			this);
 	ShowImageIndex_Pointer		= bind(&RawDataManager::ShowImageIndex,					this, 60);
@@ -465,7 +465,11 @@ QQuaternion RawDataManager::GetQuaternion()
 void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData, bool AutoDelete_ShakeData)
 {
 	Worker->SetParams(EndText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDelete_ShakeData);
-	Worker->SetScanModel(IsStart);
+	Worker->SetScanMode(IsStart);
+}
+void RawDataManager::SetScanOCTOnceMode()
+{
+	Worker->SetScanOnceMode();
 }
 void RawDataManager::CopySingleBorder(int *&LastData_Pointer)
 {
@@ -478,9 +482,9 @@ bool RawDataManager::ShakeDetect_Single(int* LastData, bool ShowDebugMessage)
 {
 	return cudaV2.ShakeDetect_Single(LastData, ShowDebugMessage);
 }
-bool RawDataManager::ShakeDetect_Multi(bool ShowDebugMessage)
+bool RawDataManager::ShakeDetect_Multi(bool UsePreciseThreshold, bool ShowDebugMessage)
 {
-	return cudaV2.ShakeDetect_Multi(ShowDebugMessage);
+	return cudaV2.ShakeDetect_Multi(UsePreciseThreshold, ShowDebugMessage);
 }
 void RawDataManager::SavePointCloud(QQuaternion quat)
 {

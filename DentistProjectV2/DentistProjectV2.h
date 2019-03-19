@@ -77,6 +77,7 @@ private slots:
 	void ChooseSaveLocaton();
 	void AutoSaveWhileScan_ChangeEvent(int);									// UI 是否勾選(掃描自動儲存 Raw Data & Image 的通知)
 	void ScanOCTMode();															// 掃描按鈕
+	void ScanOCTOnceMode();														// 只掃描一張
 
 	//////////////////////////////////////////////////////////////////////////
 	// OCT 測試

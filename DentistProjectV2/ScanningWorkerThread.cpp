@@ -30,7 +30,7 @@ void ScanningWorkerThread::InitScanFunctionPointer(
 void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
 	function<void(int*&)>* CopyBorderInfo,
 	function<bool(int*, bool)>* ShakeDetectSingle,
-	function<bool(bool)>* ShakeDetectMulti)
+	function<bool(bool, bool)>* ShakeDetectMulti)
 {
 	CopySingleBorder = CopyBorderInfo;
 	ShakeDetect_Single = ShakeDetectSingle;
@@ -61,7 +61,7 @@ void ScanningWorkerThread::SetParams(QString* EndText, bool Save_Single_RawData,
  	NeedSave_ImageData = Save_ImageData;
 	AutoDelete_ShakeData = Delete_ShakeData;
 }
-void ScanningWorkerThread::SetScanModel(bool IsStart)
+void ScanningWorkerThread::SetScanMode(bool IsStart)
 {
 	if (IsStart && ScanThread == nullptr)
 	{
@@ -79,6 +79,27 @@ void ScanningWorkerThread::SetScanModel(bool IsStart)
 	else if(!IsStart)
 	{
 		// 結束掃描模式
+		IsEnd = true;
+	}
+}
+void ScanningWorkerThread::SetScanOnceMode()
+{
+	if (ScanThread == nullptr)
+	{
+		// 開始掃描模式
+		IsEnd = false;
+
+		// 清一次記憶體
+		System::GC::Collect();
+		Last_PointType_1D->IsEmpty = true;
+
+		ThreadStart^ threadDelegaate = gcnew ThreadStart(this, &ScanningWorkerThread::ScanOnceProcess);
+		ScanThread = gcnew Thread(threadDelegaate);
+		ScanThread->Start();
+	}
+	else
+	{
+		// 強制停止
 		IsEnd = true;
 	}
 }
@@ -159,7 +180,7 @@ void ScanningWorkerThread::ScanProcess()
 		#pragma endregion
 		#pragma region 7. 驗證是否有晃動到
 		// 這裡只需要做一整片的驗證
-		bool IsShake = (*ShakeDetect_Multi)(ShowMultiScanDetail);
+		bool IsShake = (*ShakeDetect_Multi)(false, ShowMultiScanDetail);
 
 		// 晃到重掃
 		if (IsShake)
@@ -193,5 +214,62 @@ void ScanningWorkerThread::ScanProcess()
 	GyroFile->close();
 
 	delete GyroFile;
+	#pragma endregion
+}
+void ScanningWorkerThread::ScanOnceProcess()
+{
+	// 掃描
+	// 這邊要改進讀條 & 顯示文字
+	#pragma region 整個掃描一張的流程
+	while (!IsEnd)
+	{
+		#pragma region 1. 開始掃描的初始化設定
+		QString SaveLocation;							// 最後儲存的路徑
+
+		QTime currentTime = QTime::currentTime();
+		QString TimeFileName = currentTime.toString("hh_mm_ss_zzz");
+		SaveLocation = QDir(SaveLocationText->text()).absoluteFilePath(TimeFileName);
+		//cout << "儲存位置: " << SaveLocation.toStdString() << endl;
+		#pragma endregion
+		#pragma region 2. 開始掃描多個資料
+		(*ScanMultiDataFromDeviceV2)(SaveLocation + "_Multi", true);
+		(*TransformToIMG)(false);
+		(*TransformToOtherSideView)();
+
+		// 拿旋轉矩陣
+		QQuaternion currentQuat = (*GetQuaternionFromDevice)();
+		#pragma endregion
+		#pragma region 3. 顯示
+		(*ShowImageIndex)();
+		ScanNumSlider->setEnabled(true);
+		#pragma endregion
+		#pragma region 3. 驗證是否有晃動到
+		// 這裡只需要做一整片的驗證
+		bool IsShake = (*ShakeDetect_Multi)(true, true);
+
+		// 晃到重掃
+		if (IsShake)
+		{
+			if (true && true)
+			{
+				QFile file(SaveLocation + "_Multi");
+				cout << "刪除檔案 " << (SaveLocation + "_Multi").toStdString() << endl;
+				file.remove();
+			}
+			continue;
+		}
+		#pragma endregion
+		#pragma region 4. 如果沒有晃到，就結束掃描
+		cout << "可用資料!!" << endl;
+
+		QQuaternion quat;
+		(*SavePointCloud)(quat);
+
+		IsEnd = true;
+		#pragma endregion
+	}
+	#pragma endregion
+	#pragma region 結束按鈕設定
+	ScanThread = nullptr;
 	#pragma endregion
 }

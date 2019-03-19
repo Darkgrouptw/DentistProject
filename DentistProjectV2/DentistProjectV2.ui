@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -550,10 +550,10 @@
       <widget class="QPushButton" name="ScanButton">
        <property name="geometry">
         <rect>
-         <x>360</x>
-         <y>130</y>
-         <width>151</width>
-         <height>101</height>
+         <x>270</x>
+         <y>110</y>
+         <width>231</width>
+         <height>151</height>
         </rect>
        </property>
        <property name="text">
@@ -607,6 +607,20 @@
        </property>
        <property name="checked">
         <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="ScanOnceButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>200</y>
+         <width>151</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>只掃描一張
+掃到不動為止</string>
        </property>
       </widget>
      </widget>

@@ -72,6 +72,7 @@ public:
     QCheckBox *AutoSaveImageWhileScan_CheckBox;
     QCheckBox *AutoSaveMultiRawDataWhileScan_CheckBox;
     QCheckBox *AutoDeleteShakeData_CheckBox;
+    QPushButton *ScanOnceButton;
     QGroupBox *OCTTestingBox;
     QPushButton *RawDataToImage;
     QPushButton *EasyBorderDetect;
@@ -266,7 +267,7 @@ public:
         AutoSaveSingleRawDataWhileScan_CheckBox->setChecked(false);
         ScanButton = new QPushButton(OCTNormalSettingBox);
         ScanButton->setObjectName(QStringLiteral("ScanButton"));
-        ScanButton->setGeometry(QRect(360, 130, 151, 101));
+        ScanButton->setGeometry(QRect(270, 110, 231, 151));
         AutoSaveImageWhileScan_CheckBox = new QCheckBox(OCTNormalSettingBox);
         AutoSaveImageWhileScan_CheckBox->setObjectName(QStringLiteral("AutoSaveImageWhileScan_CheckBox"));
         AutoSaveImageWhileScan_CheckBox->setGeometry(QRect(10, 130, 191, 16));
@@ -279,6 +280,9 @@ public:
         AutoDeleteShakeData_CheckBox->setObjectName(QStringLiteral("AutoDeleteShakeData_CheckBox"));
         AutoDeleteShakeData_CheckBox->setGeometry(QRect(10, 160, 191, 16));
         AutoDeleteShakeData_CheckBox->setChecked(true);
+        ScanOnceButton = new QPushButton(OCTNormalSettingBox);
+        ScanOnceButton->setObjectName(QStringLiteral("ScanOnceButton"));
+        ScanOnceButton->setGeometry(QRect(10, 200, 151, 61));
         OCTTestingBox = new QGroupBox(Tab_OCT);
         OCTTestingBox->setObjectName(QStringLiteral("OCTTestingBox"));
         OCTTestingBox->setEnabled(true);
@@ -435,7 +439,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(0);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -482,6 +486,8 @@ public:
         AutoSaveImageWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\350\275\211\346\210\220\345\275\261\345\203\217\344\270\246\345\204\262\345\255\230\347\265\220\346\236\234", nullptr));
         AutoSaveMultiRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\347\253\213\351\253\224 Raw Data", nullptr));
         AutoDeleteShakeData_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\350\207\252\345\213\225\345\210\252\351\231\244\346\231\203\345\213\225\350\263\207\346\226\231", nullptr));
+        ScanOnceButton->setText(QApplication::translate("DentistProjectV2Class", "\345\217\252\346\216\203\346\217\217\344\270\200\345\274\265\n"
+"\346\216\203\345\210\260\344\270\215\345\213\225\347\202\272\346\255\242", nullptr));
         OCTTestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "OCT \346\270\254\350\251\246\347\233\270\351\227\234 (\351\200\262\351\232\216)", nullptr));
         RawDataToImage->setText(QApplication::translate("DentistProjectV2Class", "\350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", nullptr));
         EasyBorderDetect->setText(QApplication::translate("DentistProjectV2Class", "\347\260\241\346\230\223\351\202\212\347\225\214\346\270\254\350\251\246", nullptr));

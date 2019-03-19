@@ -25,6 +25,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.AutoSaveMultiRawDataWhileScan_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.AutoSaveImageWhileScan_CheckBox,				SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
 	connect(ui.ScanButton,									SIGNAL(clicked()),				this,	SLOT(ScanOCTMode()));
+	connect(ui.ScanOnceButton,								SIGNAL(clicked()),				this,	SLOT(ScanOCTOnceMode()));
 
 	// OCT 測試
 	connect(ui.RawDataToImage,								SIGNAL(clicked()),				this,	SLOT(ReadRawDataToImage()));
@@ -311,6 +312,24 @@ void DentistProjectV2::ScanOCTMode()
 		rawManager.SetScanOCTMode(false, &EndScanText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDeleteShakeData);		// 設定只掃完最後一張就停止了
 	#endif
 }
+void DentistProjectV2::ScanOCTOnceMode()
+{
+	#ifdef TEST_NO_OCT
+	// 判斷是否有
+	QMessageBox::information(this, codec->toUnicode("目前無 OCT 裝置!!"), codec->toUnicode("請取消 Global Define!!"));
+
+	// 這邊是確認檔名 OK 不 OK
+	// 因為以前檔名有一個 Bug 導致會有 Error String 會有 Api Wait TimeOut (579) 的問題
+	/*QFile TestFile(SaveLocation);
+	if (!TestFile.open(QIODevice::WriteOnly))
+		cout << "此檔名有問題!!" << endl;
+	else
+		cout << "此檔名沒有問題!!" << endl;
+	TestFile.close();*/
+	#else
+	rawManager.SetScanOCTOnceMode();
+	#endif
+}
 
 // OCT 測試
 void DentistProjectV2::ReadRawDataToImage()
@@ -485,6 +504,5 @@ void DentistProjectV2::ScanNumSlider_Change(int value)
 }
 void DentistProjectV2::DisplayPanelUpdate()
 {
-	if(!rawManager.IsLockPC)
-		ui.DisplayPanel->update();
+	ui.DisplayPanel->update();
 }

@@ -93,16 +93,17 @@ public:
 	void TransformToOtherSideView();											// 轉出TopView 
 	QQuaternion GetQuaternion();												// 從藍芽中拿資料出來
 	void SetScanOCTMode(bool, QString*, bool, bool, bool, bool);				// 開始掃描 OCT
+	void SetScanOCTOnceMode();													// 只掃描一張
 	void CopySingleBorder(int *&);												// 存單張 Border
 	bool ShakeDetect_Single(int *, bool);										// 有無晃動 (單)
-	bool ShakeDetect_Multi(bool);												// 有無晃動 (多)
+	bool ShakeDetect_Multi(bool, bool);											// 有無晃動 (多)
 	void SavePointCloud(QQuaternion);											// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
 	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊	
 
 	//////////////////////////////////////////////////////////////////////////
 	// Netowrk 相關的 Function
 	//////////////////////////////////////////////////////////////////////////
-	void NetworkDataGenerateV2(QString);										// 產生類神經網路的
+	void NetworkDataGenerateV2(QString);										// 產生類神經網路的資料
 
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲資料
@@ -145,7 +146,7 @@ private:
 	function<QQuaternion()>			GetQuaternion_Pointer;
 	function<void(int*&)>			CopySingleBorder_Pointer;
 	function<bool(int*, bool)>		ShakeDetect_Single_Pointer;
-	function<bool(bool)>			ShakeDetect_Multi_Pointer;
+	function<bool(bool, bool)>		ShakeDetect_Multi_Pointer;
 	function<void(QQuaternion)>		SavePointCloud_Pointer;
 	function<void()>				AlignmentPointCloud_Pointer;
 	function<void()>				ShowImageIndex_Pointer;

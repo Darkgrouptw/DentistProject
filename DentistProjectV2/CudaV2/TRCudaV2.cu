@@ -1618,7 +1618,7 @@ bool TRCudaV2::ShakeDetect_Single(int* LastArray, bool ShowDebugMessage)
 	}
 	return true;
 }
-bool TRCudaV2::ShakeDetect_Multi(bool ShowDebugMessage)
+bool TRCudaV2::ShakeDetect_Multi(bool UsePreiseThreshold, bool ShowDebugMessage)
 {
 	// 找 60 ~ 200 裡面有效的有沒有斷層
 	int voteNum = 0;								// 有效票數
@@ -1673,9 +1673,21 @@ bool TRCudaV2::ShakeDetect_Multi(bool ShowDebugMessage)
 			cout << "晃動距離(pixel): " << (float)MoveDis << endl;
 
 		// 這邊是代表沒有晃動
-		if (MoveDis < OCT_Move_Threshold)
-			return false;
+		if (UsePreiseThreshold)
+		{
+			// 用較輕確的結果
+			if (MoveDis < OCT_Move_Precise_Threshold)
+				return false;
+		}
+		else
+		{
+			// 用較不精確的結果
+			if (MoveDis < OCT_Move_Threshold)
+				return false;
+		}
 	}
+	else if (ShowDebugMessage)
+		cout << "資料量太少!!" << endl;
 	return true;
 }
 

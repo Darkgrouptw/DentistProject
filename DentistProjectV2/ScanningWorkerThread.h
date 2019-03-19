@@ -47,7 +47,7 @@ public:
 	void IntitShakeDetectFunctionPointer(
 		function<void(int*&)>*,													// Copy 單張資訊
 		function<bool(int*, bool)>*,											// Shake Detect (Single)
-		function<bool(bool)>*													// Shake Detect (Multi)
+		function<bool(bool, bool)>*												// Shake Detect (Multi)
 	);
 	void InitShowFunctionPointer(
 		function<void(QQuaternion)>*,											// Save 點雲
@@ -60,7 +60,8 @@ public:
 	// 外部掃描的 Function
 	//////////////////////////////////////////////////////////////////////////
 	void SetParams(QString*, bool, bool, bool, bool);							// 設定參數
-	void SetScanModel(bool);													// 設定掃描 Mode & 設定是否儲存檔案
+	void SetScanMode(bool);														// 設定掃描 Mode & 設定是否儲存檔案
+	void SetScanOnceMode();														// 只掃描一次
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -77,6 +78,7 @@ private:
 	// 8. 如果沒有晃到，那就儲存點雲 & 如果大於二就執行拼接
 	//////////////////////////////////////////////////////////////////////////
 	void ScanProcess();															// Thread 跑的 Function
+	void ScanOnceProcess();														// 只掃瞄到一張完整的
 	bool IsEnd = true;															// 是否要結束
 	bool NeedSave_Single_RawData = false;										// 是否要儲存 Single Raw Data
 	bool NeedSave_Multi_RawData = false;										// 是否要儲存 Multi Raw Data
@@ -113,7 +115,7 @@ private:
 	function<QQuaternion()>*		GetQuaternionFromDevice = NULL;				// 從裝置拿旋轉量
 	function<void(int*&)>*			CopySingleBorder = NULL;					// 抓出單張資訊
 	function<bool(int*, bool)>*		ShakeDetect_Single = NULL;					// 是否有晃動 (Single)
-	function<bool(bool)>*			ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)
+	function<bool(bool, bool)>*		ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)
 	function<void(QQuaternion)>*	SavePointCloud = NULL;						// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
 	function<void()>*				AlignmentPointCloud = NULL;					// 拼接點雲的 Function
 	function<void()>*				ShowImageIndex = NULL;						// 顯示在畫面上

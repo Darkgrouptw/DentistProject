@@ -58,7 +58,7 @@ public:
 	void CopySingleBorder(int*);												// Copy 單張 Border 的
 	void CopyBorder(int*);														// Copy 整段的 Border
 	bool ShakeDetect_Single(int*, bool);										// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
-	bool ShakeDetect_Multi(bool);												// 晃動偵測							=> True 代表有晃動
+	bool ShakeDetect_Multi(bool, bool);											// 晃動偵測，是否要用較精確的	Threshold => True 代表有晃動
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ private:
 	const float MaxPeakThreshold = 0.125f;										// 要高於這個值
 	const float GoThroughThreshold = 0.0032f;									// 要多少在走過去
 	const int ChooseBestN = 3;
-	const int StartIndex = 10;													// 從這裡開始找有效的資料
+	const int StartIndex = 50;													// 從這裡開始找有效的資料
 	//const int ConnectRadius = 25;												// 連結半徑
 	const int ConnectRadius = 200;												// 連結半徑
 
@@ -102,6 +102,7 @@ private:
 	// 晃動 Threshold
 	//////////////////////////////////////////////////////////////////////////
 	const float OCT_Move_Threshold = 20;										// 晃動大於某一個值，代表不能用
+	const float OCT_Move_Precise_Threshold = 10;								// 晃動大於某一個值，代表不能用 (較精確)
 	const int	OCT_Valid_VoteNum = 10;											// 有效票數起碼要大於這個值
 
 	//////////////////////////////////////////////////////////////////////////
