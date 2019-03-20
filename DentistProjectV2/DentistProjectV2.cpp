@@ -508,7 +508,7 @@ void DentistProjectV2::SavePCEvent()
 }
 void DentistProjectV2::DeletePCEvent()
 {
-	if (rawManager.SelectIndex < rawManager.PointCloudArray.size())
+	if (rawManager.SelectIndex < rawManager.PointCloudArray.size() && rawManager.SelectIndex >= 0)
 	{
 		// 刪除選擇的部分
 		rawManager.PointCloudArray.erase(rawManager.PointCloudArray.begin() + rawManager.SelectIndex);
