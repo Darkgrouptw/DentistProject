@@ -39,9 +39,23 @@ void PointCloudInfo::ReadFromASC(QString FileName)
 	// 關閉檔案
 	file.close();
 }
-void PointCloudInfo::SaveASC(QString)
+void PointCloudInfo::SaveASC(QString FileName)
 {
+	// 開啟檔案
+	QFile file(FileName);
+	assert(file.open(QIODevice::WriteOnly));
+	cout << "寫入檔案: " << FileName.toStdString() << endl;
 
+	// 初始化變數
+	QTextStream ss(&file);
+	for (int i = 0; i < Points.size(); i++)
+	{
+		QVector3D pos = Points[i];
+		ss << pos.x() << " " << pos.y() << "" << pos.z() << "" << endl;
+	}
+
+	// 關閉檔案
+	file.close();
 }
 
 // Helper Function

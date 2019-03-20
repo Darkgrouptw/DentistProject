@@ -95,6 +95,9 @@ private slots:
 	void QuaternionChangeEvent();												// 四個 Quaternion 修正
 	void EulerChangeEvent(int);													// 三個由拉角度修正
 	void AlignLastTwoEvent();													// 拚前兩塊
+	void ReadPCEvent();															// 讀取 Point Cloud
+	void SavePCEvent();															// 儲存 Point Cloud
+	void DeletePCEvent();														// 刪除 Point Cloud
 
 	//////////////////////////////////////////////////////////////////////////
 	// Network 相關

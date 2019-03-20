@@ -111,7 +111,9 @@ public:
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
 	int					SelectIndex = -1;										// 目前選擇地的片數
 	bool				IsLockPC = false;										// Lock PC 是來判斷是否有新資料，有新資料就會 Lock，更新結束，就會取消 Lock
-	QVector<QQuaternion> QuaternionList;										// 修改用
+	bool				IsWidgetUpdate = false;									// 是否有介面在更新
+	QVector<QQuaternion> QuaternionList;										// 修改用		
+	void				PCWidgetUpdate();										// 更新點部分的資料
     
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
@@ -196,8 +198,7 @@ private:
 	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
 	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
-	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment			
-	void				PCWidgetUpdate();										// 更新點部分的資料
+	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment	
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數

@@ -551,10 +551,9 @@ void RawDataManager::SavePointCloud(QQuaternion quat)
 	// 讓他往前
 	if (SelectIndex == PointCloudArray.size() - 2)
 		SelectIndex++;
-	PCWidgetUpdate();
 
 	// 需更新
-	IsLockPC = true;
+	PCWidgetUpdate();
 	#pragma endregion
 }
 void RawDataManager::AlignmentPointCloud()
@@ -579,11 +578,9 @@ void RawDataManager::AlignmentPointCloud()
 		{
 			PointCloudArray.removeLast();
 			SelectIndex--;
+
 			PCWidgetUpdate();
 		}
-
-		// 需更新
-		IsLockPC = true;
 	}
 }
 
@@ -599,10 +596,57 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 		// Top View
 		Mat result = cudaV2.TransformToOtherSideView();
 		cv::imwrite("Images/OCTImages/OtherSide.png", result);
+
+
+		QImage qreulst = Mat2QImage(result, CV_8UC3);
+		OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
 		cout << "儲存完成!!" << endl;
 	}
 	else
 		cout << "不能使用單層資料的資料!!" << endl;
+}
+
+// 點雲相關
+void RawDataManager::PCWidgetUpdate()
+{
+	// 更新介面
+	IsLockPC = true;
+	IsWidgetUpdate = true;
+
+	PCIndex->clear();
+	for (int i = 0; i < PointCloudArray.size(); i++)
+	{
+		QString tempText = QString::number(i) + " (" + QString::number(PointCloudArray[i].Points.size()) + ")";
+		PCIndex->addItem(tempText);
+	}
+
+	// 這邊是做例外判斷
+	if (PointCloudArray.size() <= 0)
+		return;
+
+	PCIndex->setCurrentIndex(SelectIndex);
+
+	// 重新設定 Rotation
+	QQuaternion quat = QuaternionList[SelectIndex];
+	QuaternionLinEditArray[0]->setText(QString::number(quat.x()));
+	QuaternionLinEditArray[1]->setText(QString::number(quat.y()));
+	QuaternionLinEditArray[2]->setText(QString::number(quat.z()));
+	QuaternionLinEditArray[3]->setText(QString::number(quat.scalar()));
+
+	QVector3D angle = quat.toEulerAngles();
+	int AngleX = (int)(angle[0] + 360) % 360;
+	int AngleY = (int)(angle[1] + 360) % 360;
+	int AngleZ = (int)(angle[2] + 360) % 360;
+	EulerBarArray[0]->setValue(AngleX);
+	EulerBarArray[1]->setValue(AngleY);
+	EulerBarArray[2]->setValue(AngleZ);
+
+	EulerTextArray[0]->setText(QString::number(AngleX));
+	EulerTextArray[1]->setText(QString::number(AngleY));
+	EulerTextArray[2]->setText(QString::number(AngleZ));
+
+	// 取消
+	IsWidgetUpdate = false;
 }
 
 // Helper Function
@@ -794,32 +838,4 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 	cout << "Score: " << score << endl;
 	FinalScore = score;
 	return matrix;
-}
-void RawDataManager::PCWidgetUpdate()
-{
-	PCIndex->clear();
-	for (int i = 0; i < PointCloudArray.size(); i++)
-	{
-		QString tempText = QString::number(i) + " (" + QString::number(PointCloudArray[i].Points.size()) + ")";
-		PCIndex->addItem(tempText);
-	}
-
-	// 重新設定 Rotation
-	QQuaternion quat = QuaternionList[SelectIndex];
-	QuaternionLinEditArray[0]->setText(QString::number(quat.x()));
-	QuaternionLinEditArray[1]->setText(QString::number(quat.y()));
-	QuaternionLinEditArray[2]->setText(QString::number(quat.z()));
-	QuaternionLinEditArray[3]->setText(QString::number(quat.scalar()));
-
-	QVector3D angle = quat.toEulerAngles();
-	int AngleX = (int)(angle[0] + 360) % 360;
-	int AngleY = (int)(angle[1] + 360) % 360;
-	int AngleZ = (int)(angle[2] + 360) % 360;
-	EulerBarArray[0]->setValue(AngleX);
-	EulerBarArray[1]->setValue(AngleY);
-	EulerBarArray[2]->setValue(AngleZ);
-
-	EulerTextArray[0]->setText(QString::number(AngleX));
-	EulerTextArray[1]->setText(QString::number(AngleY));
-	EulerTextArray[2]->setText(QString::number(AngleZ));
 }

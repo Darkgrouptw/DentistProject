@@ -44,6 +44,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.EulerBarY,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
 	connect(ui.EulerBarZ,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));*/
 	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoEvent()));
+	connect(ui.LoadPCButton,								SIGNAL(clicked()),				this,	SLOT(ReadPCEvent()));
+	connect(ui.SavePCButton,								SIGNAL(clicked()),				this,	SLOT(SavePCEvent()));
+	connect(ui.DeletePCButton,								SIGNAL(clicked()),				this,	SLOT(DeletePCEvent()));
 
 	// Network 相關
 	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
@@ -204,7 +207,7 @@ void DentistProjectV2::ConnectBLEDevice_OneBtn()
 void DentistProjectV2::PointCloudAlignmentTest()
 {
 	QVector<QString> FileInfo;
-	QString GyroFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("Gyro 檔案"), "D:/Dentist/Data/ScanData/", "Gyro.txt", nullptr, QFileDialog::DontUseNativeDialog);
+	QString GyroFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("Gyro 檔案"), "E:/DentistData/ScanData/", "Gyro.txt", nullptr, QFileDialog::DontUseNativeDialog);
 	if (GyroFileName != "")
 	{
 		QFile GyroFile(GyroFileName);
@@ -334,7 +337,7 @@ void DentistProjectV2::ScanOCTOnceMode()
 // OCT 測試
 void DentistProjectV2::ReadRawDataToImage()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "E:/DentistData/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
@@ -367,7 +370,7 @@ void DentistProjectV2::ReadRawDataToImage()
 }
 void DentistProjectV2::ReadRawDataForBorderTest()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("邊界測試"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName);
@@ -400,7 +403,7 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 }
 void DentistProjectV2::ReadSingleRawDataForShakeTest()
 {
-	QStringList RawFileName = QFileDialog::getOpenFileNames(this, codec->toUnicode("晃動測式"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QStringList RawFileName = QFileDialog::getOpenFileNames(this, codec->toUnicode("晃動測式"), "E:/DentistData/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName.count() == 2)
 	{
 		RawDataType type = rawManager.ReadRawDataFromFileV2(RawFileName[0]);
@@ -432,7 +435,7 @@ void DentistProjectV2::ReadMultiRawDataForShakeTest()
 }
 void DentistProjectV2::SlimLabviewRawData()
 {
-	QStringList RawFileNameList = QFileDialog::getOpenFileNames(this, codec->toUnicode("縮減 Labview 掃描的資料 (可 Shift 選取多筆資料)"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QStringList RawFileNameList = QFileDialog::getOpenFileNames(this, codec->toUnicode("縮減 Labview 掃描的資料 (可 Shift 選取多筆資料)"), "E:/DentistData/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 
 	for (int i = 0; i < RawFileNameList.count(); i++)
 	{
@@ -469,10 +472,9 @@ void DentistProjectV2::SlimLabviewRawData()
 // 點雲操作
 void DentistProjectV2::PCIndexChangeEvnet(int)
 {
-	if (!rawManager.IsLockPC)
+	if (!rawManager.IsWidgetUpdate)
 	{
-		int index = ui.PCIndex->currentIndex();
-		//cout << index << endl;
+		rawManager.SelectIndex = ui.PCIndex->currentIndex();
 	}
 }
 void DentistProjectV2::QuaternionChangeEvent()
@@ -488,12 +490,49 @@ void DentistProjectV2::AlignLastTwoEvent()
 	if (rawManager.PointCloudArray.size() >= 2)
 		rawManager.AlignmentPointCloud();
 }
+void DentistProjectV2::ReadPCEvent()
+{
+
+}
+void DentistProjectV2::SavePCEvent()
+{
+	QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	if (!PointCloudFileName.endsWith(".xyz"))
+		PointCloudFileName += ".xyz";
+	
+	if (PointCloudFileName != "")
+	{
+		int index = rawManager.SelectIndex;
+		rawManager.PointCloudArray[index].SaveASC(PointCloudFileName);
+	}
+}
+void DentistProjectV2::DeletePCEvent()
+{
+	if (rawManager.SelectIndex < rawManager.PointCloudArray.size())
+	{
+		// 刪除選擇的部分
+		rawManager.PointCloudArray.erase(rawManager.PointCloudArray.begin() + rawManager.SelectIndex);
+		if (rawManager.SelectIndex == rawManager.PointCloudArray.size())			// 因為上面一行已經減去，所以這邊不用在減一
+			rawManager.SelectIndex--;
+		rawManager.PCWidgetUpdate();
+	}
+}
 
 // Network 相關
 void DentistProjectV2::NetworkDataGenerateV2()
 {
-	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "D:/Dentist/Data/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
+	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "E:/DentistData/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	rawManager.NetworkDataGenerateV2(RawFileName);
+
+	QQuaternion quat;
+	rawManager.SavePointCloud(quat);
+
+	// 換圖片
+	ui.ScanNumSlider->setEnabled(true);
+	if (ui.ScanNumSlider->value() == 60)
+		ScanNumSlider_Change(60);
+	else
+		ui.ScanNumSlider->setValue(60);
 }
 
 // 顯示部分的事件
