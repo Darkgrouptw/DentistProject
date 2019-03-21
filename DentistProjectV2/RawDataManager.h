@@ -17,7 +17,9 @@
 #include <vcclr.h>								// 要使用 Manage 的 Class，要拿這個使用 gcroot
 #include <functional>
 
+#include <iostream>
 #include <cmath>
+#include <algorithm>
 #include <vector>
 
 #include <QFile>
@@ -31,6 +33,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QQuaternion>
+#include <QVector2D>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -55,6 +58,14 @@ struct TransformVisitor {
 		fflush(stdout);
 	}
 	constexpr bool needsGlobalTransformation() const { return false; }
+};
+
+// Bounding Box 的 DataStruct
+struct BoundingBoxDataStruct
+{
+	vector<Point> contoursRaw;					// 這個是原始的邊界
+	vector<Point> contoursPoly;					// 這個是對輪廓做多邊形擬合之後的邊界
+	Rect boundingRect;							// 框框框起來
 };
 
 using namespace GlobalRegistration;
@@ -156,8 +167,11 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 網路
 	//////////////////////////////////////////////////////////////////////////
-	// const int			NetworkCutRow = 50;
-	// const int			NetworkCutCol = 500;
+	Mat					GetBoundingBox(Mat, QVector2D&, QVector2D&);			// 網路在抓取的時候，有一個 Bounding Box 可以減少拿到外側的機率
+	static bool			SortByContourPointSize(BoundingBoxDataStruct&,			// 根據 Contour 的點來排序
+											BoundingBoxDataStruct&);
+	Size				BlurSize = Size(9, 9);									// 模糊的區塊
+	int					BoundingThreshold = 8;									// 這邊是要根據多少去裁減
 
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
@@ -198,7 +212,7 @@ private:
 	void				OCT_DataType_Transfrom(unsigned short *, int, char *);	// 這邊是因為他要轉到 char
 	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
-	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment	
+	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數

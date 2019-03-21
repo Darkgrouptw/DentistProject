@@ -593,10 +593,25 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 		// 轉成圖片並儲存
 		TransformToIMG(true);
 
+		// 抓取 Bounding Box
+		QFile BoundingBoxFile("./Images/OCTImages/boundingBox.txt");
+		BoundingBoxFile.open(QIODevice::WriteOnly);
+		QTextStream ss(&BoundingBoxFile);
+
+		ss << "TopLeft (x, y), ButtomRight (x, y)" << endl;
+		for (int i = 0; i < ImageResultArray.size(); i++)
+		{
+			QVector2D topLeft, buttomRight;
+			Mat img = GetBoundingBox(ImageResultArray[i], topLeft, buttomRight);
+			imwrite("./Images/OCTImages/bounding_v2/" + to_string(i) + ".png", img);
+
+			ss << topLeft.x() << " " << topLeft.y() << " " << buttomRight.x() << " " << buttomRight.y() << endl;
+		}
+		BoundingBoxFile.close();
+
 		// Top View
 		Mat result = cudaV2.TransformToOtherSideView();
 		cv::imwrite("Images/OCTImages/OtherSide.png", result);
-
 
 		QImage qreulst = Mat2QImage(result, CV_8UC3);
 		OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
@@ -647,6 +662,63 @@ void RawDataManager::PCWidgetUpdate()
 
 	// 取消
 	IsWidgetUpdate = false;
+}
+
+// 網路
+Mat RawDataManager::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& ButtomRight)
+{
+	#pragma region 抓出資料，並做模糊
+	Mat imgGray;
+	cvtColor(img, imgGray, COLOR_BGR2GRAY);
+	blur(imgGray, imgGray, BlurSize);
+	#pragma endregion
+	#pragma region 根據閘值，去抓邊界
+	// 先根據閘值，並抓取邊界
+	Mat threshold_output;
+	vector<vector<Point> > contours;
+	vector<Vec4i> hierarchy;
+	threshold(imgGray, threshold_output, BoundingThreshold, 255, THRESH_BINARY);
+	findContours(threshold_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+	// 先給占存 Array
+	vector<BoundingBoxDataStruct> dataInfo(contours.size());
+	#pragma endregion
+	#pragma region 抓出最大的框框
+	// 抓出擬合的結果
+	for (size_t img = 0; img < contours.size(); img++)
+	{
+		BoundingBoxDataStruct data;
+		approxPolyDP(Mat(contours[img]), data.contoursPoly, 3, true);
+		data.boundingRect = boundingRect(Mat(data.contoursPoly));
+
+		// 加進陣列
+		dataInfo[img] = data;
+	}
+	Mat drawing = Mat::zeros(threshold_output.size(), CV_8UC3);
+
+	std::sort(dataInfo.begin(), dataInfo.end(), SortByContourPointSize);
+
+	// 抓出最大的外框
+	int i = 0;
+	vector<vector<Point>> contoursPoly(1);
+	contoursPoly[0] = dataInfo[i].contoursPoly;
+
+	// 確定這邊可以抓到
+	drawContours(drawing, contoursPoly, (int)i, Scalar(255, 255, 255), 1, 8, vector<Vec4i>(), 0, Point());
+	rectangle(drawing, dataInfo[i].boundingRect.tl(), dataInfo[i].boundingRect.br(), Scalar(0, 255, 255), 2, 8, 0);
+
+	Point tl = dataInfo[i].boundingRect.tl();
+	Point br = dataInfo[i].boundingRect.br();
+	TopLeft.setX(tl.x);
+	TopLeft.setY(tl.y);
+	ButtomRight.setX(br.x);
+	ButtomRight.setY(br.y);
+	#pragma endregion
+	return drawing;
+}
+bool RawDataManager::SortByContourPointSize(BoundingBoxDataStruct& c1, BoundingBoxDataStruct& c2)
+{
+	return c1.contoursPoly.size() > c2.contoursPoly.size();
 }
 
 // Helper Function
