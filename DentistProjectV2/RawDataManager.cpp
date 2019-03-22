@@ -705,10 +705,17 @@ Mat RawDataManager::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& Butto
 
 	// 確定這邊可以抓到
 	drawContours(drawing, contoursPoly, (int)i, Scalar(255, 255, 255), 1, 8, vector<Vec4i>(), 0, Point());
-	rectangle(drawing, dataInfo[i].boundingRect.tl(), dataInfo[i].boundingRect.br(), Scalar(0, 255, 255), 2, 8, 0);
 
+	// 邊界
 	Point tl = dataInfo[i].boundingRect.tl();
+	tl.x = max(0, tl.x - BoundingOffset);
+	tl.y = max(0, tl.y - BoundingOffset);
 	Point br = dataInfo[i].boundingRect.br();
+	br.x = min(DManager.prop.SizeZ, br.x + BoundingOffset);
+	br.y = min(DManager.prop.SizeX, br.y + BoundingOffset);
+
+	rectangle(drawing, tl, br, Scalar(0, 255, 255), 2, 8, 0);
+
 	TopLeft.setX(tl.x);
 	TopLeft.setY(tl.y);
 	ButtomRight.setX(br.x);

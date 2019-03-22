@@ -494,7 +494,7 @@ void DentistProjectV2::ReadPCEvent()
 }
 void DentistProjectV2::SavePCEvent()
 {
-	//QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
 	if (PointCloudFileName != "")
 	{
 		// 修正副檔名

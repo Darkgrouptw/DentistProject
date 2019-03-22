@@ -172,6 +172,7 @@ private:
 											BoundingBoxDataStruct&);
 	Size				BlurSize = Size(9, 9);									// 模糊的區塊
 	int					BoundingThreshold = 8;									// 這邊是要根據多少去裁減
+	int					BoundingOffset = 50;									// 加上 Offset
 
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
