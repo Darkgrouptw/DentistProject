@@ -1,4 +1,4 @@
-from PrePrecess.PointClass import Point
+from PointClass import Point
 import numpy as np
 import cv2
 import os
