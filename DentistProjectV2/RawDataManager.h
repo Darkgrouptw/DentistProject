@@ -7,6 +7,7 @@
 #include "DataManager.h"
 #include "BluetoothManager.h"
 #include "PointCloudInfo.h"
+#include "VolumeRenderClass.h"
 #include "ScanningWorkerThread.h"
 
 #include "4pcs.h"
@@ -66,6 +67,7 @@ struct BoundingBoxDataStruct
 	vector<Point> contoursRaw;					// 這個是原始的邊界
 	vector<Point> contoursPoly;					// 這個是對輪廓做多邊形擬合之後的邊界
 	Rect boundingRect;							// 框框框起來
+	//float energy;								// 這邊是 Energy 的算法
 };
 
 using namespace GlobalRegistration;
@@ -76,7 +78,8 @@ public:
 	RawDataManager();
 	~RawDataManager();
 
-	/////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////
+	// UI 相關
 	//////////////////////////////////////////////////////////////////////////
 	void SendUIPointer(QVector<QObject*>);
 	void ShowImageIndex(int);
@@ -112,9 +115,11 @@ public:
 	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊	
 
 	//////////////////////////////////////////////////////////////////////////
-	// Netowrk 相關的 Function
+	// Network or Volume 相關的 Function
 	//////////////////////////////////////////////////////////////////////////
 	void NetworkDataGenerateV2(QString);										// 產生類神經網路的資料
+	void ImportVolumeDataTest(QString);											// 輸入 Label 資料做測試用
+	QVector<VolumeRenderClass*> VolumeDataArray;								// Network 預測完的資料
 
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲資料
@@ -122,17 +127,21 @@ public:
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
 	int					SelectIndex = -1;										// 目前選擇地的片數
 	bool				IsLockPC = false;										// Lock PC 是來判斷是否有新資料，有新資料就會 Lock，更新結束，就會取消 Lock
+	bool				IsLockVolumeData = false;								// 同上，可能後面會取代
 	bool				IsWidgetUpdate = false;									// 是否有介面在更新
+	bool				IsShowNone = false;										// 是否不要顯示
 	QVector<QQuaternion> QuaternionList;										// 修改用		
 	void				PCWidgetUpdate();										// 更新點部分的資料
-    
+
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
 	//////////////////////////////////////////////////////////////////////////
 	BluetoothManager	bleManager;
 
 private:
+	//////////////////////////////////////////////////////////////////////////
 	// 其他 Class 的資料
+	//////////////////////////////////////////////////////////////////////////
 	DataManager			DManager;
 	TRCudaV2			cudaV2;
 	gcroot<ScanningWorkerThread^> Worker;
@@ -172,12 +181,12 @@ private:
 											BoundingBoxDataStruct&);
 	Size				BlurSize = Size(9, 9);									// 模糊的區塊
 	int					BoundingThreshold = 8;									// 這邊是要根據多少去裁減
-	int					BoundingOffset = 50;									// 加上 Offset
+	int					BoundingOffset = 0;										// 加上 Offset
 
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
 	//////////////////////////////////////////////////////////////////////////
-	const float			AlignScoreThreshold = 0.15f;
+	const float			AlignScoreThreshold = 0.2f;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 存圖片的陣列

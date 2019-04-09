@@ -59,11 +59,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Connection Funciton
 	//////////////////////////////////////////////////////////////////////////
-	void		SetRenderTriangleBool(bool);
-	void		SetRenderBorderBool(bool);
-	void		SetRenderPointCloudBool(bool);
 	void		SetRotationMode(bool);
-	void		UpdatePC();
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他元件的 Function
@@ -84,10 +80,7 @@ private:
 	void							DrawGround();
 	void							DrawPointCloud();
 	void							DrawResetRotation();
-
-	bool							RenderTriangle_bool = true;
-	bool							RenderBorder_bool = true;
-	bool							RenderPointCloud_bool = false;
+	void							DrawVolumeData();
 
 	const float						GridSize = 10;
 	QVector2D						GridMin = QVector2D(-GridSize, -GridSize);
@@ -98,8 +91,15 @@ private:
 	// 1. 畫地板的 Shader
 	// 2. 九軸的 Shader
 	// 3. 點的 Shader
+	// 4. VolumeData 的 Shader
 	//////////////////////////////////////////////////////////////////////////
 	QVector<ProgramInfo>			ProgramList;
+
+	//////////////////////////////////////////////////////////////////////////
+	// 更新 Buffers
+	//////////////////////////////////////////////////////////////////////////
+	void		UpdatePC();
+	void		UpdateVolumeData();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Data
@@ -117,6 +117,8 @@ private:
 	GLuint							GroundUVBuffer = -1;
 	GLuint							GyroModelVertexBuffer = -1;
 	QVector<GLuint>					PointCloudVertexBufferList;
+	QVector<GLuint>					VolumeDataVertexBufferList;
+	QVector<GLuint>					VolumeDataPointTypeBufferList;
 
 	//////////////////////////////////////////////////////////////////////////
 	// MVP 矩陣
@@ -150,7 +152,6 @@ private:
 	OpenMesh::FPropHandleT<float>	AreaInfo;
 	MeshType						STLFile;
 	QVector<QVector3D>				PointArray;
-	int								SpreadingPointSize = 10000;
 	QVector3D						BoundingBox[2];					// 最大的點 & 最小的點
 	QMatrix4x4						TransformMatrix;				// 這邊是在做當 Load 進來的模型很大的時候，會做一個縮放的動作
 	QVector3D						OffsetToCenter;					// 這邊是位移

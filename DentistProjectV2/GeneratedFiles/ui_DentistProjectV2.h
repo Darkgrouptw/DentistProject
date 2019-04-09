@@ -114,6 +114,9 @@ public:
     QWidget *Tab_Network;
     QGroupBox *NetworkDataOperationBox;
     QPushButton *DataGenerationBtn;
+    QGroupBox *NetworkDataTestBox;
+    QPushButton *VolumeRenderingTestBtn;
+    QPushButton *LabedDataValidBtn;
     QWidget *StateWidget;
     QLabel *OtherSideResult;
 
@@ -423,6 +426,15 @@ public:
         DataGenerationBtn = new QPushButton(NetworkDataOperationBox);
         DataGenerationBtn->setObjectName(QStringLiteral("DataGenerationBtn"));
         DataGenerationBtn->setGeometry(QRect(10, 30, 131, 23));
+        NetworkDataTestBox = new QGroupBox(Tab_Network);
+        NetworkDataTestBox->setObjectName(QStringLiteral("NetworkDataTestBox"));
+        NetworkDataTestBox->setGeometry(QRect(530, 10, 151, 281));
+        VolumeRenderingTestBtn = new QPushButton(NetworkDataTestBox);
+        VolumeRenderingTestBtn->setObjectName(QStringLiteral("VolumeRenderingTestBtn"));
+        VolumeRenderingTestBtn->setGeometry(QRect(10, 50, 131, 23));
+        LabedDataValidBtn = new QPushButton(NetworkDataTestBox);
+        LabedDataValidBtn->setObjectName(QStringLiteral("LabedDataValidBtn"));
+        LabedDataValidBtn->setGeometry(QRect(10, 20, 131, 23));
         tabWidget->addTab(Tab_Network, QString());
         StateWidget = new QWidget(centralWidget);
         StateWidget->setObjectName(QStringLiteral("StateWidget"));
@@ -439,7 +451,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(0);
+        tabWidget->setCurrentIndex(3);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -521,6 +533,9 @@ public:
         tabWidget->setTabText(tabWidget->indexOf(Tab_PC), QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\346\223\215\344\275\234", nullptr));
         NetworkDataOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237\350\263\207\346\226\231\347\233\270\351\227\234", nullptr));
         DataGenerationBtn->setText(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237Trainning\347\232\204\350\263\207\346\226\231", nullptr));
+        NetworkDataTestBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\241\236\347\245\236\347\266\223\347\266\262\350\267\257\350\263\207\346\226\231\346\270\254\350\251\246\347\233\270\351\227\234", nullptr));
+        VolumeRenderingTestBtn->setText(QApplication::translate("DentistProjectV2Class", "Rendering\346\270\254\350\251\246", nullptr));
+        LabedDataValidBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\251\227\350\255\211 Label \350\263\207\346\226\231", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_Network), QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\347\233\270\351\227\234", nullptr));
         OtherSideResult->setText(QString());
     } // retranslateUi

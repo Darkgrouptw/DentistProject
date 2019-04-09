@@ -61,7 +61,7 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 	// 後面兩個是 給 ScanThread
 	QSlider* slider			= (QSlider*)UIPointer[3];
 	QPushButton* scanButton = (QPushButton*)UIPointer[4];
-	QLineEdit* saveLineEdt	= (QLineEdit*)UIPointer[5];
+	QLineEdit* savePathText	= (QLineEdit*)UIPointer[5];
 	
 	// OpenGL
 	DisplayPanel			= UIPointer[6];
@@ -84,7 +84,7 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 		EulerTextArray.push_back(tempLabel);
 	}
 
-	Worker->InitUIPointer(slider, scanButton, saveLineEdt);
+	Worker->InitUIPointer(slider, scanButton, savePathText);
 }
 void RawDataManager::ShowImageIndex(int index)
 {
@@ -464,6 +464,14 @@ QQuaternion RawDataManager::GetQuaternion()
 }
 void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData, bool AutoDelete_ShakeData)
 {
+	// 如果開始的話，就清空資料
+	if (IsStart)
+	{
+		PointCloudArray.clear();
+		PCWidgetUpdate();
+	}
+
+	// 設定
 	Worker->SetParams(EndText, NeedSave_Single_RawData, NeedSave_Multi_RawData, NeedSave_ImageData, AutoDelete_ShakeData);
 	Worker->SetScanMode(IsStart);
 }
@@ -579,12 +587,15 @@ void RawDataManager::AlignmentPointCloud()
 			PointCloudArray.removeLast();
 			SelectIndex--;
 
+			IsShowNone = true;
 			PCWidgetUpdate();
 		}
+		else
+			IsShowNone = false;
 	}
 }
 
-// Network 相關
+// Network or Volume 相關的 Function
 void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 {
 	RawDataType t = ReadRawDataFromFileV2(rawDataPath);
@@ -619,6 +630,16 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 	}
 	else
 		cout << "不能使用單層資料的資料!!" << endl;
+}
+void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)
+{
+	int SizeX = DManager.prop.SizeX;
+	int SizeZ = DManager.prop.SizeZ / 2;
+
+	VolumeRenderClass *voxel = new VolumeRenderClass(SizeX, SizeZ, DManager.MappingMatrix, DManager.zRatio);
+	voxel->ImportData(boundingBoxPath);
+	VolumeDataArray.push_back(voxel);
+	IsLockVolumeData = true;
 }
 
 // 點雲相關
@@ -694,11 +715,10 @@ Mat RawDataManager::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& Butto
 		// 加進陣列
 		dataInfo[img] = data;
 	}
-	Mat drawing = Mat::zeros(threshold_output.size(), CV_8UC3);
-
+	Mat drawing = img.clone();
 	std::sort(dataInfo.begin(), dataInfo.end(), SortByContourPointSize);
 
-	// 抓出最大的外框
+	// 抓出最亮，且最大的
 	int i = 0;
 	vector<vector<Point>> contoursPoly(1);
 	contoursPoly[0] = dataInfo[i].contoursPoly;
@@ -725,7 +745,7 @@ Mat RawDataManager::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& Butto
 }
 bool RawDataManager::SortByContourPointSize(BoundingBoxDataStruct& c1, BoundingBoxDataStruct& c2)
 {
-	return c1.contoursPoly.size() > c2.contoursPoly.size();
+	return c1.boundingRect.area() > c2.boundingRect.area();
 }
 
 // Helper Function

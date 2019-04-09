@@ -84,6 +84,9 @@
     <ClCompile Include="TensorflowNet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VolumeRenderClass.cpp">
+      <Filter>Source Files\Display</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DentistProjectV2.h">
@@ -134,6 +137,9 @@
     <ClInclude Include="TensorflowNet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VolumeRenderClass.h">
+      <Filter>Header Files\Display</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaV2\TRCudaV2.cu">
@@ -157,6 +163,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="..\x64\Release\DentistProjectV2\Shaders\PointCloud.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\VolumeData.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistProjectV2\Shaders\VolumeData.vert">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
