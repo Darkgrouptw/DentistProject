@@ -39,13 +39,13 @@ for i in range(len(DataPath)):
 DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101)
 
 # Network
-# logDir = "./logs"
-#
-# for lr in lrArray:
-#     for kernelSize in kernelSizeArray:
-#         net = Network(101, 101, 1, lr, kernelSize, logDir, False)
-#
-#         # Train
-#         net.Train(DM, 10000, 128)
-#         net.SaveWeight(logDir)
-#         net.Release()
+logDir = "./logs"
+
+for lr in lrArray:
+    for kernelSize in kernelSizeArray:
+        net = Network(101, 101, 1, lr, kernelSize, logDir, False)
+
+        # Train
+        net.Train(DM, 10000, 128)
+        net.SaveWeight(logDir)
+        net.Release()
