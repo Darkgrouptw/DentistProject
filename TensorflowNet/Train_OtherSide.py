@@ -36,7 +36,7 @@ for i in range(len(DataPath)):
     # 加進陣列裡
     InputFileList.append(tempInputPath)
     LabeledFileList.append(tempLabeledPath)
-DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101)
+DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101, 1)
 
 # Network
 logDir = "./logs"

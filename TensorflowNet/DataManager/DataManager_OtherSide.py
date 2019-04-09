@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-from tqdm import tqdm
 
 class DataManager:
     def __init__(
@@ -15,7 +14,6 @@ class DataManager:
         print("DataSize: ", len(FileNameList))
         print("LabeledSize: ", len(LabeledList))
         assert(len(FileNameList) == len(LabeledList))
-        #self.DataSize = len(FileNameList)
         assert WindowsSize % 2 == 1, "目前先測試 Mod 有餘數的部分"
         self.WindowsSize = WindowsSize
         self.OutClass = OutClass
@@ -75,6 +73,9 @@ class DataManager:
 
                     Prob = LabelImg[rowIndex][colIndex]
                     self.LabelData.append([Prob])
+
+            # 拿總共的資料量
+            self.DataSize = len(self.Data)
 
     # 把圖片轉換為機率圖片
     def _GetProbBorderImg(self, LabelImg):
