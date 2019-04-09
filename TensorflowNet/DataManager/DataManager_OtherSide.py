@@ -62,49 +62,19 @@ class DataManager:
             LabelImg = cv2.imread(LabeledList[i], cv2.IMREAD_COLOR)
 
             LabelProbImg = self._GetProbBorderImg(LabelImg)
-            # startIndex = self.WindowsSize / 2
 
             # 先產生大張的圖
             halfRadius = int((self.WindowsSize - 1) / 2)
             LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
             LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
-            for rowIndex in range(0, LabelImg.shape[0] + 1, 10):
-                for colIndex in range(0, LabelImg.shape[1] + 1, 10):
-                    # 創建空的 圖片
-                    # InputDataTemp = np.zeros([self.WindowsSize, self.WindowsSize], np.float32)
-                    # LabelDataTemp = np.zeros([1], np.float32)
-
+            for rowIndex in range(0, LabelImg.shape[0]):
+                for colIndex in range(0, LabelImg.shape[1]):
                     # 塞進值
-                    startRowIndex = rowIndex #- halfRadius
-                    startColIndex = colIndex #- halfRadius
-                    # cv2.imwrite("D:/SnakeImgs/" + str(tempIndex) + ".png", LargerInputImg[startRowIndex: startRowIndex + self.WindowsSize, startColIndex: startColIndex + self.WindowsSize])
-
-                    InputDataTemp = LargerInputImg[startRowIndex: startRowIndex + self.WindowsSize, startColIndex: startColIndex + self.WindowsSize]
+                    InputDataTemp = LargerInputImg[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
                     self.Data.append(InputDataTemp)
-            #
-            for k in tqdm(range(len(self.Data[:100]))):
-                cv2.imwrite("D:/SnakeImgs/" + str(k) + ".png", self.Data[k])
-            # cv2.imwrite("D:/a.png", LargerInputImg)
-            assert False
-                    # cv2.imwrite("D:/a.png", InputDataTemp)
-            # cv2.imwrite("D:/a.png", LabelProbImg * 255)
-            # assert False, "Test"
-            # 轉換資料成為機率部分
-            # 產生機率圖片
-            # LabelProbImg = np.zeros(LabelImg[0].shape, np.float32)
-            #
-            # # 接下來每一張圖片中去抓 row & col
 
-            # 加到陣列中
-            # InputTempData.append(InputImg)
-            # LabelTempData.append(LabelProbImg)
-
-            # rowSize, colSize = InputTempData.shape
-            # totalWindowDataSize += rowSize -
-            # cv2.imwrite("D:/a.png", LabelProbImg)
-            # assert False
-        # 根據每一個 Window 大小，去產生資料
-        # for i in range(self.WindowsSize)
+                    Prob = LabelImg[rowIndex][colIndex]
+                    self.LabelData.append([Prob])
 
     # 把圖片轉換為機率圖片
     def _GetProbBorderImg(self, LabelImg):

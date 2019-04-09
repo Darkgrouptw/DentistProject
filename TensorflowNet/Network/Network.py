@@ -25,10 +25,10 @@ class Network:
         self.Session.run(tf.global_variables_initializer())
 
         # 寫檔
-        # self.LogWriter = tf.summary.FileWriter(logdir)
-        # if IsDebugGraph:
-        #     self.LogWriter.add_graph(self.Session.graph)
-        #     print("Debug Output")
+        self.LogWriter = tf.summary.FileWriter(logdir)
+        if IsDebugGraph:
+            self.LogWriter.add_graph(self.Session.graph)
+            print("Debug Output")
 
     # 初始化網路
     def InitNetwork(self, lr, kernelSize):
