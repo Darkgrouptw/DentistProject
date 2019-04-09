@@ -8,7 +8,7 @@ class DataManager:
             LabeledList,
             OutClass,
             WindowsSize,
-            Ratio = 0.9
+            # Ratio = 0.9
     ):
         # 前置判斷
         print("DataSize: ", len(FileNameList))
@@ -23,13 +23,17 @@ class DataManager:
         print("Package Data Size:", self.DataSize)
 
         # 參數設定
-        self.TrainValidRatio = Ratio
+        # self.TrainValidRatio = Ratio
 
 
 
     # 拿一部分的 Train Data
     def BatchTrainData(self, size):
-        choice = np.random.randint(int(self.DataSize * self.TrainValidRatio), size=size)
+        # choice = np.random.randint(int(self.DataSize * self.TrainValidRatio), size=size)
+        halfSize = int(size / 2)
+        choiceNoneZero = np.random.choice(self.NoneZeroIndexArray, size=halfSize, replace=False)
+        choiceZero = np.random.choice(self.ZerosIndexArray, size=halfSize, replace=False)
+        choice = np.concatenate([choiceNoneZero, choiceZero], axis=0)
         return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
 
     # 拿 Valid Data
@@ -56,6 +60,11 @@ class DataManager:
         rows, cols = cv2.imread(FileNameList[0], cv2.IMREAD_GRAYSCALE).shape
         self.DataSize = len(FileNameList) * rows * cols
 
+        # 由於資料不平均
+        # 所以這邊有作一些修正
+        self.NoneZeroIndexArray = []
+        self.ZerosIndexArray = []
+
         # 讀 Input
         self.Data = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         self.LabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
@@ -75,13 +84,23 @@ class DataManager:
                     # 塞進值
                     InputDataTemp = LargerInputImg[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
                     DataIndex = i * rows * cols + rowIndex * cols + colIndex
-                    if DataIndex >= 937500:
-                        print(i, rowIndex, colIndex, DataIndex)
 
                     self.Data[DataIndex] = InputDataTemp
 
                     Prob = LabelProbImg[rowIndex][colIndex]
                     self.LabelData[DataIndex] = Prob
+
+                    # 這邊要多增加 Index 加入
+                    if Prob != 0:
+                        self.NoneZeroIndexArray.append(DataIndex)
+                    else:
+                        self.ZerosIndexArray.append(DataIndex)
+
+        # 轉成 numpy
+        self.ZerosIndexArray = np.asarray(self.ZerosIndexArray)
+        self.NoneZeroIndexArray = np.asarray(self.NoneZeroIndexArray)
+        print("None Zero Shape: ", self.NoneZeroIndexArray.shape)
+        print("Zero Shape: ", self.ZerosIndexArray.shape)
 
     # 把圖片轉換為機率圖片
     def _GetProbBorderImg(self, LabelImg):

@@ -12,7 +12,7 @@ import numpy as np
 
 tf.set_random_seed(1)
 
-class Network:
+class Network_Prob:
     def __init__(self, sizeX, sizeY, OutClass, lr = 1e-3, kernelSize = 3, logdir = "./logs", IsDebugGraph = False):
         # 神經網路大小
         self.SizeX = sizeX
@@ -58,14 +58,14 @@ class Network:
         layer3Dense = self._AddDenseLayer(layer2Dense, 64, "Layer3Dense")
 
         # 預測
-        predict = self._AddDenseLayer(layer3Dense, self.OutClass, "Predict")
-        self.PredictClassProb = tf.nn.softmax(predict, name= "PredictProb")
+        self.PredictProb = dense(layer3Dense, self.OutClass, name="PredictProb")
+        # self.PredictClassProb = tf.nn.softmax(predict, name= "PredictProb")
         # self.PredictClass = tf.argmax(predictClassProb, name="PredictImg")
-        print(self.PredictClassProb)
+        print(self.PredictProb)
 
         with tf.name_scope("Loss"):
             # loss = tf.losses.softmax_cross_entropy(self.LabeledClass, predict)
-            loss = tf.losses.mean_squared_error(self.LabeledClass, predict)
+            loss = tf.losses.mean_squared_error(self.LabeledClass, self.PredictProb)
             self.Optimzer = tf.train.AdamOptimizer(lr).minimize(loss)
 
         # Log
@@ -103,7 +103,7 @@ class Network:
         feed_dict = {
             self.InputData: Data
         }
-        return self.Session.run(self.PredictImg, feed_dict=feed_dict)
+        return self.Session.run(self.PredictProb, feed_dict=feed_dict)
 
     # 圖片放進去做 Debug 用
     # def PredictImg

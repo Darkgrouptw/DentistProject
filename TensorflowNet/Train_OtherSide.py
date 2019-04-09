@@ -1,4 +1,4 @@
-from Network.Network import Network
+from Network.Network_Prob import Network_Prob
 from DataManager import DataManager_OtherSide
 import os
 
@@ -38,16 +38,17 @@ for i in range(len(DataPath)):
     # 加進陣列裡
     InputFileList.append(tempInputPath)
     LabeledFileList.append(tempLabeledPath)
-DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101, 1)
+DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101)
 
 # Network
 logDir = "./logs"
 
 for lr in lrArray:
     for kernelSize in kernelSizeArray:
-        net = Network(101, 101, 1, lr, kernelSize, logDir, False)
+        net = Network_Prob(101, 101, 1, lr, kernelSize, logDir, True)
 
         # Train
+        assert False
         net.Train(DM, 10000, 128)
         net.SaveWeight(logDir)
         net.Release()
