@@ -20,6 +20,7 @@ class DataManager:
 
         # 讀檔案
         self._ReadData(FileNameList, LabeledList)
+        print("Package Data Size:", self.DataSize)
 
         # 參數設定
         self.TrainValidRatio = Ratio
@@ -29,20 +30,20 @@ class DataManager:
     # 拿一部分的 Train Data
     def BatchTrainData(self, size):
         choice = np.random.randint(int(self.DataSize * self.TrainValidRatio), size=size)
-        return self.Data[choice].reshape(size, self.Depth, self.Rows, self.Cols, 1), self.LabelData[choice].reshape(size, self.Rows, self.Cols, 2)
+        return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
 
     # 拿 Valid Data
     def BatchValidData(self, size):
         choice = np.random.randint(int(self.DataSize * (1 - self.TrainValidRatio)), size=size) + int(self.DataSize * self.TrainValidRatio)
-        return self.Data[choice].reshape(size, self.Depth, self.Rows, self.Cols, 1), self.LabelData[choice].reshape(size, self.Rows, self.Cols, 1)
+        return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
 
     # 測試一張圖
     def TestFirstNBoxOfTrainData(self, size):
-        return self.Data[:size].reshape(size, self.Depth, self.Rows, self.Cols, 1)
+        return self.Data[:size].reshape(size, self.WindowsSize, self.WindowsSize, 1)
 
     def TestFirstNBoxOfValidData(self, size):
         offset = int(self.DataSize * self.TrainValidRatio)
-        return self.Data[offset:offset + size].reshape(size, self.Depth, self.Rows, self.Cols, 1)
+        return self.Data[offset:offset + size].reshape(size, self.Rows, self.Cols, 1)
 
 
     #
@@ -51,9 +52,13 @@ class DataManager:
 
     # 把資料載進來
     def _ReadData(self, FileNameList, LabeledList):
+        # 算長度 & 初始化資料大小的 Array
+        rows, cols = cv2.imread(FileNameList[0], cv2.IMREAD_GRAYSCALE).shape
+        self.DataSize = len(FileNameList) * rows * cols
+
         # 讀 Input
-        self.Data = []
-        self.LabelData = []
+        self.Data = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
+        self.LabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
         for i in range(len(FileNameList)):
             # 讀圖
             InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE)
@@ -65,17 +70,18 @@ class DataManager:
             halfRadius = int((self.WindowsSize - 1) / 2)
             LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
             LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
-            for rowIndex in range(0, LabelImg.shape[0]):
-                for colIndex in range(0, LabelImg.shape[1]):
+            for rowIndex in range(0, rows):
+                for colIndex in range(0, cols):
                     # 塞進值
                     InputDataTemp = LargerInputImg[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
-                    self.Data.append(InputDataTemp)
+                    DataIndex = i * rows * cols + rowIndex * cols + colIndex
+                    if DataIndex >= 937500:
+                        print(i, rowIndex, colIndex, DataIndex)
 
-                    Prob = LabelImg[rowIndex][colIndex]
-                    self.LabelData.append([Prob])
+                    self.Data[DataIndex] = InputDataTemp
 
-            # 拿總共的資料量
-            self.DataSize = len(self.Data)
+                    Prob = LabelProbImg[rowIndex][colIndex]
+                    self.LabelData[DataIndex] = Prob
 
     # 把圖片轉換為機率圖片
     def _GetProbBorderImg(self, LabelImg):

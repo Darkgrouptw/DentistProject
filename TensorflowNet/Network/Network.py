@@ -87,11 +87,11 @@ class Network:
                     self.InputData: DM.TestFirstNBoxOfTrainData(3),
                 }
                 lossSummary = self.Session.run(self.LossTensor, feed_dict=feed_dict)
-                exampleSummary = self.Session.run(self.ExampleTensor, feed_dict=feed_dict_FirstN)
+                # exampleSummary = self.Session.run(self.ExampleTensor, feed_dict=feed_dict_FirstN)
 
                 # mergeSummary = tf.Summary.merge([lossSummary, exampleSummary])
                 self.LogWriter.add_summary(lossSummary, i)
-                self.LogWriter.add_summary(exampleSummary, i)
+                # self.LogWriter.add_summary(exampleSummary, i)
 
             # 更新
             self.Session.run(self.Optimzer, feed_dict=feed_dict)

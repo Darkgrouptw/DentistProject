@@ -3,8 +3,10 @@ from DataManager import DataManager_OtherSide
 import os
 
 # 參數
-lrArray = [1e-2, 5e-3]
-kernelSizeArray = [3, 5, 7, 9]
+# lrArray = [1e-2, 5e-3]
+# kernelSizeArray = [3, 5, 7, 9]
+lrArray = [5e-3]
+kernelSizeArray = [7]
 
 # 資料集
 InputFileList = []
@@ -12,21 +14,21 @@ LabeledFileList = []
 # Windows => E:/DentistData/NetworkData
 # Ubuntu => /home/Dark/NetworkData
 DataPath = [
-    "/home/Dark/NetworkData/2019.01.08 ToothBone1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone2",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone3.1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone3.2",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone7.1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone8.1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone9.1",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone1_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone2_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone3_no_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone4_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone5_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone6_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone7_slim",
-    "/home/Dark/NetworkData/2019.03.05 ToothBone8_slim"
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone3.2",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone9.1",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone1_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone2_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone3_no_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone4_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone5_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone6_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone7_slim",
+    "E:/DentistData/NetworkData/2019.03.05 ToothBone8_slim"
 ]
 
 for i in range(len(DataPath)):
