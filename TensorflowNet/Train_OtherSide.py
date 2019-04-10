@@ -6,7 +6,7 @@ import os
 # lrArray = [1e-2, 5e-3]
 # kernelSizeArray = [3, 5, 7, 9]
 lrArray = [5e-3]
-kernelSizeArray = [7]
+kernelSizeArray = [5]
 
 # 資料集
 InputFileList = []
@@ -41,14 +41,13 @@ for i in range(len(DataPath)):
 DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101)
 
 # Network
-logDir = "./logs"
-
 for lr in lrArray:
     for kernelSize in kernelSizeArray:
+        logDir = "./logs/" + str(lr) + "/kernel_" + str(kernelSize)
         net = Network_Prob(101, 101, 1, lr, kernelSize, logDir, True)
 
         # Train
-        assert False
+        # assert False
         net.Train(DM, 10000, 128)
         net.SaveWeight(logDir)
         net.Release()

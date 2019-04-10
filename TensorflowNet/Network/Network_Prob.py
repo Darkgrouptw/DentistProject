@@ -100,10 +100,20 @@ class Network_Prob:
     # 預測資料
     def Predict(self, Data):
         # Data
-        feed_dict = {
-            self.InputData: Data
-        }
-        return self.Session.run(self.PredictProb, feed_dict=feed_dict)
+        # print(Data.shape[])
+        topTime = int(np.ceil(Data.shape[0] / 128))
+        for i in tqdm(range(topTime)):
+            feed_dict = {
+                self.InputData: Data[i * 128: (i + 1) * 128]
+            }
+            resultTemp = self.Session.run(self.PredictProb, feed_dict=feed_dict)
+
+            if i == 0:
+                result = resultTemp
+            else:
+                result = np.concatenate([result, resultTemp], axis=0)
+        # print(
+        return result
 
     # 圖片放進去做 Debug 用
     # def PredictImg

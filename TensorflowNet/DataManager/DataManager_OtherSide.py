@@ -43,11 +43,13 @@ class DataManager:
 
     # 測試一張圖
     def TestFirstNBoxOfTrainData(self, size):
-        return self.Data[:size].reshape(size, self.WindowsSize, self.WindowsSize, 1)
+        return self.Data[: self.rows * self.cols * size].reshape(self.rows * self.cols * size, self.WindowsSize, self.WindowsSize, 1)
+        # return self.Data[:size].reshape(size, self.WindowsSize, self.WindowsSize, 1)
 
     def TestFirstNBoxOfValidData(self, size):
-        offset = int(self.DataSize * self.TrainValidRatio)
-        return self.Data[offset:offset + size].reshape(size, self.Rows, self.Cols, 1)
+        # offset = int(self.DataSize * self.TrainValidRatio)
+        # return self.Data[offset:offset + size].reshape(size, self.Rows, self.Cols, 1)
+        pass
 
 
     #
@@ -57,8 +59,8 @@ class DataManager:
     # 把資料載進來
     def _ReadData(self, FileNameList, LabeledList):
         # 算長度 & 初始化資料大小的 Array
-        rows, cols = cv2.imread(FileNameList[0], cv2.IMREAD_GRAYSCALE).shape
-        self.DataSize = len(FileNameList) * rows * cols
+        self.rows, self.cols = cv2.imread(FileNameList[0], cv2.IMREAD_GRAYSCALE).shape
+        self.DataSize = len(FileNameList) * self.rows * self.cols
 
         # 由於資料不平均
         # 所以這邊有作一些修正
@@ -79,11 +81,11 @@ class DataManager:
             halfRadius = int((self.WindowsSize - 1) / 2)
             LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
             LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
-            for rowIndex in range(0, rows):
-                for colIndex in range(0, cols):
+            for rowIndex in range(0, self.rows):
+                for colIndex in range(0, self.cols):
                     # 塞進值
                     InputDataTemp = LargerInputImg[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
-                    DataIndex = i * rows * cols + rowIndex * cols + colIndex
+                    DataIndex = i * self.rows * self.cols + rowIndex * self.cols + colIndex
 
                     self.Data[DataIndex] = InputDataTemp
 
