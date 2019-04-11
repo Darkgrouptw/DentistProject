@@ -37,21 +37,21 @@ class DataManager:
         choiceIndex = np.concatenate([choiceIndexNoneZero, choiceIndexZero], axis=0)
         choiceData = self.Data[choiceIndex]
         choiceLabelData = self.LabelData[choiceIndex]
-        print(choiceLabelData.shape)
+        # print(choiceLabelData.shape)
 
         choiceIndexRotateNoneZero = np.random.choice(self.NoneZeroRotateIndexArray, size=AQuarterSize, replace=False)
         choiceIndexRotateZero = np.random.choice(self.ZerosRotateIndexArray, size=AQuarterSize, replace=False)
         choiceRotateIndex = np.concatenate([choiceIndexRotateNoneZero, choiceIndexRotateZero], axis=0)
         choiceRotateData = self.RotateData[choiceRotateIndex]
         choiceRotateLabelData = self.RotateLabelData[choiceRotateIndex]
-        print(choiceRotateLabelData.shape)
+        # print(choiceRotateLabelData.shape)
 
         TotalData = np.concatenate([choiceData, choiceRotateData], axis=0)
         TotalLabelData = np.concatenate([choiceLabelData, choiceRotateLabelData], axis=0)
-        print(TotalData.shape)
-        print(TotalLabelData.shape)
-        assert False
-        # return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
+        # print(TotalData.shape)
+        # print(TotalLabelData.shape)
+        # assert False
+        return TotalData.reshape(size, self.WindowsSize, self.WindowsSize, 1), TotalLabelData.reshape(size, self.OutClass)
 
     # 拿 Valid Data
     def BatchValidData(self, size):
@@ -90,7 +90,7 @@ class DataManager:
         self.Data = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         self.RotateData = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         self.LabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
-        self.RotateLabelData = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
+        self.RotateLabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
         for i in range(len(FileNameList)):
             # 讀圖
             InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE)
