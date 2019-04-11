@@ -21,6 +21,7 @@ class DataManager:
         # 讀檔案
         self._ReadData(FileNameList, LabeledList)
         print("Package Data Size:", self.DataSize)
+        print("Rotate Package Data Size:", self.DataSize)
 
         # 參數設定
         # self.TrainValidRatio = Ratio
@@ -30,11 +31,26 @@ class DataManager:
     # 拿一部分的 Train Data
     def BatchTrainData(self, size):
         # choice = np.random.randint(int(self.DataSize * self.TrainValidRatio), size=size)
-        halfSize = int(size / 2)
-        choiceNoneZero = np.random.choice(self.NoneZeroIndexArray, size=halfSize, replace=False)
-        choiceZero = np.random.choice(self.ZerosIndexArray, size=halfSize, replace=False)
-        choice = np.concatenate([choiceNoneZero, choiceZero], axis=0)
-        return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
+        AQuarterSize = int(size / 4)
+        choiceIndexNoneZero = np.random.choice(self.NoneZeroIndexArray, size=AQuarterSize, replace=False)
+        choiceIndexZero = np.random.choice(self.ZerosIndexArray, size=AQuarterSize, replace=False)
+        choiceIndex = np.concatenate([choiceIndexNoneZero, choiceIndexZero], axis=0)
+        choiceData = self.Data[choiceIndex]
+        choiceLabelData = self.LabelData[choiceIndex]
+        print(choiceData.shape)
+
+        choiceIndexRotateNoneZero = np.random.choice(self.NoneZeroRotateIndexArray, size=AQuarterSize, replace=False)
+        choiceIndexRotateZero = np.random.choice(self.ZerosRotateIndexArray, size=AQuarterSize, replace=False)
+        choiceRotateIndex = np.concatenate([choiceIndexRotateNoneZero, choiceIndexRotateZero], axis=0)
+        choiceRotateData = self.RotateData[choiceRotateIndex]
+        choiceRotateLabelData = self.RotateLabelData[choiceRotateIndex]
+        print(choiceRotateData.shape)
+
+        TotalData = np.concatenate([choiceData, choiceRotateData], axis=0)
+        TotalLabelData = np.concatenate([choiceLabelData, choiceRotateLabelData])
+        print(TotalData.shape)
+        assert False
+        # return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
 
     # 拿 Valid Data
     def BatchValidData(self, size):
@@ -60,16 +76,20 @@ class DataManager:
     def _ReadData(self, FileNameList, LabeledList):
         # 算長度 & 初始化資料大小的 Array
         self.rows, self.cols = cv2.imread(FileNameList[0], cv2.IMREAD_GRAYSCALE).shape
-        self.DataSize = len(FileNameList) * self.rows * self.cols
+        self.DataSize = len(FileNameList) * self.rows * self.cols       # Rotate
 
         # 由於資料不平均
         # 所以這邊有作一些修正
         self.NoneZeroIndexArray = []
         self.ZerosIndexArray = []
+        self.NoneZeroRotateIndexArray = []
+        self.ZerosRotateIndexArray = []
 
         # 讀 Input
         self.Data = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
+        self.RotateData = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         self.LabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
+        self.RotateLabelData = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         for i in range(len(FileNameList)):
             # 讀圖
             InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE)
@@ -81,12 +101,15 @@ class DataManager:
             halfRadius = int((self.WindowsSize - 1) / 2)
             LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
             LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
+
+            # Rotate
+            LargerInputImgRotate = self._RotateImage(LargerInputImg, 180)
+            LabelProbImgRotate = self._RotateImage(LabelProbImg, 180)
             for rowIndex in range(0, self.rows):
                 for colIndex in range(0, self.cols):
                     # 塞進值
                     InputDataTemp = LargerInputImg[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
                     DataIndex = i * self.rows * self.cols + rowIndex * self.cols + colIndex
-
                     self.Data[DataIndex] = InputDataTemp
 
                     Prob = LabelProbImg[rowIndex][colIndex]
@@ -98,11 +121,38 @@ class DataManager:
                     else:
                         self.ZerosIndexArray.append(DataIndex)
 
+                    # RotatePart
+                    InputRotateDataTemp = LargerInputImgRotate[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
+                    self.RotateData[DataIndex] = InputRotateDataTemp
+
+                    ProbRotate = LabelProbImgRotate[rowIndex][colIndex]
+                    self.RotateLabelData[DataIndex] = ProbRotate
+
+                    # 這邊要多增加 Index 加入
+                    if ProbRotate != 0:
+                        self.NoneZeroRotateIndexArray.append(DataIndex)
+                    else:
+                        self.ZerosRotateIndexArray.append(DataIndex)
+
         # 轉成 numpy
         self.ZerosIndexArray = np.asarray(self.ZerosIndexArray)
         self.NoneZeroIndexArray = np.asarray(self.NoneZeroIndexArray)
+        self.ZerosRotateIndexArray = np.asarray(self.ZerosRotateIndexArray)
+        self.NoneZeroRotateIndexArray = np.asarray(self.NoneZeroRotateIndexArray)
         print("None Zero Shape: ", self.NoneZeroIndexArray.shape)
         print("Zero Shape: ", self.ZerosIndexArray.shape)
+        print("Rotate None Zero Shape: ", self.NoneZeroRotateIndexArray.shape)
+        print("Rotate Zero Shape: ", self.ZerosRotateIndexArray.shape)
+
+    # 旋轉 180 度
+    def _RotateImage(self, img, angle):
+        (h, w) = img.shape[:2]
+        center = (w / 2, h / 2)
+
+        M = cv2.getRotationMatrix2D(center, angle, 1)
+        rotatedImg = cv2.warpAffine(img, M, (h, w))
+        return rotatedImg
+
 
     # 把圖片轉換為機率圖片
     def _GetProbBorderImg(self, LabelImg):
