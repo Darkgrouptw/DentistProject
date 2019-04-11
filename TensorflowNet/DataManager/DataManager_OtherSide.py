@@ -37,14 +37,14 @@ class DataManager:
         choiceIndex = np.concatenate([choiceIndexNoneZero, choiceIndexZero], axis=0)
         choiceData = self.Data[choiceIndex]
         choiceLabelData = self.LabelData[choiceIndex]
-        print(choiceData.shape)
+        print(choiceLabelData.shape)
 
         choiceIndexRotateNoneZero = np.random.choice(self.NoneZeroRotateIndexArray, size=AQuarterSize, replace=False)
         choiceIndexRotateZero = np.random.choice(self.ZerosRotateIndexArray, size=AQuarterSize, replace=False)
         choiceRotateIndex = np.concatenate([choiceIndexRotateNoneZero, choiceIndexRotateZero], axis=0)
         choiceRotateData = self.RotateData[choiceRotateIndex]
         choiceRotateLabelData = self.RotateLabelData[choiceRotateIndex]
-        print(choiceRotateData.shape)
+        print(choiceRotateLabelData.shape)
 
         TotalData = np.concatenate([choiceData, choiceRotateData], axis=0)
         TotalLabelData = np.concatenate([choiceLabelData, choiceRotateLabelData], axis=0)
