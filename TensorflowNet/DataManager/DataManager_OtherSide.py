@@ -47,8 +47,9 @@ class DataManager:
         print(choiceRotateData.shape)
 
         TotalData = np.concatenate([choiceData, choiceRotateData], axis=0)
-        TotalLabelData = np.concatenate([choiceLabelData, choiceRotateLabelData])
+        TotalLabelData = np.concatenate([choiceLabelData, choiceRotateLabelData], axis=0)
         print(TotalData.shape)
+        print(TotalLabelData.shape)
         assert False
         # return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
 
