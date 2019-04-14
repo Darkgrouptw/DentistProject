@@ -116,9 +116,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PythonModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\Test_Python\TensorflowTestPY.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PythonModule.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

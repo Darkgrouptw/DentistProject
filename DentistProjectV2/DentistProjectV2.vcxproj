@@ -134,7 +134,6 @@
     <ClCompile Include="PointCloudInfo.cpp" />
     <ClCompile Include="RawDataManager.cpp" />
     <ClCompile Include="ScanningWorkerThread.cpp" />
-    <ClCompile Include="TensorflowNet.cpp" />
     <ClCompile Include="VolumeRenderClass.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,7 +165,6 @@
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets</IncludePath>
       <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;_UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_OPENGL_LIB;QT_WIDGETS_LIB;_WINDOWS;_USE_MATH_DEFINES;CAFFE_VERSION=1.0.0;BOOST_ALL_NO_LIB;USE_LMDB;USE_LEVELDB;USE_CUDNN;USE_OPENCV;CMAKE_WINDOWS_BUILD;GLOG_NO_ABBREVIATED_SEVERITIES;GOOGLE_GLOG_DLL_DECL=__declspec(dllimport);GOOGLE_GLOG_DLL_DECL_FOR_UNITTESTS=__declspec(dllimport);H5_BUILT_AS_DYNAMIC_LIB=1;CMAKE_INTDIR=Release;%(PreprocessorDefinitions)</Define>
     </ClInclude>
-    <ClInclude Include="TensorflowNet.h" />
     <ClInclude Include="VolumeRenderClass.h" />
   </ItemGroup>
   <ItemGroup>

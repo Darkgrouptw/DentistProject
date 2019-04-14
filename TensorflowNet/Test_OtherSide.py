@@ -13,21 +13,22 @@ LabeledFileList = []
 # Windows => E:/DentistData/NetworkData
 # Ubuntu => /home/Dark/NetworkData
 DataPath = [
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone3.2",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone9.1",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone1_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone2_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone3_no_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone4_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone5_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone6_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone7_slim",
-    "E:/DentistData/NetworkData/2019.03.05 ToothBone8_slim"
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.2",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone9.1",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone1_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone2_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone3_no_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone4_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone5_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone6_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone7_slim",
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone8_slim"
+    "C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProjectV2/Images/OCTImages"
 ]
 
 for i in range(len(DataPath)):

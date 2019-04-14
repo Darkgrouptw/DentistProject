@@ -21,10 +21,18 @@
     <ClCompile Include="Main.cpp">
       <Filter>原始程式檔</Filter>
     </ClCompile>
+    <ClCompile Include="PythonModule.cpp">
+      <Filter>原始程式檔</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\Test_Python\TensorflowTestPY.py">
       <Filter>Python</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PythonModule.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
