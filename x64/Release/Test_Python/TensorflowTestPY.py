@@ -1,10 +1,12 @@
 ﻿import tensorflow as tf
+import numpy as np
 
 # 先測試 Tensorflow 的變數
 TensorA = tf.placeholder(tf.int32, 1, "TensorA")
 TensorB = tf.placeholder(tf.int32, 1, "TensorB")
 TensorC = tf.add(TensorA, TensorB)
 Sess = tf.Session()
+print("Test2")
 
 # 測試
 def TestPrint():
@@ -20,4 +22,12 @@ def TensorTest(a, b):
     result = Sess.run(TensorC, feed_dict=feed_dict)
     print("Tensor Add: ", result)
 
-print("Test2")
+def NumpyArrayTest(arrayData):
+	print(arrayData.shape)
+	print(arrayData)
+
+def NumpyOperationTest(arrayData):
+	# print(arrayData.shape)
+	# print(arrayData)
+	print("OperationTest: ", arrayData.shape)
+	return arrayData * 3

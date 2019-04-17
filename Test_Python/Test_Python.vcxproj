@@ -69,7 +69,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Program Files\Python36\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Program Files\Python36\include;C:\Program Files\Python36\Lib\site-packages\numpy\core\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files\Python36\libs\;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
   </PropertyGroup>
