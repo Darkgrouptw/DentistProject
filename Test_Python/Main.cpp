@@ -45,7 +45,15 @@ int main(int argc, char *argv[])
 	cout << "==============================" << endl;
 	module.SetArgs(1);
 	module.AddArgs((double**)CArrays, 4, 3, 0);
-	double** NumpyArray = module.CallFunction_ReturnNumpy2DArray("NumpyOperationTest");
+	int rows, cols;
+	double** NumpyArray = module.CallFunction_ReturnNumpy2DArray("NumpyOperationTest", rows, cols);
+	// 測試
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+			cout << NumpyArray[i][j] << " ";
+		cout << endl;
+	}
 	module.Delete2DArray(NumpyArray);
 
 	//cout << T

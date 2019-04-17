@@ -6,7 +6,6 @@ PythonModule::PythonModule(string ModuleName)
 }
 PythonModule::~PythonModule()
 {
-	cout << "Delete PyModule" << endl;
 	Close();
 }
 
@@ -117,7 +116,6 @@ double** PythonModule::CallFunction_ReturnNumpy2DArray(string FunctionName, int&
 	// 抓取資料
 	PyArrayObject* npObject = (PyArrayObject*)pyReturn;
 	assert(npObject->nd == 2 && "Array 大小不符!!");
-	cout << "Return To C: " << npObject->dimensions[0] << " " << npObject->dimensions[1] << " ND:" << npObject->nd << endl;
 
 	// 把資料轉成 1D
 	int Size1D = npObject->dimensions[0] * npObject->dimensions[1];
@@ -150,7 +148,6 @@ double** PythonModule::CallFunction_ReturnNumpy2DArray(string FunctionName, int&
 // 清除部分
 void PythonModule::Delete2DArray(double** Array)
 {
-	cout << "Delete: " << Array[0] << " " << &Array[0][0] << endl;
 	delete[] &Array[0][0];
 	delete[] Array;
 }
