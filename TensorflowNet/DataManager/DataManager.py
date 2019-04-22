@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from tqdm import tqdm
 
 # Label
 # 0 背景
@@ -95,7 +96,7 @@ class DataManager:
         self.Data = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         self.LabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
         DataIndex = 0
-        for i in range(len(FileNameList)):
+        for i in tqdm(range(len(FileNameList))):
             # 讀圖
             InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE) / 255          # 這邊要除 255
             LabelImg = cv2.imread(LabeledList[i], cv2.IMREAD_COLOR)
