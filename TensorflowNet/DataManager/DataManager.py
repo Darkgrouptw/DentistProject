@@ -46,8 +46,8 @@ class DataManager:
         choiceLabelData = self.LabelData[choiceIndex]
         # print(choiceLabelData.shape)
 
-        TotalData = choiceData, choiceRotateData
-        TotalLabelData = [choiceLabelData, choiceRotateLabelData]
+        TotalData = choiceData
+        TotalLabelData = choiceLabelData
         # print(TotalData.shape)
         # print(TotalLabelData.shape)
         # assert False
