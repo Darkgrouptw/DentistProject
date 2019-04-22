@@ -91,7 +91,7 @@ class DataManager:
         self.ZerosIndexArray = []
 
         # 讀 Input
-        print("估計大小:", self.DataSize * self.WindowsSize * self.WindowsSize / 1024 / 1024 / 1024)
+        print("Estimate Ram Size:", self.DataSize * self.WindowsSize * self.WindowsSize / 1024 / 1024 / 1024)
         self.Data = np.zeros([self.DataSize, self.WindowsSize, self.WindowsSize], np.float32)
         self.LabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
         DataIndex = 0
