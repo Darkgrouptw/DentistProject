@@ -16,13 +16,13 @@ EndIndex = 200
 InputFileList = []
 LabeledFileList = []
 DataPath = [
-    # "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
-    # "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
     "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
     "E:/DentistData/NetworkData/2019.01.08 ToothBone3.2",
-    # "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
-    # "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
-    # "E:/DentistData/NetworkData/2019.01.08 ToothBone9.1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
+    "E:/DentistData/NetworkData/2019.01.08 ToothBone9.1",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone1_slim",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone2_slim",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone3_no_slim",

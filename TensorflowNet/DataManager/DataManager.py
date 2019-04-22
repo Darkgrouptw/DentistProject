@@ -37,23 +37,16 @@ class DataManager:
     # 拿一部分的 Train Data
     def BatchTrainData(self, size):
         # choice = np.random.randint(int(self.DataSize * self.TrainValidRatio), size=size)
-        AQuarterSize = int(size / 4)
-        choiceIndexNoneZero = np.random.choice(self.NoneZeroIndexArray, size=AQuarterSize, replace=False)
-        choiceIndexZero = np.random.choice(self.ZerosIndexArray, size=AQuarterSize, replace=False)
+        halfDataSize = int(size / 2)
+        choiceIndexNoneZero = np.random.choice(self.NoneZeroIndexArray, size=halfDataSize, replace=False)
+        choiceIndexZero = np.random.choice(self.ZerosIndexArray, size=halfDataSize, replace=False)
         choiceIndex = np.concatenate([choiceIndexNoneZero, choiceIndexZero], axis=0)
         choiceData = self.Data[choiceIndex]
         choiceLabelData = self.LabelData[choiceIndex]
         # print(choiceLabelData.shape)
 
-        choiceIndexRotateNoneZero = np.random.choice(self.NoneZeroRotateIndexArray, size=AQuarterSize, replace=False)
-        choiceIndexRotateZero = np.random.choice(self.ZerosRotateIndexArray, size=AQuarterSize, replace=False)
-        choiceRotateIndex = np.concatenate([choiceIndexRotateNoneZero, choiceIndexRotateZero], axis=0)
-        choiceRotateData = self.RotateData[choiceRotateIndex]
-        choiceRotateLabelData = self.RotateLabelData[choiceRotateIndex]
-        # print(choiceRotateLabelData.shape)
-
-        TotalData = np.concatenate([choiceData, choiceRotateData], axis=0)
-        TotalLabelData = np.concatenate([choiceLabelData, choiceRotateLabelData], axis=0)
+        TotalData = choiceData, choiceRotateData
+        TotalLabelData = [choiceLabelData, choiceRotateLabelData]
         # print(TotalData.shape)
         # print(TotalLabelData.shape)
         # assert False
@@ -61,8 +54,9 @@ class DataManager:
 
     # 拿 Valid Data
     def BatchValidData(self, size):
-        choice = np.random.randint(int(self.DataSize * (1 - self.TrainValidRatio)), size=size) + int(self.DataSize * self.TrainValidRatio)
-        return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
+        # choice = np.random.randint(int(self.DataSize * (1 - self.TrainValidRatio)), size=size) + int(self.DataSize * self.TrainValidRatio)
+        # return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
+        pass
 
     # 測試一張圖
     def TestFirstNBoxOfTrainData(self, size):
