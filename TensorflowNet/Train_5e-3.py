@@ -56,7 +56,7 @@ DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 21)
 for lr in lrArray:
     for kernelSize in kernelSizeArray:
         logDir = "./logs/" + str(lr) + "/kernel_" + str(kernelSize)
-        net = Network_Prob(101, 101, 4, lr, kernelSize, logDir, True)
+        net = Network_Prob(21, 21, 4, lr, kernelSize, logDir, True)
 
         # Train
         net.Train(DM, 10000, 128)
