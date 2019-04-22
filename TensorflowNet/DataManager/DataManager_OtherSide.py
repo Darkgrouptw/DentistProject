@@ -93,7 +93,7 @@ class DataManager:
         self.RotateLabelData = np.zeros([self.DataSize, self.OutClass], np.float32)
         for i in range(len(FileNameList)):
             # 讀圖
-            InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE)
+            InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE) / 255
             LabelImg = cv2.imread(LabeledList[i], cv2.IMREAD_COLOR)
 
             LabelProbImg = self._GetProbBorderImg(LabelImg)

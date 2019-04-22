@@ -28,11 +28,11 @@
       <Extensions>moc;h;cpp</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="Header Files\TensorflowNet">
-      <UniqueIdentifier>{40b90523-e56b-42d0-af96-00ec4c6f9b40}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\TensorflowNet">
-      <UniqueIdentifier>{0f4782a8-88bc-429e-8087-1a9a44109bc5}</UniqueIdentifier>
+      <UniqueIdentifier>{253727b6-7326-4788-a48a-9a60bd74f7e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TensorflowNet">
+      <UniqueIdentifier>{0aba9f48-c617-4b22-8fc0-c829b89577f7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -42,10 +42,10 @@
     <ClCompile Include="DentistLabelTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PythonModule.cpp">
+    <ClCompile Include="TensorflowNet.cpp">
       <Filter>Source Files\TensorflowNet</Filter>
     </ClCompile>
-    <ClCompile Include="TensorflowNet.cpp">
+    <ClCompile Include="PythonModule.cpp">
       <Filter>Source Files\TensorflowNet</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,10 +65,10 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PythonModule.h">
+    <ClInclude Include="TensorflowNet.h">
       <Filter>Header Files\TensorflowNet</Filter>
     </ClInclude>
-    <ClInclude Include="TensorflowNet.h">
+    <ClInclude Include="PythonModule.h">
       <Filter>Header Files\TensorflowNet</Filter>
     </ClInclude>
   </ItemGroup>
