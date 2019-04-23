@@ -85,7 +85,7 @@ class Network_Prob:
             # 紀錄 Train 的結果
             if i % 100 == 0:
                 feed_dict_FirstN = {
-                    self.InputData: DM.TestFirstNBoxOfTrainData(3),
+                    self.InputData: Train_BatchData,
                 }
                 lossSummary = self.Session.run(self.LossTensor, feed_dict=feed_dict)
                 # exampleSummary = self.Session.run(self.ExampleTensor, feed_dict=feed_dict_FirstN)
