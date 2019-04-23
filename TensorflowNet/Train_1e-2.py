@@ -5,7 +5,7 @@ import os
 # 參數
 # lrArray = [1e-2, 5e-3]
 # kernelSizeArray = [3, 5, 7, 9]
-lrArray = [5e-3]
+lrArray = [1e-2]
 kernelSizeArray = [5]
 
 
