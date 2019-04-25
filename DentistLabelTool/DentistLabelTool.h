@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "TensorflowNet.h"
+#include "Display_TopView.h"
 
 #include <QDir>
 #include <QFileDialog>
@@ -36,4 +37,5 @@ private slots:
 	// 檔案相關
 	//////////////////////////////////////////////////////////////////////////
 	void ReadBoundingBox();
+	QImage Mat2QImage(cv::Mat const& src, int Type);
 };

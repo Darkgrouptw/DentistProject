@@ -7,9 +7,12 @@ public:
 	TensorflowNet();
 	~TensorflowNet();
 
-	double** Predict(double**);
+	//////////////////////////////////////////////////////////////////////////
+	// 網路相關
+	//////////////////////////////////////////////////////////////////////////
+	float**		Predict(float**);
+	void		DeleteArray(float**);
 
 private:
-	PythonModule* module = NULL;
+	PythonModule<float>* module = NULL;
 };
-

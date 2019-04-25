@@ -1,7 +1,11 @@
 ﻿#pragma once
+//#ifndef _PTYHONMODULE_H_
+//#define _PTYHONMODULE_H_
+
 #include <iostream>
 #include <cassert>
 #include <string>
+#include <type_traits>
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -10,6 +14,7 @@ using namespace std;
 
 #define SAVE_DELETE_PY(object) if(object != NULL) Py_DECREF(object); object = NULL;
 
+template <typename T>
 class PythonModule
 {
 public:
@@ -25,9 +30,9 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void SetArgs(int);
 	void AddArgs(int, int);
-	void AddArgs(double, int);
-	void AddArgs(double*, int, int);											// 使用完的值記得刪掉
-	void AddArgs(double**, int, int, int);										// 同上
+	void AddArgs(T, int);
+	void AddArgs(T*, int, int);													// 使用完的值記得刪掉
+	void AddArgs(T**, int, int, int);											// 同上
 
 	//////////////////////////////////////////////////////////////////////////
 	// Return 的部分 
@@ -37,12 +42,12 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void CallFunction(string);
 	int CallFunction_ReturnInt(string);
-	double** CallFunction_ReturnNumpy2DArray(string, int&, int&);				// 要用這個 API，如果以後要改成其他維度的話 https://docs.scipy.org/doc/numpy/reference/c-api.array.html#data-access
+	T** CallFunction_ReturnNumpy2DArray(string, int&, int&);					// 要用這個 API，如果以後要改成其他維度的話
 
 	//////////////////////////////////////////////////////////////////////////
 	// 清除變數的 Function
 	//////////////////////////////////////////////////////////////////////////
-	void Delete2DArray(double **);												// 清除陣列
+	void Delete2DArray(T **);													// 清除陣列
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -59,4 +64,6 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	void GetPythonError(PyObject*);
 	int InitNumpy();
+	int NumpyTypeNumber();
 };
+//#endif

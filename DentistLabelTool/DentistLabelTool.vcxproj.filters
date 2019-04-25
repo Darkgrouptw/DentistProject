@@ -34,6 +34,15 @@
     <Filter Include="Header Files\TensorflowNet">
       <UniqueIdentifier>{0aba9f48-c617-4b22-8fc0-c829b89577f7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Python">
+      <UniqueIdentifier>{dbd3bbca-89fc-415b-a778-4fa9b53c71e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Display">
+      <UniqueIdentifier>{6896ef19-f8a0-4e28-b9b4-f5e67af2b384}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Display">
+      <UniqueIdentifier>{715c25f9-fcf7-490c-9b0f-54be8621cfd2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -47,6 +56,9 @@
     </ClCompile>
     <ClCompile Include="PythonModule.cpp">
       <Filter>Source Files\TensorflowNet</Filter>
+    </ClCompile>
+    <ClCompile Include="Display_TopView.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,5 +83,13 @@
     <ClInclude Include="PythonModule.h">
       <Filter>Header Files\TensorflowNet</Filter>
     </ClInclude>
+    <ClInclude Include="Display_TopView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Release\DentistLabelTool\TensorflowNet\OtherSide\TensorflowNet_C.py">
+      <Filter>Python</Filter>
+    </None>
   </ItemGroup>
 </Project>

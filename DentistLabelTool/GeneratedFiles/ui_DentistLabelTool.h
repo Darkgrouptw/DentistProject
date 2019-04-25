@@ -15,38 +15,55 @@
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QStatusBar>
-#include <QtWidgets/QToolBar>
+#include <QtWidgets/QOpenGLWidget>
+#include <QtWidgets/QScrollBar>
 #include <QtWidgets/QWidget>
+#include "display_topview.h"
 
 QT_BEGIN_NAMESPACE
 
 class Ui_DentistLabelToolClass
 {
 public:
-    QMenuBar *menuBar;
-    QToolBar *mainToolBar;
+    QAction *actionOpen;
     QWidget *centralWidget;
-    QStatusBar *statusBar;
+    Display_TopView *Widget1;
+    QOpenGLWidget *Widget2;
+    QScrollBar *SliderPage;
+    QMenuBar *menuBar;
+    QMenu *menu;
 
     void setupUi(QMainWindow *DentistLabelToolClass)
     {
         if (DentistLabelToolClass->objectName().isEmpty())
             DentistLabelToolClass->setObjectName(QStringLiteral("DentistLabelToolClass"));
-        DentistLabelToolClass->resize(600, 400);
-        menuBar = new QMenuBar(DentistLabelToolClass);
-        menuBar->setObjectName(QStringLiteral("menuBar"));
-        DentistLabelToolClass->setMenuBar(menuBar);
-        mainToolBar = new QToolBar(DentistLabelToolClass);
-        mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
-        DentistLabelToolClass->addToolBar(mainToolBar);
+        DentistLabelToolClass->resize(1200, 600);
+        actionOpen = new QAction(DentistLabelToolClass);
+        actionOpen->setObjectName(QStringLiteral("actionOpen"));
         centralWidget = new QWidget(DentistLabelToolClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
+        Widget1 = new Display_TopView(centralWidget);
+        Widget1->setObjectName(QStringLiteral("Widget1"));
+        Widget1->setGeometry(QRect(0, 0, 500, 500));
+        Widget2 = new QOpenGLWidget(centralWidget);
+        Widget2->setObjectName(QStringLiteral("Widget2"));
+        Widget2->setGeometry(QRect(500, 0, 500, 500));
+        SliderPage = new QScrollBar(centralWidget);
+        SliderPage->setObjectName(QStringLiteral("SliderPage"));
+        SliderPage->setGeometry(QRect(0, 500, 500, 16));
+        SliderPage->setOrientation(Qt::Horizontal);
         DentistLabelToolClass->setCentralWidget(centralWidget);
-        statusBar = new QStatusBar(DentistLabelToolClass);
-        statusBar->setObjectName(QStringLiteral("statusBar"));
-        DentistLabelToolClass->setStatusBar(statusBar);
+        menuBar = new QMenuBar(DentistLabelToolClass);
+        menuBar->setObjectName(QStringLiteral("menuBar"));
+        menuBar->setGeometry(QRect(0, 0, 1200, 21));
+        menu = new QMenu(menuBar);
+        menu->setObjectName(QStringLiteral("menu"));
+        DentistLabelToolClass->setMenuBar(menuBar);
+
+        menuBar->addAction(menu->menuAction());
+        menu->addAction(actionOpen);
 
         retranslateUi(DentistLabelToolClass);
 
@@ -56,6 +73,8 @@ public:
     void retranslateUi(QMainWindow *DentistLabelToolClass)
     {
         DentistLabelToolClass->setWindowTitle(QApplication::translate("DentistLabelToolClass", "DentistLabelTool", nullptr));
+        actionOpen->setText(QApplication::translate("DentistLabelToolClass", "Open", nullptr));
+        menu->setTitle(QApplication::translate("DentistLabelToolClass", "\346\252\224\346\241\210", nullptr));
     } // retranslateUi
 
 };
