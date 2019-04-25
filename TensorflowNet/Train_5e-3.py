@@ -7,7 +7,7 @@ import os
 # kernelSizeArray = [3, 5, 7, 9]
 lrArray = [5e-3]
 # kernelSizeArray = [3, 5, 7, 9]
-kernelSizeArray = [5]
+kernelSizeArray = [7]
 
 StartIndex = 60
 EndIndex = 200
