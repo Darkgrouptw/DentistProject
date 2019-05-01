@@ -583,13 +583,15 @@ __global__ static void GetOtherSideView(float* Data, float* OtherSideData, int S
 	int offsetIndex = idY * SizeX + idX;
 	OtherSideData[offsetIndex] = totalZ;
 }
-__global__ static void TransformOtherSideDataToImage(float* OtherSideData, uchar* UintOtherSideData, int SizeX, int SizeY)
+__global__ static void TransformOtherSideDataToImage(float* OtherSideData, uchar* UintOtherSideData, float Mean, float FixMean, int SizeX, int SizeY)
 {
 	int id = blockDim.x * blockIdx.x + threadIdx.x;
 	if (id >= SizeX * SizeY)								// 判斷是否超出大小
 		return;
 
-	float data = OtherSideData[id] * 255;
+	// 位移到設定的 Mean 直間
+	float ScaleFactor = FixMean / Mean / 255;
+	float data = OtherSideData[id] * 255 * ScaleFactor;
 	if (data >= 255)
 		UintOtherSideData[id] = 255;
 	else if (data <= 0)
@@ -1330,9 +1332,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	NormalizeData << < SizeX, SizeY >> > (GPU_OtherSideData, MaxValue, MinValue, SizeX * SizeY);
 	CheckCudaError();
 
+	// 將 Top View 的圖，部會因為亮度而受影響
+	float MeanValue = thrust::reduce(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY) / SizeX / SizeY;
+	cout << "Mean:" << MeanValue << endl;
+
 	uchar* GPU_UintOtherSideData;
 	cudaMalloc(&GPU_UintOtherSideData, sizeof(uchar) * SizeX * SizeY);
-	TransformOtherSideDataToImage << <SizeX, SizeY >> > (GPU_OtherSideData, GPU_UintOtherSideData, SizeX, SizeY);
+	TransformOtherSideDataToImage << <SizeX, SizeY >> > (GPU_OtherSideData, GPU_UintOtherSideData, MeanValue, OtherSideMean, SizeX, SizeY);
 	CheckCudaError();
 
 	// 刪除記憶體

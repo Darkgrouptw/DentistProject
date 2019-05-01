@@ -54,7 +54,7 @@ public:
 	// 拿出圖片
 	//////////////////////////////////////////////////////////////////////////
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
-	Mat TransformToOtherSideView();												// TopView 
+	Mat TransformToOtherSideView();												// TopView
 	void CopySingleBorder(int*);												// Copy 單張 Border 的
 	void CopyBorder(int*);														// Copy 整段的 Border
 	bool ShakeDetect_Single(int*, bool);										// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
@@ -95,8 +95,7 @@ private:
 	const float GoThroughThreshold = 0.0032f;									// 要多少在走過去
 	const int ChooseBestN = 3;
 	const int StartIndex = 150;													// 從這裡開始找有效的資料
-	//const int ConnectRadius = 25;												// 連結半徑
-	const int ConnectRadius = 200;												// 連結半徑
+	const int ConnectRadius = 25;												// 連結半徑
 
 	//////////////////////////////////////////////////////////////////////////
 	// 晃動 Threshold
@@ -112,5 +111,6 @@ private:
 	const int NumPolynomial = 5;												// 使用 5 次項
 	const int MinValuePixel_TL = 2;												// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
 	const int MinValuePixel_BR = 10;											// Buttom Right 的 Pixel
-	const float MinValueScalar = 1.8f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
+	const float MinValueScalar = 1.f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間 (測試用)
+	const float OtherSideMean = 38;												// 由於硬體的大小改變，會導至判斷上會有問題
 };

@@ -103,6 +103,7 @@
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;opengl32.lib;glu32.lib;LibGlove.lib;Qt5OpenGL.lib;Qt5Widgets.lib;OpenMeshCore.lib;opencv_world341.lib;cuda.lib;cudart.lib;cufft.lib;cublas.lib;cublas_device.lib;super4pcs_algo.lib;super4pcs_io.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
