@@ -70,7 +70,7 @@ DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101)
 # Network
 for lr in lrArray:
     for kernelSize in kernelSizeArray:
-        logDir = "./logs/" + str(lr) + "/kernel_" + str(kernelSize)
+        logDir = "./logs/" + str(lr) + "/OtherSide_kernel_" + str(kernelSize)
         net = Network_Prob(101, 101, 1, lr, kernelSize, logDir, True)
 
         # Train
