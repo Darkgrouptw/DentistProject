@@ -50,7 +50,7 @@ if len(ErrorFileList) > 0:
     for i in range(len(ErrorFileList)):
         print(ErrorFileList[i])
     assert False
-DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 21)
+DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 101)
 
 # Network
 for lr in lrArray:
