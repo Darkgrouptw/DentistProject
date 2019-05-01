@@ -1334,7 +1334,6 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 
 	// 將 Top View 的圖，部會因為亮度而受影響
 	float MeanValue = thrust::reduce(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY) / SizeX / SizeY;
-	cout << "Mean:" << MeanValue << endl;
 
 	uchar* GPU_UintOtherSideData;
 	cudaMalloc(&GPU_UintOtherSideData, sizeof(uchar) * SizeX * SizeY);
