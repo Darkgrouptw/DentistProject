@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DentistLabelTool.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.0
+** Created by: Qt User Interface Compiler version 5.9.6
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -13,13 +13,14 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QOpenGLWidget>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QWidget>
+#include "display_boundingbox.h"
 #include "display_topview.h"
 
 QT_BEGIN_NAMESPACE
@@ -30,8 +31,12 @@ public:
     QAction *actionOpen;
     QWidget *centralWidget;
     Display_TopView *Widget1;
-    QOpenGLWidget *Widget2;
+    Display_BoundingBox *Widget2;
     QScrollBar *SliderPage;
+    QCheckBox *ImageLayer1;
+    QCheckBox *ImageLayer2;
+    QScrollBar *Layer1Alpha;
+    QScrollBar *Layer2Alpha;
     QMenuBar *menuBar;
     QMenu *menu;
 
@@ -47,13 +52,36 @@ public:
         Widget1 = new Display_TopView(centralWidget);
         Widget1->setObjectName(QStringLiteral("Widget1"));
         Widget1->setGeometry(QRect(0, 0, 500, 500));
-        Widget2 = new QOpenGLWidget(centralWidget);
+        Widget2 = new Display_BoundingBox(centralWidget);
         Widget2->setObjectName(QStringLiteral("Widget2"));
         Widget2->setGeometry(QRect(500, 0, 500, 500));
         SliderPage = new QScrollBar(centralWidget);
         SliderPage->setObjectName(QStringLiteral("SliderPage"));
         SliderPage->setGeometry(QRect(0, 500, 500, 16));
+        SliderPage->setMinimum(60);
+        SliderPage->setMaximum(200);
+        SliderPage->setValue(60);
         SliderPage->setOrientation(Qt::Horizontal);
+        ImageLayer1 = new QCheckBox(centralWidget);
+        ImageLayer1->setObjectName(QStringLiteral("ImageLayer1"));
+        ImageLayer1->setGeometry(QRect(1020, 10, 121, 31));
+        ImageLayer1->setChecked(true);
+        ImageLayer2 = new QCheckBox(centralWidget);
+        ImageLayer2->setObjectName(QStringLiteral("ImageLayer2"));
+        ImageLayer2->setGeometry(QRect(1020, 80, 121, 31));
+        ImageLayer2->setChecked(true);
+        Layer1Alpha = new QScrollBar(centralWidget);
+        Layer1Alpha->setObjectName(QStringLiteral("Layer1Alpha"));
+        Layer1Alpha->setGeometry(QRect(1020, 50, 160, 16));
+        Layer1Alpha->setMaximum(100);
+        Layer1Alpha->setValue(100);
+        Layer1Alpha->setOrientation(Qt::Horizontal);
+        Layer2Alpha = new QScrollBar(centralWidget);
+        Layer2Alpha->setObjectName(QStringLiteral("Layer2Alpha"));
+        Layer2Alpha->setGeometry(QRect(1020, 120, 160, 16));
+        Layer2Alpha->setMaximum(100);
+        Layer2Alpha->setValue(100);
+        Layer2Alpha->setOrientation(Qt::Horizontal);
         DentistLabelToolClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(DentistLabelToolClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -72,9 +100,11 @@ public:
 
     void retranslateUi(QMainWindow *DentistLabelToolClass)
     {
-        DentistLabelToolClass->setWindowTitle(QApplication::translate("DentistLabelToolClass", "DentistLabelTool", nullptr));
-        actionOpen->setText(QApplication::translate("DentistLabelToolClass", "Open", nullptr));
-        menu->setTitle(QApplication::translate("DentistLabelToolClass", "\346\252\224\346\241\210", nullptr));
+        DentistLabelToolClass->setWindowTitle(QApplication::translate("DentistLabelToolClass", "DentistLabelTool", Q_NULLPTR));
+        actionOpen->setText(QApplication::translate("DentistLabelToolClass", "Open", Q_NULLPTR));
+        ImageLayer1->setText(QApplication::translate("DentistLabelToolClass", "ImageLayer1", Q_NULLPTR));
+        ImageLayer2->setText(QApplication::translate("DentistLabelToolClass", "ImageLayer2", Q_NULLPTR));
+        menu->setTitle(QApplication::translate("DentistLabelToolClass", "\346\252\224\346\241\210", Q_NULLPTR));
     } // retranslateUi
 
 };

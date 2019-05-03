@@ -60,6 +60,12 @@
     <ClCompile Include="Display_TopView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Display_BoundingBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Square.cpp">
+      <Filter>Source Files\Display</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="DentistLabelTool.h">
@@ -85,6 +91,12 @@
     </ClInclude>
     <ClInclude Include="Display_TopView.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Display_BoundingBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Square.h">
+      <Filter>Header Files\Display</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

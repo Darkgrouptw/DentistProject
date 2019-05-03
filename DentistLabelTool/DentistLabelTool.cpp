@@ -6,7 +6,10 @@ DentistLabelTool::DentistLabelTool(QWidget *parent)
 	ui.setupUi(this);
 
 	#pragma region 事件連接
-	connect(ui.actionOpen,			SIGNAL(triggered()),	this,	SLOT(ReadBoundingBox()));
+	connect(ui.actionOpen,			SIGNAL(triggered()),		this,	SLOT(ReadBoundingBox()));
+
+	connect(ui.SliderPage,			SIGNAL(valueChanged(int)),	this,	SLOT(ScanNumSlider_Change(int)));
+
 	#pragma endregion
 }
 
@@ -69,10 +72,32 @@ void DentistLabelTool::ReadBoundingBox()
 
 	net.DeleteArray(PreidctData);
 	#pragma endregion
+
+	#pragma region Load BoundingBox Image
+
+	////boundingbox texture
+	QString boundboxpath = dir.absoluteFilePath("");
+
+	vector<cv::Mat> BoundImgVec;
+
+	for (int i = 60; i <= 200; i++) {
+		BoundImgVec.push_back(cv::imread(boundboxpath.toStdString() + "/boundingBox_v2/" + std::to_string(i) + ".png", 0));
+		cv::cvtColor(BoundImgVec[i - 60].clone(), BoundImgVec[i - 60], CV_GRAY2BGR);
+		QBoundImgVec.push_back(Mat2QImage(BoundImgVec[i - 60], CV_8UC3));
+	}
+
+	#pragma endregion
+
 	#pragma region 丟到 UI 上
 	Display_TopView* widget1 = (Display_TopView*)ui.Widget1;
 	widget1->LoadTexture(QPredictImg, 0);
 	widget1->update();
+
+	Display_BoundingBox* widget2 = (Display_BoundingBox*)ui.Widget2;
+	widget2->LoadTexture(QBoundImgVec[0], 0);
+	//widget2->SetFbo();
+	//widget2->OpenPainter = true;
+	widget2->update();
 	#pragma endregion
 
 }
@@ -92,4 +117,14 @@ QImage DentistLabelTool::Mat2QImage(cv::Mat const& src, int Type)
 	dest.bits();												// enforce deep copy, see documentation 
 																// of QImage::QImage ( const uchar * data, int width, int height, Format format )
 	return dest;
+}
+
+// 顯示相關
+void DentistLabelTool::ScanNumSlider_Change(int value)
+{
+	ui.Widget1->sliderValue = value;
+	ui.Widget1->update();
+	ui.Widget2->sliderValue = value;
+	ui.Widget2->LoadTexture(QBoundImgVec[value -60], 0);
+	ui.Widget2->update();
 }

@@ -34,6 +34,7 @@ void Display_TopView::paintGL()
 	//glColor3f(0.5, 0.5, 0);
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 
+	glPushMatrix();
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 1.0f); glVertex2f(-0.5f, 0.5f);
 	glTexCoord2f(0.0f, 0.0f); glVertex2f(-0.5f, -0.5f);
@@ -41,6 +42,16 @@ void Display_TopView::paintGL()
 	glTexCoord2f(1.0f, 1.0f); glVertex2f(0.5f, 0.5f);
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+	
+	glPushMatrix();
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBegin(GL_LINES);
+	glVertex2f(sliderValue / 250.0f - 0.5f, -0.5f);
+	glVertex2f(sliderValue / 250.0f - 0.5f, 0.5f);
+	glEnd();
+	glPopMatrix();
+	
 }
 
 // 外部連結

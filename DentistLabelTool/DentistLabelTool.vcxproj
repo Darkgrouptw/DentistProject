@@ -98,7 +98,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5Widgets.lib;opencv_world341.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5Widgets.lib;opencv_world341.lib;python3.lib;python36.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
@@ -117,9 +117,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DentistLabelTool.cpp" />
+    <ClCompile Include="Display_BoundingBox.cpp" />
     <ClCompile Include="Display_TopView.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PythonModule.cpp" />
+    <ClCompile Include="Square.cpp" />
     <ClCompile Include="TensorflowNet.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -132,11 +134,13 @@
     <QtRcc Include="DentistLabelTool.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Display_BoundingBox.h" />
     <ClInclude Include="Display_TopView.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets</IncludePath>
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtOpenGL;$(QTDIR)\include\QtWidgets</IncludePath>
     </ClInclude>
     <ClInclude Include="PythonModule.h" />
+    <ClInclude Include="Square.h" />
     <ClInclude Include="TensorflowNet.h" />
   </ItemGroup>
   <ItemGroup>
