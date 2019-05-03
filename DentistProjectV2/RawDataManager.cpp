@@ -622,7 +622,9 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 
 		// Top View
 		Mat result = cudaV2.TransformToOtherSideView();
-		cv::imwrite("Images/OCTImages/OtherSide.png", result);
+		Mat GrayResult;
+		cvtColor(result, GrayResult, CV_BGR2GRAY);
+		cv::imwrite("Images/OCTImages/OtherSide.png", GrayResult);
 
 		QImage qreulst = Mat2QImage(result, CV_8UC3);
 		OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));

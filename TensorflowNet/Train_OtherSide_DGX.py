@@ -6,7 +6,7 @@ import os
 # lrArray = [1e-2, 5e-3]
 # kernelSizeArray = [3, 5, 7, 9]
 lrArray = [5e-3]
-kernelSizeArray = [5]
+kernelSizeArray = [5, 7, 9]
 
 # 資料集
 InputFileList = []
@@ -70,7 +70,7 @@ DM = DataManager_OtherSide.DataManager(InputFileList, LabeledFileList, 1, 101)
 # Network
 for lr in lrArray:
     for kernelSize in kernelSizeArray:
-        logDir = "./logs/" + str(lr) + "/OtherSide_kernel_" + str(kernelSize)
+        logDir = "./logs/OtherSide_kernel_" + str(kernelSize) + "/" + str(lr)
         net = Network_Prob(101, 101, 1, lr, kernelSize, logDir, True)
 
         # Train
