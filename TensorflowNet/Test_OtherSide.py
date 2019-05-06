@@ -5,7 +5,7 @@ import cv2
 
 # 參數
 lr = 5e-3
-kernelSize = 5
+kernelSize = 7
 
 # 資料集
 InputFileList = []
@@ -27,8 +27,14 @@ DataPath = [
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone5_slim",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone6_slim",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone7_slim",
-    # "E:/DentistData/NetworkData/2019.03.05 ToothBone8_slim"
-    "C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProjectV2/Images/OCTImages"
+    # "E:/DentistData/NetworkData/2019.03.05 ToothBone8_slim",
+    "E:/DentistData/NetworkData/2019.04.15 31_1",
+    "E:/DentistData/NetworkData/2019.04.15 DONG31",
+    "E:/DentistData/NetworkData/2019.04.15 DONG31_2",
+    "E:/DentistData/NetworkData/2019.04.15 DONG31_3",
+    "E:/DentistData/NetworkData/2019.04.15 DONG36",
+    "E:/DentistData/NetworkData/2019.04.15 DONG41",
+    # "C:/Users/Dark/Desktop/SourceTree/DentistProject/x64/Release/DentistProjectV2/Images/OCTImages"
 ]
 
 for i in range(len(DataPath)):
@@ -46,7 +52,7 @@ logDir = "./logs/"
 net = Network_Prob(101, 101, 1, lr, kernelSize, logDir, False)
 
 # 讀資料
-net.LoadWeight("./logs/0.005/kernel_5")
+net.LoadWeight("./logs/OtherSide_kernel_7")
 
 ValidData = DM.TestFirstNBoxOfTrainData(len(DataPath))
 predictData = net.Predict(ValidData)
