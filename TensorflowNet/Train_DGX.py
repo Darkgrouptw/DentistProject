@@ -22,6 +22,12 @@ DataPath = [
     "/home/Dark/NetworkData/2019.01.08 ToothBone3.2",
     "/home/Dark/NetworkData/2019.01.08 ToothBone7.1",
     "/home/Dark/NetworkData/2019.01.08 ToothBone8.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone9.1",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone1_slim",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone2_slim",
@@ -36,8 +42,8 @@ DataPath = [
 ErrorFileList = []
 for i in range(len(DataPath)):
     for j in range(StartIndex, EndIndex + 1):
-        tempInputPath = os.path.join(DataPath[i], "./boundingBox_v2/" + str(j) + ".png")
-        tempLabeledPath = os.path.join(DataPath[i], "./labeled_v2/" + str(j) + ".png")
+        tempInputPath = DataPath[i] + "/boundingBox_v2/" + str(j) + ".png"
+        tempLabeledPath = DataPath[i] + "/labeled_v2/" + str(j) + ".png"
 
         if (not os.path.isfile(tempInputPath)) or (not os.path.isfile(tempLabeledPath)):
             ErrorFileList.append(tempInputPath)

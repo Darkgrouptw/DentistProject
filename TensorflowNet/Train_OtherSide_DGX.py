@@ -59,8 +59,8 @@ DataPath = [
 ]
 
 for i in range(len(DataPath)):
-    tempInputPath = os.path.join(DataPath[i], "./OtherSide.png")
-    tempLabeledPath = os.path.join(DataPath[i], "./OtherSide_Label.png")
+    tempInputPath = DataPath[i] + "/OtherSide.png"
+    tempLabeledPath = DataPath[i] + "/OtherSide_Label.png"
 
     # 加進陣列裡
     InputFileList.append(tempInputPath)
