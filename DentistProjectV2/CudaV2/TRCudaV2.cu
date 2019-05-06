@@ -591,7 +591,7 @@ __global__ static void TransformOtherSideDataToImage(float* OtherSideData, uchar
 
 	// 位移到設定的 Mean 直間
 	float ScaleFactor = FixMean / Mean / 255;
-	float data = OtherSideData[id] * 255 * ScaleFactor;
+	float data = OtherSideData[id] * 255; // *ScaleFactor;
 	if (data >= 255)
 		UintOtherSideData[id] = 255;
 	else if (data <= 0)

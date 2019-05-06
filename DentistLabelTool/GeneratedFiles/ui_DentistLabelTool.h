@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DentistLabelTool.ui'
 **
-** Created by: Qt User Interface Compiler version 5.9.6
+** Created by: Qt User Interface Compiler version 5.10.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -100,11 +100,11 @@ public:
 
     void retranslateUi(QMainWindow *DentistLabelToolClass)
     {
-        DentistLabelToolClass->setWindowTitle(QApplication::translate("DentistLabelToolClass", "DentistLabelTool", Q_NULLPTR));
-        actionOpen->setText(QApplication::translate("DentistLabelToolClass", "Open", Q_NULLPTR));
-        ImageLayer1->setText(QApplication::translate("DentistLabelToolClass", "ImageLayer1", Q_NULLPTR));
-        ImageLayer2->setText(QApplication::translate("DentistLabelToolClass", "ImageLayer2", Q_NULLPTR));
-        menu->setTitle(QApplication::translate("DentistLabelToolClass", "\346\252\224\346\241\210", Q_NULLPTR));
+        DentistLabelToolClass->setWindowTitle(QApplication::translate("DentistLabelToolClass", "DentistLabelTool", nullptr));
+        actionOpen->setText(QApplication::translate("DentistLabelToolClass", "Open", nullptr));
+        ImageLayer1->setText(QApplication::translate("DentistLabelToolClass", "ImageLayer1", nullptr));
+        ImageLayer2->setText(QApplication::translate("DentistLabelToolClass", "ImageLayer2", nullptr));
+        menu->setTitle(QApplication::translate("DentistLabelToolClass", "\346\252\224\346\241\210", nullptr));
     } // retranslateUi
 
 };

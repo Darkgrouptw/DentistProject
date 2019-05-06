@@ -317,6 +317,47 @@ __global__ static void NormalizeData(float* ShiftData, float MaxValue, float Min
 	ShiftData[id] = (ShiftData[id] - MinValue) / (MaxValue - MinValue);
 }
 
+// 轉成圖片 & 產生邊界判斷 (Smooth 後的 Data)的資料
+__device__ static float SmoothDataByIndex(float* VolumeData, int id, int FinalSizeZ, int SmoothSizeRange)
+{
+	int idZ = id % FinalSizeZ;
+	int SmoothRadius = (SmoothSizeRange - 1) / 2;
+
+	// Smooth 這個區段的資料
+	int MinValue = min(SmoothRadius, idZ - 0);
+	int MaxValue = min(SmoothRadius, FinalSizeZ - idZ - 1);
+	float TempTotal = 0;
+
+	// 把範圍內的部分相加
+	for (int i = -MinValue; i <= MaxValue; i++)
+		TempTotal += VolumeData[id + i];
+	TempTotal /= (MaxValue + MinValue + 1);
+	return TempTotal;
+}
+__global__ static void TransformToImageAndBorderData(float* VolumeData_Normalized, float* SmoothData, uchar* ImageArray, int SizeX, int SizeY, int FinalSizeZ, int SmoothSizeRange)
+{
+	// 這邊是將原本的資料，轉換完圖片
+	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * 1 * 1024
+		blockIdx.x * gridDim.z * blockDim.x +							// X	=> X * 1 * 1024
+		blockIdx.z * blockDim.x +										// Z	=> (Z1 * 1024 + Z2)
+		threadIdx.x;
+
+	if (id >= SizeX * SizeY * FinalSizeZ)								// 判斷是否超出大小
+		return;
+
+	// 產生 Border Detect 的資料
+	SmoothData[id] = SmoothDataByIndex(VolumeData_Normalized, id, FinalSizeZ, SmoothSizeRange);
+
+	// 這個 1.3 倍，是東元測出來的
+	float data = VolumeData_Normalized[id] * 255 * 1.3f;
+	if (data >= 255)
+		ImageArray[id] = 255;
+	else if (data <= 0)
+		ImageArray[id] = 0;
+	else
+		ImageArray[id] = (uchar)data;
+}
+
 // 邊界部分
 __global__ static void findMaxAndMinPeak(float* DataArray, uchar* PointType, int size, int rows, int cols, float MaxPeakThreshold)
 {
@@ -515,25 +556,48 @@ __global__ static void ConnectPointsStatus(int* PointType_BestN, int* ConnectSta
 	}
 }
 
-// 轉成圖片
-__global__ static void TransforToImage(float* VolumeData_Normalized, uchar* ImageArray, int SizeX, int SizeY, int FinalSizeZ)
+// 這邊是例外，只有 Multi 才有TopView 
+__global__ static void GetOtherSideView(float* Data, float* OtherSideData, int SizeX, int SizeY, int FinalSizeZ)
 {
-	// 這邊是將原本的資料，轉換完圖片
-	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * 1 * 1024
-		blockIdx.x * gridDim.z * blockDim.x +							// X	=> X * 1 * 1024
-		blockIdx.z * blockDim.x +										// Z	=> (Z1 * 1024 + Z2)
-		threadIdx.x;
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id >= SizeX * SizeY)
+	{
+		printf("範圍有錯!!\n");
+		return;
+	}
 
-	if (id >= SizeX * SizeY * FinalSizeZ)								// 判斷是否超出大小
+	// id 換算
+	int idX = id / SizeY;
+	int idY = id % SizeY;
+	int DataOffsetIndex = idX * SizeY * FinalSizeZ + idY * FinalSizeZ;
+
+	// 總和一個 SizeZ
+	float totalZ = 0;
+	for (int i = 0; i < FinalSizeZ; i++)
+		totalZ += Data[DataOffsetIndex + i];
+
+
+	// 這邊的單位要調整一下
+	// rows => 是張樹 (SizeY)
+	// cols => 是 SizeX
+	int offsetIndex = idY * SizeX + idX;
+	OtherSideData[offsetIndex] = totalZ;
+}
+__global__ static void TransformOtherSideDataToImage(float* OtherSideData, uchar* UintOtherSideData, float Mean, float FixMean, int SizeX, int SizeY)
+{
+	int id = blockDim.x * blockIdx.x + threadIdx.x;
+	if (id >= SizeX * SizeY)								// 判斷是否超出大小
 		return;
 
-	float data = VolumeData_Normalized[id] * 255 * 1.3f;
+	// 位移到設定的 Mean 直間
+	float ScaleFactor = FixMean / Mean / 255;
+	float data = OtherSideData[id] * 255; // *ScaleFactor;
 	if (data >= 255)
-		ImageArray[id] = 255;
+		UintOtherSideData[id] = 255;
 	else if (data <= 0)
-		ImageArray[id] = 0;
+		UintOtherSideData[id] = 0;
 	else
-		ImageArray[id] = (uchar)data;
+		UintOtherSideData[id] = (uchar)data;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -660,7 +724,9 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	// 先算平均
 	int* FirstSizeZData = new int[SizeZ];
 	cudaMemcpy(FirstSizeZData, GPU_OCTRawData, sizeof(int) * SizeZ, cudaMemcpyDeviceToHost);
-	float average = std::accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
+	cudaDeviceSynchronize();
+
+	float average = accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
 	delete[] FirstSizeZData;
 
 	// 取得 Matrix
@@ -672,6 +738,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	float* MatrixB = new float[(NumPolynomial + 1)];
 	cudaMemcpy(MatrixA, GPU_MatrixA, sizeof(float) * (NumPolynomial + 1) *(NumPolynomial + 1), cudaMemcpyDeviceToHost);
 	cudaMemcpy(MatrixB, GPU_MatrixB, sizeof(float) * (NumPolynomial + 1), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
 
 	// 解 Eigen 找 Fitting Function
 	EigenUtility eigen;
@@ -844,17 +911,22 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 
 	// 圖片的資料
 	uchar *GPU_UintDataArray;
+	float* GPU_OCTSmoothData;
 	cudaMalloc(&GPU_UintDataArray, sizeof(uchar) * SizeX * 1 * SizeZ);
+	cudaMalloc(&GPU_OCTSmoothData, sizeof(float) * SizeX * 1 * SizeZ);
 	CheckCudaError();
 
 	// 轉圖片
-	TransforToImage << <dim3(SizeX, 1, SizeZ / NumThreads / 2), NumThreads >> > (GPU_OCTFloatData, GPU_UintDataArray, SizeX, 1, SizeZ / 2);
+	TransformToImageAndBorderData << <dim3(SizeX, 1, SizeZ / NumThreads / 2), NumThreads >> > (GPU_OCTFloatData, GPU_OCTSmoothData, GPU_UintDataArray, SizeX, 1, SizeZ / 2, SmoothSizeRange);
 	CheckCudaError();
 
 	// 設定一下其他參數
 	size = 1;
 	rows = SizeX;
 	cols = SizeZ / 2;
+
+	// 刪除記憶體
+	cudaFree(GPU_OCTFloatData);
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -886,7 +958,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	assert(rows <= NumThreads && "rows 要小於 1024 的限制");
 
 	// 找最大最小值
-	findMaxAndMinPeak << < size * rows * cols / NumThreads, NumThreads >> > (GPU_OCTFloatData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
+	findMaxAndMinPeak << < size * rows * cols / NumThreads, NumThreads >> > (GPU_OCTSmoothData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
 	CheckCudaError();
 
 	// Parse 一些連續最小值
@@ -896,7 +968,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	// 抓出一維陣列
 	int *GPU_PointType_BestN, *PointType_BestN;
 	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
-	PickBestChoiceToArray << < size, rows >> > (GPU_OCTFloatData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	PickBestChoiceToArray << < size, rows >> > (GPU_OCTSmoothData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
@@ -924,7 +996,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	cudaFree(GPU_PointType);
 	cudaFree(GPU_PointType_BestN);
 	cudaFree(GPU_Connect_Status);
-	cudaFree(GPU_OCTFloatData);
+	cudaFree(GPU_OCTSmoothData);
 
 	delete[] Connect_Status;
 	delete[] PointType_BestN;
@@ -976,6 +1048,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 4. λ Space 轉成 K Space
 	// 5. cuFFT
 	// 6. 位移 Data
+	// 6.5 要找出TopView  (這邊有多一個要找出TopView )
 	// 7. 根據最大最小值來 Normalize 資料
 	// 8. 轉成圖
 	// 9. 邊界判斷
@@ -987,6 +1060,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 3. K_Step		=> 深度(14.多mm對應 2.5的k step；可以考慮之後用2)(k step越大，z軸越深，但資料精細度越差；1~2.5)
 	// 4. CutValue		=> OCT每個z軸，前面數據減去多少。原因是開頭的laser弱，干涉訊號不明顯，拿掉的資料會比較美。 (東元那邊的變數是 cuteValue XD)
 	// 5. 只是這邊比上方的 Function 多了 SizeY 個
+	// 6. 有多一個 找出TopView 
 	//////////////////////////////////////////////////////////////////////////
 	#pragma region 1. 上傳 GPU Data
 	// 初始
@@ -1076,7 +1150,9 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 先算平均
 	int* FirstSizeZData = new int[SizeZ];
 	cudaMemcpy(FirstSizeZData, GPU_OCTRawData, sizeof(int) * SizeZ, cudaMemcpyDeviceToHost);
-	float average = std::accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
+	cudaDeviceSynchronize();
+
+	float average = accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
 	delete[] FirstSizeZData;
 
 	// 取得 Matrix
@@ -1088,6 +1164,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	float* MatrixB = new float[(NumPolynomial + 1)];
 	cudaMemcpy(MatrixA, GPU_MatrixA, sizeof(float) * (NumPolynomial + 1) *(NumPolynomial + 1), cudaMemcpyDeviceToHost);
 	cudaMemcpy(MatrixB, GPU_MatrixB, sizeof(float) * (NumPolynomial + 1), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
 
 	// 解 Eigen 找 Fitting Function
 	EigenUtility eigen;
@@ -1232,6 +1309,46 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	cout << "6. 搬移資料: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 	#pragma endregion
+	#pragma region 6.5 TopView 
+	// 開始
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
+	time = clock();
+	#endif
+
+	// 這邊會抓出TopView 
+	float* GPU_OtherSideData;
+	cudaMalloc(&GPU_OtherSideData, sizeof(float) * OCTDataSize / 2);
+	GetOtherSideView << <SizeX, SizeY >> > (GPU_ShiftData, GPU_OtherSideData, SizeX, SizeY, SizeZ / 2);
+	CheckCudaError();
+	cudaDeviceSynchronize();
+
+	// 找最大值
+	float MaxValue = 0, MinValue = 0;
+	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY);
+	float *GPU_MinElement = thrust::min_element(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY);
+	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&MinValue, GPU_MinElement, sizeof(float), cudaMemcpyDeviceToHost);
+
+	NormalizeData << < SizeX, SizeY >> > (GPU_OtherSideData, MaxValue, MinValue, SizeX * SizeY);
+	CheckCudaError();
+
+	// 將 Top View 的圖，部會因為亮度而受影響
+	float MeanValue = thrust::reduce(thrust::device, GPU_OtherSideData, GPU_OtherSideData + SizeX * SizeY) / SizeX / SizeY;
+
+	uchar* GPU_UintOtherSideData;
+	cudaMalloc(&GPU_UintOtherSideData, sizeof(uchar) * SizeX * SizeY);
+	TransformOtherSideDataToImage << <SizeX, SizeY >> > (GPU_OtherSideData, GPU_UintOtherSideData, MeanValue, OtherSideMean, SizeX, SizeY);
+	CheckCudaError();
+
+	// 刪除記憶體
+	cudaFree(GPU_OtherSideData);
+
+	// 結算
+	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
+	time = clock() - time;
+	cout << "7. Normalize Data: " << ((float)time) / CLOCKS_PER_SEC << " sec" << endl;
+	#endif
+	#pragma endregion
 	#pragma region 7. Normalize Data
 	// 開始
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -1239,10 +1356,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	#endif
 	
 	// 算最大值
-	float MaxValue = 0;
-	float *GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
+	cudaDeviceSynchronize();
+
+	MaxValue = 0;
+	GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
 	cudaMemcpy(&MaxValue, GPU_MaxElement, sizeof(float), cudaMemcpyDeviceToHost);
 	CheckCudaError();
+	cudaDeviceSynchronize();
 
 	// 最小值 (拿一塊不會使用的 GPU 部分，來做 Normalize)
 	// 拿一個正方形的區塊
@@ -1250,7 +1370,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// ｜　　　｜
 	// ｜　　　｜
 	// ｘ－－－BR
-	float MinValue = 0;
+	MinValue = 0;
 	for (int i = MinValuePixel_TL; i <= MinValuePixel_BR; i++)
 	{
 		// [first, last)
@@ -1280,17 +1400,22 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 
 	// 圖片的資料
 	uchar *GPU_UintDataArray;
+	float* GPU_OCTSmoothData;
 	cudaMalloc(&GPU_UintDataArray, sizeof(uchar) * SizeX * SizeY * SizeZ);
+	cudaMalloc(&GPU_OCTSmoothData, sizeof(float) * SizeX * SizeY * SizeZ);
 	CheckCudaError();
 
 	// 轉圖片
-	TransforToImage << <dim3(SizeX, SizeY, SizeZ / NumThreads / 2), NumThreads >> > (GPU_ShiftData, GPU_UintDataArray, SizeX, SizeY, SizeZ / 2);
+	TransformToImageAndBorderData << <dim3(SizeX, SizeY, SizeZ / NumThreads / 2), NumThreads >> > (GPU_ShiftData, GPU_OCTSmoothData, GPU_UintDataArray, SizeX, SizeY, SizeZ / 2, SmoothSizeRange);
 	CheckCudaError();
 
 	// 設定一下其他參數
 	size = SizeY;
 	rows = SizeX;
 	cols = SizeZ / 2;
+
+	// 刪除記憶體
+	cudaFree(GPU_ShiftData);
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -1321,7 +1446,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	assert(rows <= NumThreads && "rows 要小於 1024 的限制");
 	
 	// 找最大最小值
-	findMaxAndMinPeak << < size * rows * cols / NumThreads, NumThreads >> > (GPU_ShiftData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
+	findMaxAndMinPeak << < size * rows * cols / NumThreads, NumThreads >> > (GPU_OCTSmoothData, GPU_PointType, size, rows, cols, MaxPeakThreshold);
 	CheckCudaError();
 
 	// Parse 一些連續最小值
@@ -1331,7 +1456,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 抓出一維陣列
 	int *GPU_PointType_BestN, *PointType_BestN;
 	cudaMalloc(&GPU_PointType_BestN, sizeof(int) * size * rows * ChooseBestN);
-	PickBestChoiceToArray << < size, rows >> > (GPU_ShiftData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
+	PickBestChoiceToArray << < size, rows >> > (GPU_OCTSmoothData, GPU_PointType, GPU_PointType_BestN, size, rows, cols, ChooseBestN, StartIndex, GoThroughThreshold);
 	CheckCudaError();
 
 	// 連結點
@@ -1359,7 +1484,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	cudaFree(GPU_PointType);
 	cudaFree(GPU_PointType_BestN);
 	cudaFree(GPU_Connect_Status);
-	cudaFree(GPU_ShiftData);
+	cudaFree(GPU_OCTSmoothData);
 
 	delete[] Connect_Status;
 	delete[] PointType_BestN;
@@ -1381,8 +1506,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	VolumeData = new uchar[SizeX * SizeY * SizeZ / 2];
 	cudaMemcpy(VolumeData, GPU_UintDataArray, sizeof(uchar) * SizeX * SizeY * SizeZ / 2, cudaMemcpyDeviceToHost);
 
+	SaveDelete(VolumeData_OtherSide);
+	VolumeData_OtherSide = new uchar[SizeX * SizeY];
+	cudaMemcpy(VolumeData_OtherSide, GPU_UintOtherSideData, sizeof(uchar) * SizeX * SizeY, cudaMemcpyDeviceToHost);
+
 	// 刪除 GPU
 	cudaFree(GPU_UintDataArray);
+	cudaFree(GPU_UintOtherSideData);
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
@@ -1393,7 +1523,7 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 
 	// 結算
 	#ifdef SHOW_TRCUDAV2_TOTAL_TIME
-	totalTime = clock() - totalTime;
+	totalTime = clock() - totalTimeTransfromMatArray
 	cout << "轉換多張點雲: " << ((float)totalTime) / CLOCKS_PER_SEC << " sec" << endl;
 	#endif
 }
@@ -1444,12 +1574,25 @@ vector<Mat> TRCudaV2::TransfromMatArray(bool SaveBorder = false)
 	}
 	return ImgArray;
 }
+Mat TRCudaV2::TransformToOtherSideView()
+{
+	assert(size > 1 && "這段一定要大於一張圖");
+
+	Mat img(rows, size, CV_8U, VolumeData_OtherSide);
+	cvtColor(img, img, CV_GRAY2BGR);
+	return img;
+}
 void TRCudaV2::CopySingleBorder(int* LastArray)
 {
-	assert(LastArray != NULL && PointType_1D != NULL && "要先初始化 Array 和要做轉點雲的部分!!");
-	memcpy(LastArray, PointType_1D, 1 * rows * cols);				// 一定是一張
+	assert(LastArray != NULL && PointType_1D != NULL && size == 1 && "要先初始化 Array 和要做轉點雲的部分!!");	// assert 抓出 call 錯的可能性 (這邊只能單張)
+	memcpy(LastArray, PointType_1D, sizeof (int) * size * rows);
 }
-bool TRCudaV2::ShakeDetect_Single(int* LastArray)
+void TRCudaV2::CopyBorder(int* BorderArray)
+{
+	assert(BorderArray != NULL && PointType_1D != NULL && size != 1 && "要先初始化 Array 和要做轉點雲的部分!!");	// assert 抓出 call 錯的可能性 (這邊要多張)
+	memcpy(BorderArray, PointType_1D, sizeof(int) * size * rows);
+}
+bool TRCudaV2::ShakeDetect_Single(int* LastArray, bool ShowDebugMessage)
 {
 	// 設定變數
 	int voteNum = 0;								// 有效票數
@@ -1469,7 +1612,10 @@ bool TRCudaV2::ShakeDetect_Single(int* LastArray)
 	if (voteNum > OCT_Valid_VoteNum)
 	{
 		MoveDis /= voteNum;
-		cout << "晃動距離(pixel): " << (float)MoveDis << endl;
+
+		// Debug Message
+		if(ShowDebugMessage)
+			cout << "晃動距離(pixel): " << (float)MoveDis << endl;
 
 		// 這邊是代表沒有晃動
 		if (MoveDis < OCT_Move_Threshold)
@@ -1477,7 +1623,7 @@ bool TRCudaV2::ShakeDetect_Single(int* LastArray)
 	}
 	return true;
 }
-bool TRCudaV2::ShakeDetect_Multi()
+bool TRCudaV2::ShakeDetect_Multi(bool UsePreiseThreshold, bool ShowDebugMessage)
 {
 	// 找 60 ~ 200 裡面有效的有沒有斷層
 	int voteNum = 0;								// 有效票數
@@ -1494,7 +1640,7 @@ bool TRCudaV2::ShakeDetect_Multi()
 
 		// 從中間往前找
 		for (int j = size / 2 - 1; j >= 0; j--)
-			if (!PointType_1D[j * rows + i] != -1)
+			if (PointType_1D[j * rows + i] != -1)
 			{
 				leftIndex = j * rows + i;
 				break;
@@ -1526,12 +1672,27 @@ bool TRCudaV2::ShakeDetect_Multi()
 	if (voteNum > OCT_Valid_VoteNum)
 	{
 		MoveDis /= voteNum;
-		cout << "晃動距離(pixel): " << (float)MoveDis << endl;
+
+		// Debug Message
+		if (ShowDebugMessage)
+			cout << "晃動距離(pixel): " << (float)MoveDis << endl;
 
 		// 這邊是代表沒有晃動
-		if (MoveDis < OCT_Move_Threshold)
-			return false;
+		if (UsePreiseThreshold)
+		{
+			// 用較輕確的結果
+			if (MoveDis < OCT_Move_Precise_Threshold)
+				return false;
+		}
+		else
+		{
+			// 用較不精確的結果
+			if (MoveDis < OCT_Move_Threshold)
+				return false;
+		}
 	}
+	else if (ShowDebugMessage)
+		cout << "資料量太少!!" << endl;
 	return true;
 }
 

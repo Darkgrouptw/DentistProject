@@ -54,16 +54,18 @@ public:
 	// 拿出圖片
 	//////////////////////////////////////////////////////////////////////////
 	vector<Mat> TransfromMatArray(bool);										// 這邊要存出圖片 (bool 是是否要儲存出邊界資訊)
+	Mat TransformToOtherSideView();												// TopView
 	void CopySingleBorder(int*);												// Copy 單張 Border 的
-	bool ShakeDetect_Single(int*);												// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
-	bool ShakeDetect_Multi();													// 晃動偵測						=> True 代表有晃動
-	
-	
+	void CopyBorder(int*);														// Copy 整段的 Border
+	bool ShakeDetect_Single(int*, bool);										// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
+	bool ShakeDetect_Multi(bool, bool);											// 晃動偵測，是否要用較精確的	Threshold => True 代表有晃動
+
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 圖片資料
 	//////////////////////////////////////////////////////////////////////////
 	uchar *VolumeData = NULL;													// 圖片資訊
+	uchar *VolumeData_OtherSide = NULL;											// TopView 
 	uchar* PointType = NULL;													// 存成 2D 每個點是什麼 Type (0 無、1 Max Peak、 2 Min Peak)
 	int* PointType_1D = NULL;													// 存哪一個為 Border
 	int size;																	// 慢軸 (SizeY)
@@ -88,24 +90,27 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// 找邊界參數設定
 	//////////////////////////////////////////////////////////////////////////
-	const float MaxPeakThreshold = 0.18f;									// 要高於這個值
-	const float GoThroughThreshold = 0.01f;									// 要多少在走過去
+	const int SmoothSizeRange = 5;												// 向外 Smooth  左 (SmoothLength - 1) / 2 + 中間 1 + 右 (SmoothLength - 1) / 2
+	const float MaxPeakThreshold = 0.125f;										// 要高於這個值
+	const float GoThroughThreshold = 0.0032f;									// 要多少在走過去
 	const int ChooseBestN = 3;
-	const int StartIndex = 10;												// 從這裡開始找有效的資料
-	const int ConnectRadius = 25;											// 連結半徑
+	const int StartIndex = 150;													// 從這裡開始找有效的資料
+	const int ConnectRadius = 25;												// 連結半徑
 
 	//////////////////////////////////////////////////////////////////////////
 	// 晃動 Threshold
 	//////////////////////////////////////////////////////////////////////////
-	const float OCT_Move_Threshold = 7;										// 晃動大於某一個值，代表不能用
-	const int	OCT_Valid_VoteNum = 10;										// 有效票數起碼要大於這個值
+	const float OCT_Move_Threshold = 20;										// 晃動大於某一個值，代表不能用
+	const float OCT_Move_Precise_Threshold = 10;								// 晃動大於某一個值，代表不能用 (較精確)
+	const int	OCT_Valid_VoteNum = 20;											// 有效票數起碼要大於這個值
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他參數設定 設定
 	//////////////////////////////////////////////////////////////////////////
-	const int NumThreads = 1024;											// 最多限制在 1024
-	const int NumPolynomial = 5;											// 使用 5 次項
-	const int MinValuePixel_TL = 2;											// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
-	const int MinValuePixel_BR = 10;										// Buttom Right 的 Pixel
-	const float MinValueScalar = 1.8f;										// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間
+	const int NumThreads = 1024;												// 最多限制在 1024
+	const int NumPolynomial = 5;												// 使用 5 次項
+	const int MinValuePixel_TL = 2;												// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
+	const int MinValuePixel_BR = 10;											// Buttom Right 的 Pixel
+	const float MinValueScalar = 1.f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間 (測試用)
+	const float OtherSideMean = 50;												// 由於硬體的大小改變，會導至判斷上會有問題
 };
