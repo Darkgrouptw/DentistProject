@@ -76,7 +76,7 @@ class DataManager:
 
     # 測試一張圖
     def TestFirstNBoxOfTrainData(self, size):
-
+        pass
 
     def TestFirstNBoxOfValidData(self, size):
         # offset = int(self.DataSize * self.TrainValidRatio)

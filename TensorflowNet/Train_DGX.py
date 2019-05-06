@@ -5,7 +5,7 @@ import os
 # 參數
 # lrArray = [1e-2, 5e-3]
 # kernelSizeArray = [3, 5, 7, 9]
-lrArray = [5e-3]
+lrArray = [1e-4]
 kernelSizeArray = [5, 7]
 
 
@@ -61,7 +61,7 @@ DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 101)
 # Network
 for lr in lrArray:
     for kernelSize in kernelSizeArray:
-        logDir = "./logs/" + str(lr) + "/Full_kernel_" + str(kernelSize)
+        logDir = "./logs/Full_kernel_" + str(kernelSize)
         net = Network_Prob(101, 101, 4, lr, kernelSize, logDir, True)
 
         # Train
