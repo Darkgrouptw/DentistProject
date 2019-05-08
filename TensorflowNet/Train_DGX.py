@@ -65,6 +65,6 @@ for lr in lrArray:
         net = Network_Prob(101, 101, 4, lr, kernelSize, logDir, True)
 
         # Train
-        net.Train(DM, 10000, 128)
+        net.Train(DM, 1000, 128)
         net.SaveWeight(logDir)
         net.Release()
