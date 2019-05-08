@@ -64,15 +64,40 @@ int main(int argc, char *argv[])
 	//cudaV2.ShakeDetect(false);
 	#pragma endregion
 	#pragma region 測試圖片
-	vector<Mat> ImgArray = cudaV2.TransfromMatArray(true);
-	
-	// 單張圖片
-	//imwrite("Images/" + to_string(125) + ".png", ImgArray[0]);
+	//vector<Mat> ImgArray = cudaV2.TransfromMatArray(true);
+	vector<Mat> ImgArray = cudaV2.TransfromMatArray(false);
+
+	//for (int x = 0; x < 250; x++)
+	//	imwrite("Images/Origin/" + to_string(x) + ".png", ImgArray[x]);
+
+	// 判斷是否要檢查所有的 Min Max 點
+	int TestBestNum = 3;
+	for (int x = 0; x < 250; x++)
+	{
+		Mat PeakImg = ImgArray[x].clone();
+		for (int row = 0; row < PeakImg.rows; row++)
+		{
+			for (int bestIndex = 0; bestIndex < TestBestNum; bestIndex ++)
+			{
+				if(cudaV2.TestBestN[x * PeakImg.rows * TestBestNum + row * TestBestNum + bestIndex] == -1)
+					continue;
+				Point contourPoint(cudaV2.TestBestN[x * PeakImg.rows * TestBestNum + row * TestBestNum + bestIndex], row);
+				circle(PeakImg, contourPoint, 1, Scalar(0, 255, 255), CV_FILLED);
+			}
+		}
+		imwrite("Images/Peak/" + to_string(x) + ".png", PeakImg);
+	}
+	// imwrite("Images/" + to_string(x) + ".png", ImgArray[x]);
 
 	// 多張圖片
+	ImgArray = cudaV2.TransfromMatArray(true);
 	for (int x = 0; x < 250; x++)
-		imwrite("Images/" + to_string(x) + ".png", ImgArray[x]);
+		imwrite("Images/Border/" + to_string(x) + ".png", ImgArray[x]);
 	#pragma endregion
 	system("PAUSE");
 	return 0;
 }
+// "E:/DentistData/ScanData/2019.01.08_ToothBone/DATA/TOOTH bone 2"
+// "E:/DentistData/ScanData/2019.01.08_ToothBone/DATA/TOOTH bone 3.1"
+// "E:/DentistData/ScanData/2019.03.05_ToothBone/5_slim"
+// "E:/DentistData/ScanData/2019.04.15_ToothBone/DONG31"
