@@ -41,6 +41,8 @@ DataPath = [
 
 ErrorFileList = []
 for i in range(len(DataPath)):
+    tempInputArray = []
+    tempLabeledArray = []
     for j in range(StartIndex, EndIndex + 1):
         tempInputPath = DataPath[i] + "/boundingBox_v2/" + str(j) + ".png"
         tempLabeledPath = DataPath[i] + "/labeled_v2/" + str(j) + ".png"
@@ -48,8 +50,12 @@ for i in range(len(DataPath)):
         if (not os.path.isfile(tempInputPath)) or (not os.path.isfile(tempLabeledPath)):
             ErrorFileList.append(tempInputPath)
 
-        InputFileList.append(tempInputPath)
-        LabeledFileList.append(tempLabeledPath)
+        tempInputArray.append(tempInputPath)
+        tempLabeledArray.append(tempLabeledPath)
+
+    # 加進去 Array 中
+    InputFileList.append(tempInputArray)
+    LabeledFileList.append(tempLabeledArray)
 
 if len(ErrorFileList) > 0:
     print("以下的檔案有少!!")

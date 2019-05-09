@@ -19,8 +19,8 @@ class DataManager:
             # Ratio = 0.9
     ):
         # 前置判斷
-        print("DataSize: ", len(FileNameList))
-        print("LabeledSize: ", len(LabeledList))
+        print("DataSize (set): ", len(FileNameList))
+        print("LabeledSize (set): ", len(LabeledList))
         assert(len(FileNameList) == len(LabeledList))
         assert WindowsSize % 2 == 1, "目前先測試 Mod 有餘數的部分"
         self.WindowsSize = WindowsSize
@@ -111,44 +111,61 @@ class DataManager:
         # 算長度 & 初始化資料大小的 Array
         print("Start to Generate Data!!")
 
-        # 打開兩份檔案
+        # 打開 Total 的檔案
         DataList = open(self.DataListDir + "/DataList.txt", "w")
 
-        for i in tqdm(range(len(FileNameList))):
-            # 先找出要存檔在哪裡
-            AllIndex = [index for index in range(len(FileNameList[i])) if FileNameList[i].startswith('/', index)]
-            PNGIndex = FileNameList[i].rfind(".png")
-            SaveDataName = self.DataListDir + "/Data/" + FileNameList[i][AllIndex[-3] + 1: AllIndex[-2]] + "_" + FileNameList[i][AllIndex[-1] + 1:PNGIndex]
-            
-            # 讀圖
-            InputImg = cv2.imread(FileNameList[i], cv2.IMREAD_GRAYSCALE) / 255  # 這邊要除 255
-            LabelImg = cv2.imread(LabeledList[i], cv2.IMREAD_COLOR)
-            LabelProbImg = self._TransformProbImg(LabelImg, i)
+        for i in range(len(FileNameList)):
+            print("Creating DataSet: ",i, "/", str(len(FileNameList)))
 
-            # 找出哪邊是 0 & 非零
-            [rows, cols] = InputImg.shape[:2]
-            for rowIndex in range(rows):
-                for colIndex in range(cols):
-                    # 抓取原圖
-                    halfRadius = int((self.WindowsSize - 1) / 2)
+            for j in tqdm(range(len(FileNameList[i]))):
+                # 先找出要存檔在哪裡
+                AllIndex = [index for index in range(len(FileNameList[i][j])) if FileNameList[i][j].startswith('/', index)]
+                PNGIndex = FileNameList[i][j].rfind(".png")
 
-                    # 抓取原圖
-                    LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
-                    LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
+                # 如果是第 0，就要創建資料夾
+                if j == 0:
+                    # 創建並寫入 Datalist 中
+                    DataListSinglePath = self.DataListDir + "/Data/" + FileNameList[i][j][AllIndex[-3] + 1: AllIndex[-2]] + ".txt"
+                    DataListSingle = open(DataListSinglePath, "w")
+                    DataList.write(DataListSinglePath + "\n")
 
-                    # 放進原本該放的地方
-                    WindowImg = LargerInputImg[rowIndex: rowIndex + self.WindowsSize,
-                                    colIndex: colIndex + self.WindowsSize]
-                    WindowProb = LabelProbImg[rowIndex][colIndex]
-                    CurrentSaveName = SaveDataName + "_" + str(rowIndex) + "_" + str(colIndex) + ".png"
+                    # 產生 Data
+                    os.mkdir(self.DataListDir + "/Data/" + FileNameList[i][j][AllIndex[-3] + 1: AllIndex[-2]])
 
-                    # 根據機率算要寫哪個檔案
-                    Index = np.argmax(WindowProb)
+                SaveDataName = self.DataListDir + "/Data/" + FileNameList[i][j][AllIndex[-3] + 1: AllIndex[-2]] + "/" + FileNameList[i][j][AllIndex[-1] + 1:PNGIndex]
 
-                    # 寫出檔案
-                    cv2.imwrite(CurrentSaveName, WindowImg * 255)
-                    WriteLine = CurrentSaveName + " " + str(Index) + "\n"
-                    DataList.write(WriteLine)
+                # 讀圖
+                InputImg = cv2.imread(FileNameList[i][j], cv2.IMREAD_GRAYSCALE) / 255  # 這邊要除 255
+                LabelImg = cv2.imread(LabeledList[i][j], cv2.IMREAD_COLOR)
+                LabelProbImg = self._TransformProbImg(LabelImg, i)
+
+                # 找出哪邊是 0 & 非零
+                [rows, cols] = InputImg.shape[:2]
+                for rowIndex in range(rows):
+                    for colIndex in range(cols):
+                        # 抓取原圖
+                        halfRadius = int((self.WindowsSize - 1) / 2)
+
+                        # 抓取原圖
+                        LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
+                        LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
+
+                        # 放進原本該放的地方
+                        WindowImg = LargerInputImg[rowIndex: rowIndex + self.WindowsSize,
+                                        colIndex: colIndex + self.WindowsSize]
+                        WindowProb = LabelProbImg[rowIndex][colIndex]
+                        CurrentSaveName = SaveDataName + "_" + str(rowIndex) + "_" + str(colIndex) + ".png"
+
+                        # 根據機率算要寫哪個檔案
+                        Index = np.argmax(WindowProb)
+
+                        # 寫出檔案
+                        cv2.imwrite(CurrentSaveName, WindowImg * 255)
+                        WriteLine = CurrentSaveName + " " + str(Index) + "\n"
+                        DataListSingle.write(WriteLine)
+
+            # 關閉檔案
+            DataListSingle.close()
 
         # 關閉檔案
         DataList.close()
