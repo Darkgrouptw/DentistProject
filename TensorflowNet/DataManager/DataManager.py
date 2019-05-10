@@ -177,23 +177,28 @@ class DataManager:
 
         # Data
         DataListStr = DataList.read().split("\n")
+
         for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
-            CurrentLineData = DataListStr[i].split(" ")
-            print(DataListStr[i])
-            print(CurrentLineData)
+            DataListSingle = open(DataListStr[i], "r")
+            DataListSingleStr = DataList.read().split("\n")
+            for j in range(len(DataListSingleStr) - 1):
+                CurrentLineData = DataListSingleStr[i][:-2].split(" ")
+                # print(DataListStr[i])
+                print(CurrentLineData)
+                assert False
 
-            # 加進資料中
-            self.ImgPath.append(CurrentLineData[0])
-            resultArray = np.zeros([self.OutClass], np.float32)
-            if CurrentLineData == 0:
-                self.ZeroIndexArray.append(i)
-            else:
-                # 加 Index
-                self.NonZeroIndexArray.append(i)
+                # 加進資料中
+                self.ImgPath.append(CurrentLineData[0])
+                resultArray = np.zeros([self.OutClass], np.float32)
+                if CurrentLineData == 0:
+                    self.ZeroIndexArray.append(i)
+                else:
+                    # 加 Index
+                    self.NonZeroIndexArray.append(i)
 
-            # 加 Non Zero 結果
-            resultArray[int(CurrentLineData[1])] = 1
-            self.LabelResult.append(resultArray)
+                # 加 Non Zero 結果
+                resultArray[int(CurrentLineData[1])] = 1
+                self.LabelResult.append(resultArray)
 
         print("Zero Data Size: ", len(self.ZeroIndexArray))
         print("NonZero Data Size: ", len(self.NonZeroIndexArray))
