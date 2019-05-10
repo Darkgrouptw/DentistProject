@@ -190,10 +190,12 @@ class DataManager:
             print("Open Single DataSet: ", i, "/", str(len(DataListStr) - 1))
 
             for j in tqdm(range(len(DataListSingleStr) - 1)):
-                CurrentLineData = DataListSingleStr[j].split(" ")
+                CurrentLineData = DataListSingleStr[j].split(".png ")
+                assert len(CurrentLineData) > 1, "Change it if u are not using png!!"
+
 
                 # 加進資料中
-                self.ImgPath.append(CurrentLineData[:-1])
+                self.ImgPath.append(CurrentLineData[0] + ".png")
                 resultArray = np.zeros([self.OutClass], np.float32)
 
                 labelClass = int(CurrentLineData[-1])
