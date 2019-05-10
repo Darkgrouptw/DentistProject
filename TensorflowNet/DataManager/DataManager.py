@@ -180,7 +180,7 @@ class DataManager:
 
         for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
             DataListSingle = open(DataListStr[i], "r")
-            DataListSingleStr = DataList.read().split("\n")
+            DataListSingleStr = DataListSingle.read().split("\n")
             for j in range(len(DataListSingleStr) - 1):
                 CurrentLineData = DataListSingleStr[i][:-2].split(" ")
                 # print(DataListStr[i])
