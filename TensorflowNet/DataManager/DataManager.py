@@ -193,7 +193,8 @@ class DataManager:
                 CurrentLineData = DataListSingleStr[j].split(" ")
 
                 # 加進資料中
-                self.ImgPath.append(CurrentLineData[:-2])
+                self.ImgPath.append(CurrentLineData[:-1])
+                print(CurrentLineData[:-1])
                 resultArray = np.zeros([self.OutClass], np.float32)
 
                 labelClass = int(CurrentLineData[-1])
@@ -209,6 +210,7 @@ class DataManager:
                 self.LabelResult.append(resultArray)
             # 關閉當一檔案
             DataListSingle.close()
+            assert False
         print("Zero Data Size: ", len(self.ZeroIndexArray))
         print("NonZero Data Size: ", len(self.NonZeroIndexArray))
         print("Finish Open Data!")
