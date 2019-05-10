@@ -190,6 +190,7 @@ class DataManager:
                 self.NonZeroIndexArray.append(i)
 
             # 加 Non Zero 結果
+            print(CurrentLineData)
             resultArray[int(CurrentLineData[1])] = 1
             self.LabelResult.append(resultArray)
 
