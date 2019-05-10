@@ -59,6 +59,8 @@ class DataManager:
         for i in range(halfDataSize):
             # 前半對是 Zero
             index = choiceIndexZero[i]
+            print(index, len(choiceIndexZero))
+            print(self.ImgPath[index])
             TotalData[i] = cv2.imread(self.ImgPath[index], cv2.IMREAD_GRAYSCALE) / 255
             TotalLabelData[i] = self.LabelResult[index]
 
