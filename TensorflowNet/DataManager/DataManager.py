@@ -169,16 +169,18 @@ class DataManager:
 
         # 關閉檔案
         DataList.close()
-        print("Fininsh Generating Data!!")
+        print("Finish Generating Data!!")
 
     def _ReadListData(self):
+        print("Start Open Data!")
+
         # 先開起檔案
         DataList = open(self.DataListDir + "/DataList.txt", "r")
 
         # Data
         DataListStr = DataList.read().split("\n")
 
-        for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
+        for i in tqdm(range(len(DataListStr) - 1)):          # 跳過最後一個 \n
             DataListSingle = open(DataListStr[i], "r")
             DataListSingleStr = DataListSingle.read().split("\n")
             for j in range(len(DataListSingleStr) - 1):
@@ -199,6 +201,7 @@ class DataManager:
 
         print("Zero Data Size: ", len(self.ZeroIndexArray))
         print("NonZero Data Size: ", len(self.NonZeroIndexArray))
+        print("Finish Open Data!")
 
     # 把圖片轉換 ArgMax 的 Class Array
     def _TransformProbImg(self, LabelImg, i):
