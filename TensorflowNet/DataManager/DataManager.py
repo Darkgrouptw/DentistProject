@@ -191,7 +191,7 @@ class DataManager:
                 CurrentLineData = DataListSingleStr[i].split(" ")
 
                 # 加進資料中
-                self.ImgPath.append(CurrentLineData[:-2])
+                self.ImgPath.append(int(CurrentLineData[:-2]))
                 resultArray = np.zeros([self.OutClass], np.float32)
                 if CurrentLineData == 0:
                     self.ZeroIndexArray.append(i)
