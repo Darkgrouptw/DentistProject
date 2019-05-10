@@ -179,6 +179,7 @@ class DataManager:
         DataListStr = DataList.read().split("\n")
         for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
             CurrentLineData = DataListStr[i].split(" ")
+            print(CurrentLineData)
 
             # 加進資料中
             self.ImgPath.append(CurrentLineData[0])
@@ -190,7 +191,6 @@ class DataManager:
                 self.NonZeroIndexArray.append(i)
 
             # 加 Non Zero 結果
-            print(CurrentLineData)
             resultArray[int(CurrentLineData[1])] = 1
             self.LabelResult.append(resultArray)
 
