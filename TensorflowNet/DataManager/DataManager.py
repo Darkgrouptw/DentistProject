@@ -184,7 +184,7 @@ class DataManager:
             for j in range(len(DataListSingleStr) - 1):
                 CurrentLineData = DataListSingleStr[i].split(" ")
                 # print(DataListStr[i])
-                print(CurrentLineData)
+                print(CurrentLineData[:-2])
                 assert False
 
                 # 加進資料中
