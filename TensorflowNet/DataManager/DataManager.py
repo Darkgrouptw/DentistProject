@@ -170,7 +170,6 @@ class DataManager:
         # 關閉檔案
         DataList.close()
         print("Fininsh Generating Data!!")
-        assert False
 
     def _ReadListData(self):
         # 先開起檔案

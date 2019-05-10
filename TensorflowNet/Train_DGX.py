@@ -65,12 +65,12 @@ if len(ErrorFileList) > 0:
 DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 101)
 
 # Network
-# for lr in lrArray:
-#     for kernelSize in kernelSizeArray:
-#         logDir = "./logs/Full_kernel_" + str(kernelSize)
-#         net = Network_Prob(101, 101, 4, lr, kernelSize, logDir, True)
-#
-#         # Train
-#         net.Train(DM, 1000, 128)
-#         net.SaveWeight(logDir)
-#         net.Release()
+for lr in lrArray:
+    for kernelSize in kernelSizeArray:
+        logDir = "./logs/Full_kernel_" + str(kernelSize)
+        net = Network_Prob(101, 101, 4, lr, kernelSize, logDir, True)
+
+        # Train
+        net.Train(DM, 10000, 128)
+        net.SaveWeight(logDir)
+        net.Release()
