@@ -188,19 +188,22 @@ class DataManager:
             print("Open Single DataSet: ", i, "/", str(len(DataListStr) - 1))
 
             for j in tqdm(range(len(DataListSingleStr) - 1)):
-                CurrentLineData = DataListSingleStr[i].split(" ")
+                CurrentLineData = DataListSingleStr[j].split(" ")
 
                 # 加進資料中
-                self.ImgPath.append(int(CurrentLineData[:-2]))
+                self.ImgPath.append(CurrentLineData[:-2])
                 resultArray = np.zeros([self.OutClass], np.float32)
-                if CurrentLineData == 0:
-                    self.ZeroIndexArray.append(i)
+
+                labelClass = int(CurrentLineData[-1])
+                insertIndex = len(self.ImgPath) - 1
+                if labelClass == 0:
+                    self.ZeroIndexArray.append(insertIndex)
                 else:
                     # 加 Index
-                    self.NonZeroIndexArray.append(i)
+                    self.NonZeroIndexArray.append(insertIndex)
 
                 # 加 Non Zero 結果
-                resultArray[int(CurrentLineData[-1])] = 1
+                resultArray[labelClass] = 1
                 self.LabelResult.append(resultArray)
             # 關閉當一檔案
             DataListSingle.close()
