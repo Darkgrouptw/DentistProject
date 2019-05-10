@@ -182,13 +182,13 @@ class DataManager:
             DataListSingle = open(DataListStr[i], "r")
             DataListSingleStr = DataListSingle.read().split("\n")
             for j in range(len(DataListSingleStr) - 1):
-                CurrentLineData = DataListSingleStr[i][:-2].split(" ")
+                CurrentLineData = DataListSingleStr[i].split(" ")
                 # print(DataListStr[i])
                 print(CurrentLineData)
                 assert False
 
                 # 加進資料中
-                self.ImgPath.append(CurrentLineData[0])
+                self.ImgPath.append(CurrentLineData[:-2])
                 resultArray = np.zeros([self.OutClass], np.float32)
                 if CurrentLineData == 0:
                     self.ZeroIndexArray.append(i)
@@ -197,7 +197,7 @@ class DataManager:
                     self.NonZeroIndexArray.append(i)
 
                 # 加 Non Zero 結果
-                resultArray[int(CurrentLineData[1])] = 1
+                resultArray[int(CurrentLineData[-1])] = 1
                 self.LabelResult.append(resultArray)
 
         print("Zero Data Size: ", len(self.ZeroIndexArray))
