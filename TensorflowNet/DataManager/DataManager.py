@@ -179,6 +179,7 @@ class DataManager:
         DataListStr = DataList.read().split("\n")
         for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
             CurrentLineData = DataListStr[i].split(" ")
+            print(DataListStr[i])
             print(CurrentLineData)
 
             # 加進資料中
