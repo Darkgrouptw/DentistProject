@@ -180,10 +180,14 @@ class DataManager:
         # Data
         DataListStr = DataList.read().split("\n")
 
-        for i in tqdm(range(len(DataListStr) - 1)):          # 跳過最後一個 \n
+        for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
             DataListSingle = open(DataListStr[i], "r")
             DataListSingleStr = DataListSingle.read().split("\n")
-            for j in range(len(DataListSingleStr) - 1):
+
+            # Debug 用
+            print("Open Single DataSet: ", i, "/", str(len(DataListStr) - 1))
+
+            for j in tqdm(range(len(DataListSingleStr) - 1)):
                 CurrentLineData = DataListSingleStr[i].split(" ")
 
                 # 加進資料中
@@ -198,7 +202,8 @@ class DataManager:
                 # 加 Non Zero 結果
                 resultArray[int(CurrentLineData[-1])] = 1
                 self.LabelResult.append(resultArray)
-
+            # 關閉當一檔案
+            DataListSingle.close()
         print("Zero Data Size: ", len(self.ZeroIndexArray))
         print("NonZero Data Size: ", len(self.NonZeroIndexArray))
         print("Finish Open Data!")
