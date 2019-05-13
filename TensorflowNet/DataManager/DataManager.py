@@ -36,7 +36,6 @@ class DataManager:
     def BatchTrainData(self, size):
         # 抓出所有要的 Index 來產生資料
         halfDataSize = int(size / 2)
-        print(self.NonZeroIndexArray.shape)
         choiceIndexNonZero = self.NonZeroIndexArray[np.random.choice(self.NonZeroIndexArray.shape[0], size=halfDataSize, replace=False)]
         choiceIndexZero = self.ZeroIndexArray[np.random.choice(self.ZeroIndexArray.shape[0], size=halfDataSize, replace=False)]
         TotalIndex = np.concatenate([choiceIndexNonZero, choiceIndexZero], axis=0)
