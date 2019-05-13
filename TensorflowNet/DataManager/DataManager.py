@@ -26,47 +26,22 @@ class DataManager:
         self.WindowsSize = WindowsSize
         self.OutClass = OutClass
 
-        #檔案前處理
-        self.DataListDir = "./DataList"
-        if not self._CheckFileListIsExist():
-            print("Creating Data!!")
-            self._ReadDataAndCreateListData(FileNameList, LabeledList)
-        else:
-            print("Already has Data!!")
-
         # 讀檔案
-        self.ImgPath = []                   # 圖片位置
-        self.LabelResult = []               # 存非 0 的結果
-        self.NonZeroIndexArray = []         # 存非 0 的方哪
-        self.ZeroIndexArray = []            # 存 0 放在哪
-        self._ReadListData()
+        self._ReadData(FileNameList, LabeledList)
 
         # 參數設定
         # self.TrainValidRatio = Ratio
-
-
 
     # 拿一部分的 Train Data
     def BatchTrainData(self, size):
         # 抓出所有要的 Index 來產生資料
         halfDataSize = int(size / 2)
-        choiceIndexNonZero = np.random.choice(self.NonZeroIndexArray, size=halfDataSize, replace=False)
-        choiceIndexZero = np.random.choice(self.ZeroIndexArray, size=halfDataSize, replace=False)
-        TotalData = np.zeros([size, self.WindowsSize, self.WindowsSize])
-        TotalLabelData = np.zeros([size, self.OutClass])
+        print(self.NonZeroIndexArray.shape)
+        choiceIndexNonZero = self.NonZeroIndexArray[np.random.choice(self.NonZeroIndexArray.shape[0], size=halfDataSize, replace=False)]
+        choiceIndexZero = self.ZeroIndexArray[np.random.choice(self.ZeroIndexArray.shape[0], size=halfDataSize, replace=False)]
+        TotalIndex = np.concatenate([choiceIndexNonZero, choiceIndexZero], axis=0)
+        return self._GetWindowImgFromPos(TotalIndex)
 
-        # 抓圖片
-        for i in range(halfDataSize):
-            # 前半對是 Zero
-            index = choiceIndexZero[i]
-            TotalData[i] = cv2.imread(self.ImgPath[index], cv2.IMREAD_GRAYSCALE) / 255
-            TotalLabelData[i] = self.LabelResult[index]
-
-            # 後半段是 NonZero
-            index = choiceIndexNonZero[i]
-            TotalData[halfDataSize + i] = cv2.imread(self.ImgPath[index], cv2.IMREAD_GRAYSCALE) / 255
-            TotalLabelData[halfDataSize + i] = self.LabelResult[index]
-        return TotalData.reshape([size, self.WindowsSize, self.WindowsSize, 1]), TotalLabelData.reshape([size, self.OutClass])
 
     # 拿 Valid Data
     def BatchValidData(self, size):
@@ -76,11 +51,13 @@ class DataManager:
 
     # 測試一張圖
     def TestFirstNBoxOfTrainData(self, size):
-        pass
+        # 只取前面幾個
+        totalSize = size * (200 - 60 + 1)
+        _, endIndex = self.StartEndIndex[totalSize]
+
+        return self._GetWindowImgFromPos(self.IndexArray[0: endIndex])
 
     def TestFirstNBoxOfValidData(self, size):
-        # offset = int(self.DataSize * self.TrainValidRatio)
-        # return self.Data[offset:offset + size].reshape(size, self.Rows, self.Cols, 1)
         pass
 
 
@@ -88,132 +65,80 @@ class DataManager:
     # Helper Function
     #
 
-    # 先確定檔案室否有建立起來
-    def _CheckFileListIsExist(self):
-        # 使否有資料夾
-        # 這便主要有三件事情
-        # 1. 見檔案資料夾
-        # 2. 建 Data List
-        if not os.path.isdir(self.DataListDir):
-            os.mkdir(self.DataListDir)
-            return False
+    # 把整張圖讀進來
+    def _ReadData(self, FileNameList, LabeledList):
+        print("Start Read Data!")
+        assert len(FileNameList) == len(LabeledList), "DataSize is not the same."
 
-        if not os.path.exists(self.DataListDir + "/DataList.txt"):
-            return False
-        return True
+        # 由於資料不平均
+        # 所以這邊有作一些修正
+        # 存放的內容 [rowIndex, colIndex]
+        self.NonZeroIndexArray = []
+        self.ZeroIndexArray = []
+        self.IndexArray = []
 
-    # 把資料載進來，然後到目錄中產生 兩個 List 檔案
-    def _ReadDataAndCreateListData(self, FileNameList, LabeledList):
-        # 判斷資料夾存不存在
-        if not os.path.isdir(self.DataListDir + "/Data"):
-            os.mkdir(self.DataListDir + "/Data")
+        # 建造參數
+        TotalSize = len(FileNameList) * (200 - 60 + 1)
+        self.Data = []                                                      # 由於圖片大小不確定，所以只能給這種
+        self.LabelData = []                                                 # 同上
+        self.StartEndIndex = np.zeros([TotalSize, 2], np.int32)             # [Start, EndIndex)，用在 Test 前面幾張用的
 
-        # 算長度 & 初始化資料大小的 Array
-        print("Start to Generate Data!!")
+        DataPixelCount = 0
+        for i in range(len(FileNameList)):          # 跳過最後一個 \n
+            # Debug 用
+            print("Read DataSet: ", i, "/", str(len(FileNameList)))
 
-        # 打開 Total 的檔案
-        DataList = open(self.DataListDir + "/DataList.txt", "w")
+            for j in tqdm(range(len(FileNameList[i]) - 1)):
+                # 讀圖，並確保有讀到
+                InputImg = cv2.imread(FileNameList[i][j], cv2.IMREAD_GRAYSCALE) / 255
+                LabelImg = cv2.imread(LabeledList[i][j])
 
-        for i in range(len(FileNameList)):
-            print("Creating DataSet: ",i, "/", str(len(FileNameList)))
+                # 確保有讀到資料
+                assert type(InputImg) is np.ndarray and type(LabelImg) is np.ndarray
+                rows, cols = InputImg.shape[:2]
+                LabelProbImg = self._TransformProbImg(LabelImg)
 
-            for j in tqdm(range(len(FileNameList[i]))):
-                # 先找出要存檔在哪裡
-                AllIndex = [index for index in range(len(FileNameList[i][j])) if FileNameList[i][j].startswith('/', index)]
-                PNGIndex = FileNameList[i][j].rfind(".png")
-
-                # 如果是第 0，就要創建資料夾
-                if j == 0:
-                    # 創建並寫入 Datalist 中
-                    DataListSinglePath = self.DataListDir + "/Data/" + FileNameList[i][j][AllIndex[-3] + 1: AllIndex[-2]] + ".txt"
-                    DataListSingle = open(DataListSinglePath, "w")
-                    DataList.write(DataListSinglePath + "\n")
-
-                    # 產生 Data
-                    os.mkdir(self.DataListDir + "/Data/" + FileNameList[i][j][AllIndex[-3] + 1: AllIndex[-2]])
-
-                SaveDataName = self.DataListDir + "/Data/" + FileNameList[i][j][AllIndex[-3] + 1: AllIndex[-2]] + "/" + FileNameList[i][j][AllIndex[-1] + 1:PNGIndex]
-
-                # 讀圖
-                InputImg = cv2.imread(FileNameList[i][j], cv2.IMREAD_GRAYSCALE) / 255  # 這邊要除 255
-                LabelImg = cv2.imread(LabeledList[i][j], cv2.IMREAD_COLOR)
-                LabelProbImg = self._TransformProbImg(LabelImg, i)
-
-                # 找出哪邊是 0 & 非零
-                [rows, cols] = InputImg.shape[:2]
+                # 抓出所有零 與 非零 的
                 for rowIndex in range(rows):
                     for colIndex in range(cols):
-                        # 抓取原圖
-                        halfRadius = int((self.WindowsSize - 1) / 2)
+                        Prob = LabelProbImg[rowIndex][colIndex]
+                        PosInfo = [len(self.Data), rowIndex, colIndex]
+                        if np.array_equal(Prob, [1, 0, 0, 0]):
+                            self.NonZeroIndexArray.append(PosInfo)
+                        else:
+                            self.ZeroIndexArray.append(PosInfo)
+                        self.IndexArray.append(PosInfo)
 
-                        # 抓取原圖
-                        LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
-                        LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
+                # 計算哪一張圖對應的
+                startIndex = DataPixelCount
+                DataPixelCount += rows * cols
+                endIndex = DataPixelCount
+                self.StartEndIndex[len(self.Data)] = [startIndex, endIndex]
 
-                        # 放進原本該放的地方
-                        WindowImg = LargerInputImg[rowIndex: rowIndex + self.WindowsSize,
-                                        colIndex: colIndex + self.WindowsSize]
-                        WindowProb = LabelProbImg[rowIndex][colIndex]
-                        CurrentSaveName = SaveDataName + "_" + str(rowIndex) + "_" + str(colIndex) + ".png"
+                # 圖片結算
+                self.Data.append(InputImg)
+                self.LabelData.append(LabelProbImg)
 
-                        # 根據機率算要寫哪個檔案
-                        Index = np.argmax(WindowProb)
+        # 讀完檔案
+        print("Finish Read Data!")
 
-                        # 寫出檔案
-                        cv2.imwrite(CurrentSaveName, WindowImg * 255)
-                        WriteLine = CurrentSaveName + " " + str(Index) + "\n"
-                        DataListSingle.write(WriteLine)
+        # 最後再轉乘 Numpy Array
+        # self.Data = np.asarray(self.Data)
+        # self.LabelData = np.asarray(self.LabelData)
+        self.ZeroIndexArray = np.asarray(self.ZeroIndexArray)
+        self.NonZeroIndexArray = np.asarray(self.NonZeroIndexArray)
+        self.IndexArray = np.asarray(self.IndexArray)
 
-            # 關閉檔案
-            DataListSingle.close()
-
-        # 關閉檔案
-        DataList.close()
-        print("Finish Generating Data!!")
-
-    def _ReadListData(self):
-        print("Start Open Data!")
-
-        # 先開起檔案
-        DataList = open(self.DataListDir + "/DataList.txt", "r")
-
-        # Data
-        DataListStr = DataList.read().split("\n")
-
-        for i in range(len(DataListStr) - 1):          # 跳過最後一個 \n
-            DataListSingle = open(DataListStr[i], "r")
-            DataListSingleStr = DataListSingle.read().split("\n")
-
-            # Debug 用
-            print("Open Single DataSet: ", i, "/", str(len(DataListStr) - 1))
-
-            for j in tqdm(range(len(DataListSingleStr) - 1)):
-                CurrentLineData = DataListSingleStr[j].split(".png ")
-                assert len(CurrentLineData) > 1, "Change it if u are not using png!!"
-
-                # 加進資料中
-                self.ImgPath.append(CurrentLineData[0] + ".png")
-                resultArray = np.zeros([self.OutClass], np.float32)
-
-                labelClass = int(CurrentLineData[-1])
-                insertIndex = len(self.ImgPath) - 1
-                if labelClass == 0:
-                    self.ZeroIndexArray.append(insertIndex)
-                else:
-                    # 加 Index
-                    self.NonZeroIndexArray.append(insertIndex)
-
-                # 加 Non Zero 結果
-                resultArray[labelClass] = 1
-                self.LabelResult.append(resultArray)
-            # 關閉當一檔案
-            DataListSingle.close()
-        print("Zero Data Size: ", len(self.ZeroIndexArray))
-        print("NonZero Data Size: ", len(self.NonZeroIndexArray))
-        print("Finish Open Data!")
+        print("====================================================")
+        print("DataSize: ", len(self.Data))
+        print("Label: ", len(self.LabelData))
+        print("IndexArray: ", self.IndexArray.shape)
+        print("ZeroIndex: ", self.ZeroIndexArray.shape)
+        print("NonZeroIndex: ", self.NonZeroIndexArray.shape)
+        print("====================================================")
 
     # 把圖片轉換 ArgMax 的 Class Array
-    def _TransformProbImg(self, LabelImg, i):
+    def _TransformProbImg(self, LabelImg):
         # LabelProbImg = np.zeros([LabelImg.shape[0:2]])
         shapeSize = np.concatenate([LabelImg.shape[0:2], [self.OutClass]], axis=0)
         LabelProbImg = np.zeros(shapeSize, np.float32)
@@ -232,6 +157,32 @@ class DataManager:
                 elif np.array_equal(p, [255, 0, 0]):
                     LabelProbImg[rowIndex][colIndex][3] = 1
                 else:
-                    print(i)
                     assert False, "測試有沒有 Bug"
         return LabelProbImg
+
+    def _GetWindowImgFromPos(self, choosePos):
+        size = choosePos.shape[0]
+        WindowData = np.zeros([size, self.WindowsSize, self.WindowsSize], np.float32)
+        WindowLabel = np.zeros([size, self.OutClass], np.float32)
+
+        # 接這要跑每一筆資料加到陣列中
+        for i in range(size):
+            # 抓出位置
+            pos = choosePos[i]
+
+            # 抓取原圖
+            InputImg = self.Data[pos[0]]
+            LabelProbImg = self.LabelData[pos[0]]
+
+            # 放大
+            halfRadius = int((self.WindowsSize - 1) / 2)
+            LargerInputImg = np.zeros([halfRadius * 2 + InputImg.shape[0], halfRadius * 2 + InputImg.shape[1]], np.float32)
+            LargerInputImg[halfRadius:halfRadius + InputImg.shape[0], halfRadius:halfRadius + InputImg.shape[1]] = InputImg
+
+            # 設定原本要放的位置
+            rowIndex = pos[1]
+            colIndex = pos[2]
+
+            WindowData[i] = LargerInputImg[rowIndex: rowIndex + self.WindowsSize, colIndex: colIndex + self.WindowsSize]
+            WindowLabel[i] = LabelProbImg[rowIndex][colIndex]
+        return WindowData.reshape([size, self.WindowsSize, self.WindowsSize, 1]), WindowLabel
