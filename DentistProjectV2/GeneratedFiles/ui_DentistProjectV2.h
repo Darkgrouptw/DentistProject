@@ -326,6 +326,7 @@ public:
         AlignLastTwoPCButton->setGeometry(QRect(10, 20, 131, 23));
         CombinePCButton = new QPushButton(AlignBox);
         CombinePCButton->setObjectName(QStringLiteral("CombinePCButton"));
+        CombinePCButton->setEnabled(false);
         CombinePCButton->setGeometry(QRect(10, 50, 131, 23));
         PCInfoBox = new QGroupBox(Tab_PC);
         PCInfoBox->setObjectName(QStringLiteral("PCInfoBox"));
@@ -451,7 +452,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(3);
+        tabWidget->setCurrentIndex(1);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 

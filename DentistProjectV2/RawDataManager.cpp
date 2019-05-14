@@ -585,13 +585,11 @@ void RawDataManager::AlignmentPointCloud()
 		if (score < AlignScoreThreshold)
 		{
 			PointCloudArray.removeLast();
-			SelectIndex--;
-
-			IsShowNone = true;
-			PCWidgetUpdate();
+			if (PointCloudArray.size() <= SelectIndex)
+				SelectIndex--;
 		}
 		else
-			IsShowNone = false;
+			IsLockPC = true;	// 要重新更新點雲了
 	}
 }
 

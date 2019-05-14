@@ -129,7 +129,6 @@ public:
 	bool				IsLockPC = false;										// Lock PC 是來判斷是否有新資料，有新資料就會 Lock，更新結束，就會取消 Lock
 	bool				IsLockVolumeData = false;								// 同上，可能後面會取代
 	bool				IsWidgetUpdate = false;									// 是否有介面在更新
-	bool				IsShowNone = false;										// 是否不要顯示
 	QVector<QQuaternion> QuaternionList;										// 修改用		
 	void				PCWidgetUpdate();										// 更新點部分的資料
 

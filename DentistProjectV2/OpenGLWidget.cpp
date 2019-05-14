@@ -283,10 +283,9 @@ void OpenGLWidget::DrawPointCloud()
 		program->setUniformValue(PointSizeLoc, pointSize);
 
 		// 畫
-		//for (int i = 0; i < PointCloudVertexBufferList.size(); i++)
-		if (!rawManager->IsShowNone && PointCloudVertexBufferList.size() > 0)
+		for (int i = 0; i < PointCloudVertexBufferList.size(); i++)
 		{
-			int i = PointCloudVertexBufferList.size() - 1;
+			//int i = PointCloudVertexBufferList.size() - 1;
 			if (rawManager->SelectIndex == i)
 				program->setUniformValue(IsCrurrentPCLoc, true);
 			else

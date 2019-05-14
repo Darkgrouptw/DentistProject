@@ -8,9 +8,10 @@ uniform mat4 ViewMatrix;
 
 // Uniform Point Size
 uniform float pointSize;
+
 void main()
 {
-	// 點大小
+	// 點的大小
 	gl_PointSize = pointSize;
 	
 	// Position
