@@ -10,7 +10,11 @@ OpenGLWidget::OpenGLWidget(QWidget* parent = 0) : QOpenGLWidget(parent)
 	OBJLoader::loadOBJ("./Models/handpiece.obj", GyroModelPoints, GyroModelUVs, GyroModelNormals, MaterialIndex, MaterialName);
 	cout << "讀取九軸矯正模型!!" << endl;
 	#pragma endregion
-
+	#pragma region 設定 Rotation 的矩陣
+	OCTView_ModelMatrix[0].setToIdentity();
+	OCTView_ModelMatrix[0].rotate(90, 1, 0, 0);
+	OCTView_ModelMatrix[0].translate(0, -5, -5);
+	#pragma endregion
 }
 OpenGLWidget::~OpenGLWidget()
 {
@@ -278,6 +282,7 @@ void OpenGLWidget::DrawPointCloud()
 
 		program->setUniformValue(ProgramList[2].ProjectionMLoc, ProjectionMatrix);
 		program->setUniformValue(ProgramList[2].ViewMLoc,		ViewMatrix);
+		program->setUniformValue(ProgramList[2].ModelMLoc,		OCTView_ModelMatrix[OCTViewType]);
 
 		float pointSize = (1 - (float)(Radius - MinRadius) / (MaxRadius - MinRadius)) * 0.1f;
 		program->setUniformValue(PointSizeLoc, pointSize);

@@ -92,9 +92,9 @@ private slots:
 	// 點雲操作相關
 	//////////////////////////////////////////////////////////////////////////
 	void PCIndexChangeEvnet(int);												// 更換 PC Index 的 Function
-	void QuaternionChangeEvent();												// 四個 Quaternion 修正
-	void EulerChangeEvent(int);													// 三個由拉角度修正
-	void AlignLastTwoEvent();													// 拚前兩塊
+	void AlignLastTwoPCEvent();													// 拚前兩塊
+	void CombineLastTwoPCEvent();												// 合併後面兩片
+	void CombineAllPCEvent();													// 合併全部並輸出點雲
 	void ReadPCEvent();															// 讀取 Point Cloud
 	void SavePCEvent();															// 儲存 Point Cloud
 	void DeletePCEvent();														// 刪除 Point Cloud
@@ -114,4 +114,5 @@ private slots:
 	//////////////////////////////////////////////////////////////////////////
 	void ScanNumSlider_Change(int);												// 這個是右邊視窗的顯示
 	void DisplayPanelUpdate();													// 這個是 GL 視窗的更新
+	void OCTViewOptionChange(int);												// 看的方向改變
 };

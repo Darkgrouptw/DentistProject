@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -773,14 +773,30 @@
         <string>拼接後面兩片點雲</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="CombinePCButton">
+      <widget class="QPushButton" name="CombineLastTwoPCButton">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>50</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>合併最後兩片點雲</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="CombineAllPCButton">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
          <width>131</width>
          <height>23</height>
         </rect>
@@ -815,268 +831,6 @@
         <string>點雲Index</string>
        </property>
       </widget>
-      <widget class="QGroupBox" name="QuaternionBox">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>50</y>
-         <width>161</width>
-         <height>141</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Quaternion 相關</string>
-       </property>
-       <widget class="QLabel" name="QuaternionXText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>X</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="QuaternionYText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Y</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="QuaternionYValue">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>50</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="QuaternionZText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Z</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="QuaternionWValue">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>110</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLabel" name="QuaternionWText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>110</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>W</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="QuaternionXValue">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>20</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="QuaternionZValue">
-        <property name="geometry">
-         <rect>
-          <x>40</x>
-          <y>80</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
-      <widget class="QGroupBox" name="EulerAngleBox">
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>50</y>
-         <width>331</width>
-         <height>111</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Euler角度相關</string>
-       </property>
-       <widget class="QLabel" name="EulerXText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>X</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="EulerYText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Y</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="EulerZText">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Z</string>
-        </property>
-       </widget>
-       <widget class="QSlider" name="EulerBarX">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>20</y>
-          <width>251</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="maximum">
-         <number>359</number>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QSlider" name="EulerBarY">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>50</y>
-          <width>251</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="maximum">
-         <number>359</number>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QSlider" name="EulerBarZ">
-        <property name="geometry">
-         <rect>
-          <x>30</x>
-          <y>80</y>
-          <width>251</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="maximum">
-         <number>359</number>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-       <widget class="QLabel" name="EulerZValueText">
-        <property name="geometry">
-         <rect>
-          <x>290</x>
-          <y>80</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>0</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="EulerYValueText">
-        <property name="geometry">
-         <rect>
-          <x>290</x>
-          <y>50</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>0</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-       <widget class="QLabel" name="EulerXValueText">
-        <property name="geometry">
-         <rect>
-          <x>290</x>
-          <y>20</y>
-          <width>21</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>0</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </widget>
       <widget class="QComboBox" name="PCIndex">
        <property name="geometry">
         <rect>
@@ -1090,8 +844,8 @@
       <widget class="QGroupBox" name="PCOperationBox">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>170</y>
+         <x>10</x>
+         <y>210</y>
          <width>301</width>
          <height>61</height>
         </rect>
@@ -1249,6 +1003,47 @@
      </property>
      <property name="scaledContents">
       <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="RenderGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>1490</x>
+      <y>10</y>
+      <width>101</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Render選項</string>
+    </property>
+    <widget class="QComboBox" name="OCTViewDir">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>81</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <item>
+      <property name="text">
+       <string>由上往下</string>
+      </property>
+     </item>
+    </widget>
+    <widget class="QLabel" name="OCTViewDirText">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>51</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>OCT視角</string>
      </property>
     </widget>
    </widget>

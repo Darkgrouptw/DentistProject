@@ -36,14 +36,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 
 	// 點雲操作
 	connect(ui.PCIndex,										SIGNAL(currentIndexChanged(int)),this,	SLOT(PCIndexChangeEvnet(int)));
-	/*connect(ui.QuaternionWValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
-	connect(ui.QuaternionXValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
-	connect(ui.QuaternionYValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
-	connect(ui.QuaternionZValue,							SIGNAL(editingFinished()),		this,	SLOT(QuaternionChangeEvent()));
-	connect(ui.EulerBarX,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
-	connect(ui.EulerBarY,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));
-	connect(ui.EulerBarZ,									SIGNAL(valueChanged(int)),		this,	SLOT(EulerChangeEvent(int)));*/
-	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoEvent()));
+	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoPCEvent()));
+	connect(ui.CombineLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(CombineLastTwoPCEvent()));
+	connect(ui.CombineAllPCButton,							SIGNAL(clicked()),				this,	SLOT(CombineAllPCEvent()));
 	connect(ui.LoadPCButton,								SIGNAL(clicked()),				this,	SLOT(ReadPCEvent()));
 	connect(ui.SavePCButton,								SIGNAL(clicked()),				this,	SLOT(SavePCEvent()));
 	connect(ui.DeletePCButton,								SIGNAL(clicked()),				this,	SLOT(DeletePCEvent()));
@@ -57,6 +52,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
 	connect(UpdateGLTimer,									SIGNAL(timeout()),				this,	SLOT(DisplayPanelUpdate()));
+	connect(ui.OCTViewDir,									SIGNAL(currentIndexChanged(int)),this,	SLOT(OCTViewOptionChange(int)));
 	#pragma endregion
 	#pragma region 初始化參數
 	// UI 文字 & Scan Thread
@@ -123,16 +119,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.SaveLocationText);
 	objList.push_back(ui.DisplayPanel);
 	objList.push_back(ui.PCIndex);
-	objList.push_back(ui.QuaternionXValue);
-	objList.push_back(ui.QuaternionYValue);
-	objList.push_back(ui.QuaternionZValue);
-	objList.push_back(ui.QuaternionWValue);
-	objList.push_back(ui.EulerBarX);
-	objList.push_back(ui.EulerBarY);
-	objList.push_back(ui.EulerBarZ);
-	objList.push_back(ui.EulerXValueText);
-	objList.push_back(ui.EulerYValueText);
-	objList.push_back(ui.EulerZValueText);
 	objList.push_back(ui.OtherSideResult);
 
 	rawManager.SendUIPointer(objList);
@@ -481,22 +467,37 @@ void DentistProjectV2::PCIndexChangeEvnet(int)
 	if (!rawManager.IsWidgetUpdate)
 		rawManager.SelectIndex = ui.PCIndex->currentIndex();
 }
-void DentistProjectV2::QuaternionChangeEvent()
-{
-
-}
-void DentistProjectV2::EulerChangeEvent(int)
-{
-
-}
-void DentistProjectV2::AlignLastTwoEvent()
+void DentistProjectV2::AlignLastTwoPCEvent()
 {
 	if (rawManager.PointCloudArray.size() >= 2)
 		rawManager.AlignmentPointCloud();
 }
+void DentistProjectV2::CombineLastTwoPCEvent()
+{
+	if (rawManager.PointCloudArray.size() >= 2)
+		rawManager.CombinePointCloud(rawManager.PointCloudArray.size() - 2, rawManager.PointCloudArray.size() - 1);
+}
+void DentistProjectV2::CombineAllPCEvent()
+{
+	if (rawManager.PointCloudArray.size() >= 2)
+		for (int i = rawManager.PointCloudArray.size() - 1; i > 0; i--)
+			rawManager.CombinePointCloud(0, i);
+}
+
 void DentistProjectV2::ReadPCEvent()
 {
+	QString PointCloudFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("讀取點雲"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	if (PointCloudFileName != "")
+	{
+		int index = rawManager.SelectIndex;
+		PointCloudInfo info;
+		info.ReadFromASC(PointCloudFileName);
+		rawManager.PointCloudArray.push_back(info);
 
+		// 更新相關設定
+		rawManager.SelectIndex = rawManager.PointCloudArray.size() - 1;
+		rawManager.PCWidgetUpdate();
+	}
 }
 void DentistProjectV2::SavePCEvent()
 {
@@ -556,4 +557,9 @@ void DentistProjectV2::ScanNumSlider_Change(int value)
 void DentistProjectV2::DisplayPanelUpdate()
 {
 	ui.DisplayPanel->update();
+}
+void DentistProjectV2::OCTViewOptionChange(int)
+{
+	OpenGLWidget* widget = ui.DisplayPanel;
+	widget->OCTViewType = ui.OCTViewDir->currentIndex();
 }

@@ -112,7 +112,8 @@ public:
 	bool ShakeDetect_Single(int *, bool);										// 有無晃動 (單)
 	bool ShakeDetect_Multi(bool, bool);											// 有無晃動 (多)
 	void SavePointCloud(QQuaternion);											// 因為這邊不用做比對，所以直接把點雲存出來顯示就可以了
-	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊	
+	void AlignmentPointCloud();													// 跟以前的點雲資料做對齊
+	void CombinePointCloud(int, int);											// 合併點雲	(後面加到前面)
 
 	//////////////////////////////////////////////////////////////////////////
 	// Network or Volume 相關的 Function
@@ -208,9 +209,6 @@ private:
 	QLabel*				OtherSideResult;										// TopView 
 	QObject*			DisplayPanel;											// 畫圖的部分
 	QComboBox*			PCIndex;												// 選擇 PC 的 Index
-	QVector<QLineEdit*> QuaternionLinEditArray;									// Quaternion 的文字
-	QVector<QSlider*>	EulerBarArray;											// Eular 的值
-	QVector<QLabel*>	EulerTextArray;											// Eular 文字
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function

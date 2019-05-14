@@ -52,11 +52,11 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 19 && "UI 對應有問題!!");
+	assert(UIPointer.size() == 9 && "UI 對應有問題!!");
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
-	OtherSideResult			= (QLabel*)UIPointer[18];
+	OtherSideResult			= (QLabel*)UIPointer[8];
 
 	// 後面兩個是 給 ScanThread
 	QSlider* slider			= (QSlider*)UIPointer[3];
@@ -66,23 +66,8 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 	// OpenGL
 	DisplayPanel			= UIPointer[6];
 
-	// 角度顯示
-	// 8  ~ 11	=>	Quaternion
-	// 12 ~ 14	=>	QSlider
-	// 15 ~ 17	=>	QLabel
+	// 點雲顯示
 	PCIndex					= (QComboBox*)UIPointer[7];
-	for (int i = 0; i < 4; i++)
-	{
-		QLineEdit* tempQuaternion = (QLineEdit*)UIPointer[8 + i];
-		QuaternionLinEditArray.push_back(tempQuaternion);
-	}
-	for (int i = 0; i < 3;i++)
-	{
-		QSlider* tempSlider = (QSlider*)UIPointer[12 + i];
-		QLabel* tempLabel	= (QLabel*)UIPointer[15 + i];
-		EulerBarArray.push_back(tempSlider);
-		EulerTextArray.push_back(tempLabel);
-	}
 
 	Worker->InitUIPointer(slider, scanButton, savePathText);
 }
@@ -578,6 +563,7 @@ void RawDataManager::AlignmentPointCloud()
 		// 轉換 Matrix
 		float score = 0;
 		super4PCS_Align(&LastPC, &NewPC, score);
+		cout << "拼接最後分數: " << score << endl;
 		ConvertPoint3D2QVector(NewPC, PointCloudArray[LastID].Points);
 
 		// 這邊再去做判斷
@@ -585,12 +571,30 @@ void RawDataManager::AlignmentPointCloud()
 		if (score < AlignScoreThreshold)
 		{
 			PointCloudArray.removeLast();
-			if (PointCloudArray.size() <= SelectIndex)
-				SelectIndex--;
+			SelectIndex = PointCloudArray.size() - 1;
+			PCWidgetUpdate();
 		}
 		else
 			IsLockPC = true;	// 要重新更新點雲了
 	}
+}
+void RawDataManager::CombinePointCloud(int FirstID, int LastID)
+{
+	// 加進去
+	for (int i = 0; i < PointCloudArray[LastID].Points.size(); i++)
+	{
+		QVector3D p = PointCloudArray[LastID].Points[i];
+		PointCloudArray[FirstID].Points.append(p);
+	}
+
+	// 把顯示部分設定為合併後的那一個
+	SelectIndex = FirstID;
+
+	// 刪除那片點雲
+	PointCloudArray.removeAt(LastID);
+
+	// 更新資料
+	PCWidgetUpdate();
 }
 
 // Network or Volume 相關的 Function
@@ -661,25 +665,6 @@ void RawDataManager::PCWidgetUpdate()
 		return;
 
 	PCIndex->setCurrentIndex(SelectIndex);
-
-	// 重新設定 Rotation
-	QQuaternion quat = QuaternionList[SelectIndex];
-	QuaternionLinEditArray[0]->setText(QString::number(quat.x()));
-	QuaternionLinEditArray[1]->setText(QString::number(quat.y()));
-	QuaternionLinEditArray[2]->setText(QString::number(quat.z()));
-	QuaternionLinEditArray[3]->setText(QString::number(quat.scalar()));
-
-	QVector3D angle = quat.toEulerAngles();
-	int AngleX = (int)(angle[0] + 360) % 360;
-	int AngleY = (int)(angle[1] + 360) % 360;
-	int AngleZ = (int)(angle[2] + 360) % 360;
-	EulerBarArray[0]->setValue(AngleX);
-	EulerBarArray[1]->setValue(AngleY);
-	EulerBarArray[2]->setValue(AngleZ);
-
-	EulerTextArray[0]->setText(QString::number(AngleX));
-	EulerTextArray[1]->setText(QString::number(AngleY));
-	EulerTextArray[2]->setText(QString::number(AngleZ));
 
 	// 取消
 	IsWidgetUpdate = false;
@@ -911,13 +896,13 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 			MatchSuper4PCS *matcher;
 			matcher = new MatchSuper4PCS(options, logger);
 
-			cout << "Use Super4PCS" << endl;
+			//cout << "Use Super4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
 		}
 		else {
 			Match4PCS *matcher;
 			matcher = new Match4PCS(options, logger);
-			cout << "Use old 4PCS" << endl;
+			//cout << "Use old 4PCS" << endl;
 			score = matcher->ComputeTransformation(*PC1, PC2, *mat);
 		}
 
@@ -934,7 +919,7 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 		return matrix;
 	}
 	t2 = clock();
-	cout << "Score: " << score << endl;
+	//cout << "Score: " << score << endl;
 	FinalScore = score;
 	return matrix;
 }
