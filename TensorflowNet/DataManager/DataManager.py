@@ -48,16 +48,22 @@ class DataManager:
         # return self.Data[choice].reshape(size, self.WindowsSize, self.WindowsSize, 1), self.LabelData[choice].reshape(size, self.OutClass)
         pass
 
+    # 測試一組圖
+    # def TestFirstNBoxOfTrainData(self, size):
+    #     # 只取前面幾個
+    #     totalSize = size * (200 - 60 + 1)
+    #     _, endIndex = self.StartEndIndex[totalSize - 1]
+    #
+    #     return self._GetWindowImgFromPos(self.IndexArray[0: endIndex])
+    #
+    # def TestFirstNBoxOfValidData(self, size):
+    #     pass
+
     # 測試一張圖
-    def TestFirstNBoxOfTrainData(self, size):
-        # 只取前面幾個
-        totalSize = size * (200 - 60 + 1)
-        _, endIndex = self.StartEndIndex[totalSize]
-
-        return self._GetWindowImgFromPos(self.IndexArray[0: endIndex])
-
-    def TestFirstNBoxOfValidData(self, size):
-        pass
+    def TestFullImage(self, index):
+        startIndex, endIndex, rows, cols = self.StartEndIndex[index]
+        InputData, _ = self._GetWindowImgFromPos(self.IndexArray[startIndex:endIndex])
+        return InputData, rows, cols
 
 
     #
@@ -80,14 +86,14 @@ class DataManager:
         TotalSize = len(FileNameList) * (200 - 60 + 1)
         self.Data = []                                                      # 由於圖片大小不確定，所以只能給這種
         self.LabelData = []                                                 # 同上
-        self.StartEndIndex = np.zeros([TotalSize, 2], np.int32)             # [Start, EndIndex)，用在 Test 前面幾張用的
+        self.StartEndIndex = np.zeros([TotalSize, 4], np.int32)             # [StartIndex, EndIndex, rows, cols]，[Start, EndIndex)，用在 Test 前面幾張用的
 
         DataPixelCount = 0
         for i in range(len(FileNameList)):          # 跳過最後一個 \n
             # Debug 用
             print("Read DataSet: ", i, "/", str(len(FileNameList)))
 
-            for j in tqdm(range(len(FileNameList[i]) - 1)):
+            for j in tqdm(range(len(FileNameList[i]))):
                 # 讀圖，並確保有讀到
                 InputImg = cv2.imread(FileNameList[i][j], cv2.IMREAD_GRAYSCALE) / 255
                 LabelImg = cv2.imread(LabeledList[i][j])
@@ -112,7 +118,7 @@ class DataManager:
                 startIndex = DataPixelCount
                 DataPixelCount += rows * cols
                 endIndex = DataPixelCount
-                self.StartEndIndex[len(self.Data)] = [startIndex, endIndex]
+                self.StartEndIndex[len(self.Data)] = [startIndex, endIndex, rows, cols]
 
                 # 圖片結算
                 self.Data.append(InputImg)

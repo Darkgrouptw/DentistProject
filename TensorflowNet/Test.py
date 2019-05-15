@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 # 參數
-lr = 5e-3
+lr = 1e-4
 kernelSize = 5
 
 StartIndex = 60
@@ -36,15 +36,21 @@ DataPath = [
 
 ErrorFileList = []
 for i in range(len(DataPath)):
+    tempInputArray = []
+    tempLabeledArray = []
     for j in range(StartIndex, EndIndex + 1):
-        tempInputPath = os.path.join(DataPath[i], "./boundingBox_v2/" + str(j) + ".png")
-        tempLabeledPath = os.path.join(DataPath[i], "./labeled_v2/" + str(j) + ".png")
+        tempInputPath = DataPath[i] + "/boundingBox_v2/" + str(j) + ".png"
+        tempLabeledPath = DataPath[i] + "/labeled_v2/" + str(j) + ".png"
 
         if (not os.path.isfile(tempInputPath)) or (not os.path.isfile(tempLabeledPath)):
             ErrorFileList.append(tempInputPath)
 
-        InputFileList.append(tempInputPath)
-        LabeledFileList.append(tempLabeledPath)
+        tempInputArray.append(tempInputPath)
+        tempLabeledArray.append(tempLabeledPath)
+
+    # 加進去 Array 中
+    InputFileList.append(tempInputArray)
+    LabeledFileList.append(tempLabeledArray)
 
 if len(ErrorFileList) > 0:
     print("以下的檔案有少!!")
@@ -61,11 +67,6 @@ net = Network_Prob(101, 101, 4, lr, kernelSize, logDir, False)
 # net.LoadWeight("./logs/0.005/kernel_5")
 net.LoadWeight("./logs/Full_kernel_5")
 
-ValidData = DM.TestFirstNBoxOfTrainData(len(DataPath))
-predictData = net.Predict(ValidData)
-print("PredictData Shape: ", predictData.shape)
-assert False
-
 # 存出來
 color = np.array(
     [
@@ -76,13 +77,16 @@ color = np.array(
     ],
     dtype = np.uint8
 )
-for i in range(predictData.shape[0]):
-    ImgProb = predictData[startIndex: endIndex].reshape([DM.RowArray[i], DM.ColArray[i], net.OutClass])
+
+# 每一張圖都跑過一次
+for i in range(len(DataPath) * 141):
+    print(i, "/", range(DataPath) * 141)
+    ValidData, rows, cols = DM.TestFullImage(i)
+    predictData = net.Predict(ValidData)
+    ImgProb = predictData.reshape([rows, cols, net.OutClass])
 
     # 抓最大的
     ImgArgMaxProb = np.argmax(ImgProb, axis=2)
     imgColor = color[ImgArgMaxProb]
-    # Img = predictData[]
-
-    cv2.imwrite("D:/Data" + str(i) + ".png", imgColor)
+    cv2.imwrite("D:/Data/" + str(i) + ".png", imgColor)
 net.Release()
