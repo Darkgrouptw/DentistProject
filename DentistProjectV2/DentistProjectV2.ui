@@ -805,6 +805,22 @@
         <string>合併所有點雲</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="RotationAngleTest">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>250</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>旋轉測試</string>
+       </property>
+      </widget>
      </widget>
      <widget class="QGroupBox" name="PCInfoBox">
       <property name="geometry">

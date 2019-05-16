@@ -975,7 +975,7 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 	// 要算出原始整條的強度值
 	float *GPU_BrightnessArray;
 	cudaMalloc(&GPU_BrightnessArray, sizeof(float) * SizeX);
-	ZCalcBrightness << <1, SizeZ >> > (GPU_OCTFloatData, GPU_BrightnessArray, 1, SizeX, SizeZ, StartIndex);
+	ZCalcBrightness << <1, SizeX >> > (GPU_OCTFloatData, GPU_BrightnessArray, 1, SizeX, SizeZ / 2, StartIndex);
 	CheckCudaError();
 
 	// 算最大值
