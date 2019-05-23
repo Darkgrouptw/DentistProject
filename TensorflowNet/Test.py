@@ -80,7 +80,7 @@ color = np.array(
 
 # 每一張圖都跑過一次
 for i in range(len(DataPath) * 141):
-    print(i, "/", range(DataPath) * 141)
+    print(i, "/", len(DataPath) * 141)
     ValidData, rows, cols = DM.TestFullImage(i)
     predictData = net.Predict(ValidData)
     ImgProb = predictData.reshape([rows, cols, net.OutClass])
