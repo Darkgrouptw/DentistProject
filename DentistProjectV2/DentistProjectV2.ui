@@ -812,13 +812,29 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>250</y>
+         <y>110</y>
          <width>131</width>
          <height>23</height>
         </rect>
        </property>
        <property name="text">
         <string>旋轉測試</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="PassScanDataToPC">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>140</y>
+         <width>131</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>一系列掃描圖轉模型</string>
        </property>
       </widget>
      </widget>

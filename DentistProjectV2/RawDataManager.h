@@ -35,6 +35,7 @@
 #include <QImage>
 #include <QQuaternion>
 #include <QVector2D>
+#include <QStringList>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -67,7 +68,6 @@ struct BoundingBoxDataStruct
 	vector<Point> contoursRaw;					// 這個是原始的邊界
 	vector<Point> contoursPoly;					// 這個是對輪廓做多邊形擬合之後的邊界
 	Rect boundingRect;							// 框框框起來
-	//float energy;								// 這邊是 Energy 的算法
 };
 
 using namespace GlobalRegistration;
@@ -84,9 +84,6 @@ public:
 	void SendUIPointer(QVector<QObject*>);
 	void ShowImageIndex(int);
 
-	//////////////////////////////////////////////////////////////////////////
-	// 九軸 or 點雲 or Alignment 相關
-	//////////////////////////////////////////////////////////////////////////
 	//void ReadPointCloudData(QString);
 
 	//////////////////////////////////////////////////////////////////////////
@@ -132,6 +129,8 @@ public:
 	bool				IsWidgetUpdate = false;									// 是否有介面在更新
 	QVector<QQuaternion> QuaternionList;										// 修改用		
 	void				PCWidgetUpdate();										// 更新點部分的資料
+	void				RotationAngle(int);										// 更新旋轉的角度
+	void				TransformMultiDataToPointCloud(QStringList);			// 將資料轉成點雲
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
@@ -220,6 +219,13 @@ private:
 	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
 	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
+
+	//////////////////////////////////////////////////////////////////////////
+	// TransformMatrix
+	//////////////////////////////////////////////////////////////////////////
+	static const int	CONST_SIZE_MATRIX = 12 + 1;								// 矩陣大小			
+	QString		PreMolarLoc = "./AlignmentMatrix/PreMolar.txt";					// Alignment 的位置
+	QMatrix4x4	PreMolarMatrix[CONST_SIZE_MATRIX];								// 矩陣
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數

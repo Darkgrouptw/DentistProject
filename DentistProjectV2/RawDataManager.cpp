@@ -43,6 +43,16 @@ RawDataManager::RawDataManager()
 	for (int i = 0; i < testDir.size(); i++)
 		dir.mkpath("Images/OCTImages/" + testDir[i]);
 	#pragma endregion
+	#pragma region 讀取 Matrix
+	QFile TransformFile(PreMolarLoc);
+	assert(TransformFile.open(QIODevice::ReadOnly) && "讀取 PreMolar 的矩陣錯誤!!");
+
+	QTextStream ss(&TransformFile);
+	QString readText = ss.readAll().replace("\r\n", "\n");
+	QStringList itemData = readText.split("\n\n");
+	assert(itemData.size() == CONST_SIZE_MATRIX && "讀取 Matrix 失敗");
+	//cout << "Size: " << itemData.size() << endl;
+	#pragma endregion
 }
 RawDataManager::~RawDataManager()
 {
@@ -668,6 +678,75 @@ void RawDataManager::PCWidgetUpdate()
 
 	// 取消
 	IsWidgetUpdate = false;
+}
+void RawDataManager::RotationAngle(int rotateTimes)
+{
+	// 先確定有這片點雲
+	if (SelectIndex >= 0)
+	{
+		// Point
+		PointCloudArray[SelectIndex].RotateConstantAngle(rotateTimes);
+		IsLockPC = true;
+	}
+}
+void RawDataManager::TransformMultiDataToPointCloud(QStringList rawDataList)
+{
+	#pragma region 先確認資料是正確的
+	bool IsCurrent = true;
+	IsCurrent = IsCurrent & rawDataList[0].endsWith("_C");
+
+	// 確認是否有按照順序
+	for (int i = 1; i < 13; i++)
+		IsCurrent = IsCurrent & rawDataList[i].endsWith("_" + QString::number(i));
+
+	if (!IsCurrent)
+	{
+		cout << "資料可能不正確!" << endl;
+		return;
+	}
+	#pragma endregion
+	#pragma region 接這按照順序轉點雲
+	// 清空點雲
+	PointCloudArray.clear();
+	 
+	// RawDataManager 轉換
+	for (int i = 0; i < 13; i++)
+	{
+		// 轉換函式
+		ReadRawDataFromFileV2(rawDataList[i]);
+		TransformToIMG(false);
+		TransformToOtherSideView();
+
+		int index = rawDataList[i].lastIndexOf("/");
+		QString SaveFileName = rawDataList[i].mid(0, index) + "/";
+		if (i == 0)
+			SaveFileName += "C";
+		else
+			SaveFileName += QString::number(i);
+		SaveFileName += ".png";
+		cv::imwrite(SaveFileName.toLocal8Bit().toStdString(), cudaV2.TransformToOtherSideView());
+
+		// Quat
+		QQuaternion quat;
+		SavePointCloud(quat);
+
+		if (i > 0)
+			PointCloudArray[i].RotateConstantAngle(i - 1);
+	}
+
+	// 要存檔的
+	for (int i = 0; i < 13; i++) 
+	{
+		int index = rawDataList[i].lastIndexOf("/");
+		QString SaveFileName = rawDataList[i].mid(0, index) + "/";
+		cout << SaveFileName.toLocal8Bit().toStdString() << endl;
+		if (i == 0)
+			SaveFileName += "C";
+		else
+			SaveFileName += QString::number(i);
+		PointCloudArray[i].SaveASC(SaveFileName + ".xyz");
+	}
+	#pragma endregion
 }
 
 // 網路

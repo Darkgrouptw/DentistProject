@@ -36,12 +36,14 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 
 	// 點雲操作
 	connect(ui.PCIndex,										SIGNAL(currentIndexChanged(int)),this,	SLOT(PCIndexChangeEvnet(int)));
-	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoPCEvent()));
-	connect(ui.CombineLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(CombineLastTwoPCEvent()));
-	connect(ui.CombineAllPCButton,							SIGNAL(clicked()),				this,	SLOT(CombineAllPCEvent()));
 	connect(ui.LoadPCButton,								SIGNAL(clicked()),				this,	SLOT(ReadPCEvent()));
 	connect(ui.SavePCButton,								SIGNAL(clicked()),				this,	SLOT(SavePCEvent()));
 	connect(ui.DeletePCButton,								SIGNAL(clicked()),				this,	SLOT(DeletePCEvent()));
+	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoPCEvent()));
+	connect(ui.CombineLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(CombineLastTwoPCEvent()));
+	connect(ui.CombineAllPCButton,							SIGNAL(clicked()),				this,	SLOT(CombineAllPCEvent()));
+	connect(ui.RotationAngleTest,							SIGNAL(clicked()),				this,	SLOT(RotationAngleTestEvent()));
+	connect(ui.PassScanDataToPC,							SIGNAL(clicked()),				this,	SLOT(TransformMultiDataToPCEvent()));
 
 	// Network 相關
 	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
@@ -77,7 +79,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	ui.NetworkResultText->setEnabled(false);
 	ui.OCTTestingBox->setEnabled(false);
 	ui.BLETestingBox->setEnabled(false);
-	ui.tabWidget->setTabEnabled(2, false);
 	ui.tabWidget->setTabEnabled(3, false);
 
 	// BLE
@@ -467,23 +468,6 @@ void DentistProjectV2::PCIndexChangeEvnet(int)
 	if (!rawManager.IsWidgetUpdate)
 		rawManager.SelectIndex = ui.PCIndex->currentIndex();
 }
-void DentistProjectV2::AlignLastTwoPCEvent()
-{
-	if (rawManager.PointCloudArray.size() >= 2)
-		rawManager.AlignmentPointCloud();
-}
-void DentistProjectV2::CombineLastTwoPCEvent()
-{
-	if (rawManager.PointCloudArray.size() >= 2)
-		rawManager.CombinePointCloud(rawManager.PointCloudArray.size() - 2, rawManager.PointCloudArray.size() - 1);
-}
-void DentistProjectV2::CombineAllPCEvent()
-{
-	if (rawManager.PointCloudArray.size() >= 2)
-		for (int i = rawManager.PointCloudArray.size() - 1; i > 0; i--)
-			rawManager.CombinePointCloud(0, i);
-}
-
 void DentistProjectV2::ReadPCEvent()
 {
 	QString PointCloudFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("讀取點雲"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
@@ -522,6 +506,37 @@ void DentistProjectV2::DeletePCEvent()
 			rawManager.SelectIndex--;
 		rawManager.PCWidgetUpdate();
 	}
+}
+void DentistProjectV2::AlignLastTwoPCEvent()
+{
+	if (rawManager.PointCloudArray.size() >= 2)
+		rawManager.AlignmentPointCloud();
+}
+void DentistProjectV2::CombineLastTwoPCEvent()
+{
+	if (rawManager.PointCloudArray.size() >= 2)
+		rawManager.CombinePointCloud(rawManager.PointCloudArray.size() - 2, rawManager.PointCloudArray.size() - 1);
+}
+void DentistProjectV2::CombineAllPCEvent()
+{
+	if (rawManager.PointCloudArray.size() >= 2)
+		for (int i = rawManager.PointCloudArray.size() - 1; i > 0; i--)
+			rawManager.CombinePointCloud(0, i);
+}
+void DentistProjectV2::RotationAngleTestEvent()
+{
+	rawManager.RotationAngle(1);
+}
+void DentistProjectV2::TransformMultiDataToPCEvent()
+{
+	QStringList RawDataList = QFileDialog::getOpenFileNames(this,
+		codec->toUnicode("讀取掃描狀況"),
+		"E:/DentistData/ScanData/2019.05.15/",
+		codec->toUnicode(""), nullptr,
+		QFileDialog::DontUseNativeDialog);
+
+	if (RawDataList.size() == 13)
+		rawManager.TransformMultiDataToPointCloud(RawDataList);
 }
 
 // Network 相關

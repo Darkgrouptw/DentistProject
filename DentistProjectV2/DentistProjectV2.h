@@ -92,12 +92,14 @@ private slots:
 	// 點雲操作相關
 	//////////////////////////////////////////////////////////////////////////
 	void PCIndexChangeEvnet(int);												// 更換 PC Index 的 Function
-	void AlignLastTwoPCEvent();													// 拚前兩塊
-	void CombineLastTwoPCEvent();												// 合併後面兩片
-	void CombineAllPCEvent();													// 合併全部並輸出點雲
 	void ReadPCEvent();															// 讀取 Point Cloud
 	void SavePCEvent();															// 儲存 Point Cloud
 	void DeletePCEvent();														// 刪除 Point Cloud
+	void AlignLastTwoPCEvent();													// 拚前兩塊
+	void CombineLastTwoPCEvent();												// 合併後面兩片
+	void CombineAllPCEvent();													// 合併全部並輸出點雲
+	void RotationAngleTestEvent();												// 旋轉 30 度測試
+	void TransformMultiDataToPCEvent();												// 轉掃描資料
 
 	//////////////////////////////////////////////////////////////////////////
 	// Network 相關
