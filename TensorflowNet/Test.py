@@ -1,5 +1,5 @@
 from Network.Network_Prob import Network_Prob
-from DataManager import DataManager
+from DataManager import DataManager_Test
 import os
 import numpy as np
 import cv2
@@ -40,24 +40,21 @@ for i in range(len(DataPath)):
     tempLabeledArray = []
     for j in range(StartIndex, EndIndex + 1):
         tempInputPath = DataPath[i] + "/boundingBox_v2/" + str(j) + ".png"
-        tempLabeledPath = DataPath[i] + "/labeled_v2/" + str(j) + ".png"
 
-        if (not os.path.isfile(tempInputPath)) or (not os.path.isfile(tempLabeledPath)):
+        if (not os.path.isfile(tempInputPath)):
             ErrorFileList.append(tempInputPath)
 
         tempInputArray.append(tempInputPath)
-        tempLabeledArray.append(tempLabeledPath)
 
     # 加進去 Array 中
     InputFileList.append(tempInputArray)
-    LabeledFileList.append(tempLabeledArray)
 
 if len(ErrorFileList) > 0:
     print("以下的檔案有少!!")
     for i in range(len(ErrorFileList)):
         print(ErrorFileList[i])
     assert False
-DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 101)
+DM = DataManager_Test.DataManager(InputFileList, 4, 101)
 
 # Network
 logDir = "./logs"
@@ -88,5 +85,5 @@ for i in range(len(DataPath) * 141):
     # 抓最大的
     ImgArgMaxProb = np.argmax(ImgProb, axis=2)
     imgColor = color[ImgArgMaxProb]
-    cv2.imwrite("D:/Data/" + str(i) + ".png", imgColor)
+    cv2.imwrite("D:/Data_Slim/" + str(i) + ".png", imgColor)
 net.Release()
