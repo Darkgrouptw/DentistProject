@@ -558,11 +558,15 @@ void DentistProjectV2::NetworkDataGenerateV2()
 }
 void DentistProjectV2::PredictResultTesting()
 {
-	// 先讀 Data
+	// 1. 先讀 Data
 	ReadRawDataForBorderTest();
 
-	// 接著要
+	// 2. 接著要抓出
 	rawManager.NetworkDataGenerateInRamV2();
+
+	// 3. Python 預測資料
+
+	// 4. 預測整份的資料
 }
 
 // Volume Render 測試

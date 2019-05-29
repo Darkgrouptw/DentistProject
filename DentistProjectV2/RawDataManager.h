@@ -3,6 +3,7 @@
 這邊是管理所有裝置的 class (包含 藍芽、OCT)
 */
 #include "TRCudaV2.cuh"
+#include "TensorflowNet_OtherSide.h"
 
 #include "DataManager.h"
 #include "BluetoothManager.h"
