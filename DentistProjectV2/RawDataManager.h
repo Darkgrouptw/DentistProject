@@ -116,8 +116,9 @@ public:
 	// Network or Volume 相關的 Function
 	//////////////////////////////////////////////////////////////////////////
 	void NetworkDataGenerateV2(QString);										// 產生類神經網路的資料
-	void ImportVolumeDataTest(QString);											// 輸入 Label 資料做測試用
-	QVector<VolumeRenderClass*> VolumeDataArray;								// Network 預測完的資料
+	void NetworkDataGenerateInRamV2();											// 產生相同的類神經網路資料，但不輸出
+	//void ImportVolumeDataTest(QString);										// 輸入 Label 資料做測試用
+	//QVector<VolumeRenderClass*> VolumeDataArray;								// Network 預測完的資料
 
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲資料
@@ -181,6 +182,7 @@ private:
 	Size				BlurSize = Size(9, 9);									// 模糊的區塊
 	int					BoundingThreshold = 8;									// 這邊是要根據多少去裁減
 	int					BoundingOffset = 0;										// 加上 Offset
+	//QVector<>
 
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
@@ -192,12 +194,21 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QVector<Mat>		ImageResultArray;										// 原圖
 	QVector<Mat>		BorderDetectionResultArray;								// 邊界判斷完
+	QVector<Mat>		NetworkResultArray;										// 網路預測的結果
+	Mat					OtherSideMat;											// 存放單一大小的
 
 	//////////////////////////////////////////////////////////////////////////
 	// 顯示部分
 	//////////////////////////////////////////////////////////////////////////
 	QVector<QImage>		QImageResultArray;										// 同上(顯示)
 	QVector<QImage>		QBorderDetectionResultArray;							// 同上(顯示)
+	QVector<QImage>		QNetworkResultArray;									// 同上(顯示)
+
+	//////////////////////////////////////////////////////////////////////////
+	// 網路的 Bounding Point
+	//////////////////////////////////////////////////////////////////////////
+	QVector<QVector2D>	TLPointArray;											// Bounding Box Array
+	QVector<QVector2D>	BRPointArray;											// 同上
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer

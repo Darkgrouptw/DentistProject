@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -937,7 +937,7 @@
         <x>10</x>
         <y>10</y>
         <width>151</width>
-        <height>281</height>
+        <height>91</height>
        </rect>
       </property>
       <property name="title">
@@ -947,9 +947,9 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
+         <y>20</y>
          <width>131</width>
-         <height>23</height>
+         <height>61</height>
         </rect>
        </property>
        <property name="text">
@@ -970,10 +970,13 @@
        <string>類神經網路資料測試相關</string>
       </property>
       <widget class="QPushButton" name="VolumeRenderingTestBtn">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>50</y>
+         <y>250</y>
          <width>131</width>
          <height>23</height>
         </rect>
@@ -982,17 +985,17 @@
         <string>Rendering測試</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="LabedDataValidBtn">
+      <widget class="QPushButton" name="PredictResultTestingBtn">
        <property name="geometry">
         <rect>
          <x>10</x>
          <y>20</y>
          <width>131</width>
-         <height>23</height>
+         <height>61</height>
         </rect>
        </property>
        <property name="text">
-        <string>驗證 Label 資料</string>
+        <string>預測結果</string>
        </property>
       </widget>
      </widget>
@@ -1002,9 +1005,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>590</y>
-      <width>300</width>
-      <height>300</height>
+      <y>640</y>
+      <width>500</width>
+      <height>250</height>
      </rect>
     </property>
     <property name="font">
@@ -1023,8 +1026,30 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>300</width>
-       <height>300</height>
+       <width>250</width>
+       <height>250</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="NetworkResult_OtherSide">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="geometry">
+      <rect>
+       <x>250</x>
+       <y>0</y>
+       <width>248</width>
+       <height>250</height>
       </rect>
      </property>
      <property name="styleSheet">

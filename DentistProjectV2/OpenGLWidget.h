@@ -81,7 +81,7 @@ private:
 	void							DrawGround();
 	void							DrawPointCloud();
 	void							DrawResetRotation();
-	void							DrawVolumeData();
+	//void							DrawVolumeData();
 	//void							DrawAxis();
 
 	const float						GridSize = 10;
@@ -101,7 +101,7 @@ private:
 	// 更新 Buffers
 	//////////////////////////////////////////////////////////////////////////
 	void							UpdatePC();
-	void							UpdateVolumeData();
+	//void							UpdateVolumeData();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Data

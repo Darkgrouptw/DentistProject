@@ -52,8 +52,7 @@ void OpenGLWidget::paintGL()
 		DrawPointCloud();
 		//DrawVolumeData();
 	}
-	DrawVolumeData();
-
+	//DrawVolumeData();
 }
 
 // 滑鼠事件
@@ -327,49 +326,49 @@ void OpenGLWidget::DrawResetRotation()
 
 	program->release();
 }
-void OpenGLWidget::DrawVolumeData()
-{
-	if (rawManager != NULL && rawManager->VolumeDataArray.size() > 0)
-	{
-		// 這邊是要先判斷有沒有 Lock
-		// 如果有 Lock 代表說，要更新
-		// 但由於 OpenGL 只能有單一一個 Thread 去呼叫
-		// 其他 Thread 去呼叫此 Class 的 Function 都會出現 1282 (GL_INVALID_OPERATION)
-		if (rawManager->IsLockVolumeData)
-		{
-			UpdateVolumeData();
-			rawManager->IsLockVolumeData = false;
-		}
-
-		assert(ProgramList.size() >= 4);
-
-		QOpenGLShaderProgram* program = ProgramList[3].program;
-		program->bind();
-
-		QMatrix4x4 modelM;
-		modelM.setToIdentity();
-		program->setUniformValue(ProgramList[3].ProjectionMLoc, ProjectionMatrix);
-		program->setUniformValue(ProgramList[3].ViewMLoc, ViewMatrix);
-		program->setUniformValue(ProgramList[3].ModelMLoc, modelM);
-
-		// 畫
-		for (int i = 0; i < VolumeDataVertexBufferList.size(); i++)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, VolumeDataVertexBufferList[i]);
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-			glBindBuffer(GL_ARRAY_BUFFER, VolumeDataPointTypeBufferList[i]);
-			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
-
-
-			int PointSize = rawManager->VolumeDataArray[i]->Points.size();
-			glDrawArrays(GL_TRIANGLES, 0, PointSize);
-		}
-		program->release();
-	}
-}
+//void OpenGLWidget::DrawVolumeData()
+//{
+//	if (rawManager != NULL && rawManager->VolumeDataArray.size() > 0)
+//	{
+//		// 這邊是要先判斷有沒有 Lock
+//		// 如果有 Lock 代表說，要更新
+//		// 但由於 OpenGL 只能有單一一個 Thread 去呼叫
+//		// 其他 Thread 去呼叫此 Class 的 Function 都會出現 1282 (GL_INVALID_OPERATION)
+//		if (rawManager->IsLockVolumeData)
+//		{
+//			UpdateVolumeData();
+//			rawManager->IsLockVolumeData = false;
+//		}
+//
+//		assert(ProgramList.size() >= 4);
+//
+//		QOpenGLShaderProgram* program = ProgramList[3].program;
+//		program->bind();
+//
+//		QMatrix4x4 modelM;
+//		modelM.setToIdentity();
+//		program->setUniformValue(ProgramList[3].ProjectionMLoc, ProjectionMatrix);
+//		program->setUniformValue(ProgramList[3].ViewMLoc, ViewMatrix);
+//		program->setUniformValue(ProgramList[3].ModelMLoc, modelM);
+//
+//		// 畫
+//		for (int i = 0; i < VolumeDataVertexBufferList.size(); i++)
+//		{
+//			glBindBuffer(GL_ARRAY_BUFFER, VolumeDataVertexBufferList[i]);
+//			glEnableVertexAttribArray(0);
+//			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+//
+//			glBindBuffer(GL_ARRAY_BUFFER, VolumeDataPointTypeBufferList[i]);
+//			glEnableVertexAttribArray(1);
+//			glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+//
+//
+//			int PointSize = rawManager->VolumeDataArray[i]->Points.size();
+//			glDrawArrays(GL_TRIANGLES, 0, PointSize);
+//		}
+//		program->release();
+//	}
+//}
 
 // 更新 Buffer
 void OpenGLWidget::UpdatePC()
@@ -400,44 +399,44 @@ void OpenGLWidget::UpdatePC()
 
 	program->release();
 }
-void OpenGLWidget::UpdateVolumeData()
-{
-	// Program 設定
-	assert(ProgramList.size() >= 4);
-
-	QOpenGLShaderProgram* program = ProgramList[3].program;
-	program->bind();
-
-	// 刪除 Buffer
-	for (int i = 0; i < VolumeDataVertexBufferList.size(); i++)
-	{
-		glDeleteBuffers(1, &VolumeDataVertexBufferList[i]);
-		glDeleteBuffers(1, &VolumeDataPointTypeBufferList[i]);
-	}
-	VolumeDataVertexBufferList.clear();
-	VolumeDataPointTypeBufferList.clear();
-
-	for (int i = 0; i < rawManager->VolumeDataArray.size(); i++)
-	{
-		// 拿資料
-		QVector<QVector3D> pointData;
-		rawManager->VolumeDataArray[i]->GenerateMeshFromLookZ();
-		QVector<QVector3D>& tempP = rawManager->VolumeDataArray[i]->Points;
-		QVector<float>& tempT = rawManager->VolumeDataArray[i]->PointType;
-
-		GLuint VBuffer;
-		glGenBuffers(1, &VBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, VBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * tempP.size(), tempP.constData(), GL_STATIC_DRAW);
-
-		VolumeDataVertexBufferList.push_back(VBuffer);
-
-		GLuint TypeBuffer;
-		glGenBuffers(1, &TypeBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, TypeBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * tempT.size(), tempT.constData(), GL_STATIC_DRAW);
-
-		VolumeDataPointTypeBufferList.push_back(TypeBuffer);
-	}
-	program->release();
-}
+//void OpenGLWidget::UpdateVolumeData()
+//{
+//	// Program 設定
+//	assert(ProgramList.size() >= 4);
+//
+//	QOpenGLShaderProgram* program = ProgramList[3].program;
+//	program->bind();
+//
+//	// 刪除 Buffer
+//	for (int i = 0; i < VolumeDataVertexBufferList.size(); i++)
+//	{
+//		glDeleteBuffers(1, &VolumeDataVertexBufferList[i]);
+//		glDeleteBuffers(1, &VolumeDataPointTypeBufferList[i]);
+//	}
+//	VolumeDataVertexBufferList.clear();
+//	VolumeDataPointTypeBufferList.clear();
+//
+//	for (int i = 0; i < rawManager->VolumeDataArray.size(); i++)
+//	{
+//		// 拿資料
+//		QVector<QVector3D> pointData;
+//		rawManager->VolumeDataArray[i]->GenerateMeshFromLookZ();
+//		QVector<QVector3D>& tempP = rawManager->VolumeDataArray[i]->Points;
+//		QVector<float>& tempT = rawManager->VolumeDataArray[i]->PointType;
+//
+//		GLuint VBuffer;
+//		glGenBuffers(1, &VBuffer);
+//		glBindBuffer(GL_ARRAY_BUFFER, VBuffer);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D) * tempP.size(), tempP.constData(), GL_STATIC_DRAW);
+//
+//		VolumeDataVertexBufferList.push_back(VBuffer);
+//
+//		GLuint TypeBuffer;
+//		glGenBuffers(1, &TypeBuffer);
+//		glBindBuffer(GL_ARRAY_BUFFER, TypeBuffer);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * tempT.size(), tempT.constData(), GL_STATIC_DRAW);
+//
+//		VolumeDataPointTypeBufferList.push_back(TypeBuffer);
+//	}
+//	program->release();
+//}

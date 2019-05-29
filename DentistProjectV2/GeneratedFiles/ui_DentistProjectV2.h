@@ -100,9 +100,10 @@ public:
     QPushButton *DataGenerationBtn;
     QGroupBox *NetworkDataTestBox;
     QPushButton *VolumeRenderingTestBtn;
-    QPushButton *LabedDataValidBtn;
+    QPushButton *PredictResultTestingBtn;
     QWidget *StateWidget;
     QLabel *OtherSideResult;
+    QLabel *NetworkResult_OtherSide;
     QGroupBox *RenderGroupBox;
     QComboBox *OCTViewDir;
     QLabel *OCTViewDirText;
@@ -353,31 +354,38 @@ public:
         Tab_Network->setObjectName(QStringLiteral("Tab_Network"));
         NetworkDataOperationBox = new QGroupBox(Tab_Network);
         NetworkDataOperationBox->setObjectName(QStringLiteral("NetworkDataOperationBox"));
-        NetworkDataOperationBox->setGeometry(QRect(10, 10, 151, 281));
+        NetworkDataOperationBox->setGeometry(QRect(10, 10, 151, 91));
         DataGenerationBtn = new QPushButton(NetworkDataOperationBox);
         DataGenerationBtn->setObjectName(QStringLiteral("DataGenerationBtn"));
-        DataGenerationBtn->setGeometry(QRect(10, 30, 131, 23));
+        DataGenerationBtn->setGeometry(QRect(10, 20, 131, 61));
         NetworkDataTestBox = new QGroupBox(Tab_Network);
         NetworkDataTestBox->setObjectName(QStringLiteral("NetworkDataTestBox"));
         NetworkDataTestBox->setGeometry(QRect(530, 10, 151, 281));
         VolumeRenderingTestBtn = new QPushButton(NetworkDataTestBox);
         VolumeRenderingTestBtn->setObjectName(QStringLiteral("VolumeRenderingTestBtn"));
-        VolumeRenderingTestBtn->setGeometry(QRect(10, 50, 131, 23));
-        LabedDataValidBtn = new QPushButton(NetworkDataTestBox);
-        LabedDataValidBtn->setObjectName(QStringLiteral("LabedDataValidBtn"));
-        LabedDataValidBtn->setGeometry(QRect(10, 20, 131, 23));
+        VolumeRenderingTestBtn->setEnabled(false);
+        VolumeRenderingTestBtn->setGeometry(QRect(10, 250, 131, 23));
+        PredictResultTestingBtn = new QPushButton(NetworkDataTestBox);
+        PredictResultTestingBtn->setObjectName(QStringLiteral("PredictResultTestingBtn"));
+        PredictResultTestingBtn->setGeometry(QRect(10, 20, 131, 61));
         tabWidget->addTab(Tab_Network, QString());
         StateWidget = new QWidget(centralWidget);
         StateWidget->setObjectName(QStringLiteral("StateWidget"));
-        StateWidget->setGeometry(QRect(10, 590, 300, 300));
+        StateWidget->setGeometry(QRect(10, 640, 500, 250));
         StateWidget->setFont(font);
         StateWidget->setStyleSheet(QStringLiteral("background:rgba(21, 79, 255, 150)"));
         OtherSideResult = new QLabel(StateWidget);
         OtherSideResult->setObjectName(QStringLiteral("OtherSideResult"));
         OtherSideResult->setEnabled(true);
-        OtherSideResult->setGeometry(QRect(0, 0, 300, 300));
+        OtherSideResult->setGeometry(QRect(0, 0, 250, 250));
         OtherSideResult->setStyleSheet(QStringLiteral(""));
         OtherSideResult->setScaledContents(true);
+        NetworkResult_OtherSide = new QLabel(StateWidget);
+        NetworkResult_OtherSide->setObjectName(QStringLiteral("NetworkResult_OtherSide"));
+        NetworkResult_OtherSide->setEnabled(true);
+        NetworkResult_OtherSide->setGeometry(QRect(250, 0, 248, 250));
+        NetworkResult_OtherSide->setStyleSheet(QStringLiteral(""));
+        NetworkResult_OtherSide->setScaledContents(true);
         RenderGroupBox = new QGroupBox(centralWidget);
         RenderGroupBox->setObjectName(QStringLiteral("RenderGroupBox"));
         RenderGroupBox->setGeometry(QRect(1490, 10, 101, 181));
@@ -392,7 +400,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(1);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -467,9 +475,10 @@ public:
         DataGenerationBtn->setText(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237Trainning\347\232\204\350\263\207\346\226\231", nullptr));
         NetworkDataTestBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\241\236\347\245\236\347\266\223\347\266\262\350\267\257\350\263\207\346\226\231\346\270\254\350\251\246\347\233\270\351\227\234", nullptr));
         VolumeRenderingTestBtn->setText(QApplication::translate("DentistProjectV2Class", "Rendering\346\270\254\350\251\246", nullptr));
-        LabedDataValidBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\251\227\350\255\211 Label \350\263\207\346\226\231", nullptr));
+        PredictResultTestingBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\240\220\346\270\254\347\265\220\346\236\234", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(Tab_Network), QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\347\233\270\351\227\234", nullptr));
         OtherSideResult->setText(QString());
+        NetworkResult_OtherSide->setText(QString());
         RenderGroupBox->setTitle(QApplication::translate("DentistProjectV2Class", "Render\351\201\270\351\240\205", nullptr));
         OCTViewDir->setItemText(0, QApplication::translate("DentistProjectV2Class", "\347\224\261\344\270\212\345\276\200\344\270\213", nullptr));
 

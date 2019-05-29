@@ -47,9 +47,10 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 
 	// Network 相關
 	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
+	connect(ui.PredictResultTestingBtn,						SIGNAL(clicked()),				this,	SLOT(PredictResultTesting()));
 
 	// Volumne Rendering Test
-	connect(ui.VolumeRenderingTestBtn,						SIGNAL(clicked()),				this,	SLOT(VolumeRenderTest()));
+	//connect(ui.VolumeRenderingTestBtn,						SIGNAL(clicked()),				this,	SLOT(VolumeRenderTest()));
 
 	// 顯示部分
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
@@ -555,12 +556,20 @@ void DentistProjectV2::NetworkDataGenerateV2()
 	else
 		ui.ScanNumSlider->setValue(60);
 }
+void DentistProjectV2::PredictResultTesting()
+{
+	// 先讀 Data
+	ReadRawDataForBorderTest();
+
+	// 接著要
+	rawManager.NetworkDataGenerateInRamV2();
+}
 
 // Volume Render 測試
 void DentistProjectV2::VolumeRenderTest()
 {
-	QString boungBoxPath = QFileDialog::getOpenFileName(this, codec->toUnicode("BoundingBox 檔案"), "E:/DentistData/NetworkData/2019.01.08 ToothBone1", "boundingBox.txt", nullptr, QFileDialog::DontUseNativeDialog);
-	rawManager.ImportVolumeDataTest(boungBoxPath);
+	/*QString boungBoxPath = QFileDialog::getOpenFileName(this, codec->toUnicode("BoundingBox 檔案"), "E:/DentistData/NetworkData/2019.01.08 ToothBone1", "boundingBox.txt", nullptr, QFileDialog::DontUseNativeDialog);
+	rawManager.ImportVolumeDataTest(boungBoxPath);*/
 }
 
 // 顯示部分的事件

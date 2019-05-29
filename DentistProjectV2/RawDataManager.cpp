@@ -43,16 +43,6 @@ RawDataManager::RawDataManager()
 	for (int i = 0; i < testDir.size(); i++)
 		dir.mkpath("Images/OCTImages/" + testDir[i]);
 	#pragma endregion
-	#pragma region 讀取 Matrix
-	QFile TransformFile(PreMolarLoc);
-	assert(TransformFile.open(QIODevice::ReadOnly) && "讀取 PreMolar 的矩陣錯誤!!");
-
-	QTextStream ss(&TransformFile);
-	QString readText = ss.readAll().replace("\r\n", "\n");
-	QStringList itemData = readText.split("\n\n");
-	assert(itemData.size() == CONST_SIZE_MATRIX && "讀取 Matrix 失敗");
-	//cout << "Size: " << itemData.size() << endl;
-	#pragma endregion
 }
 RawDataManager::~RawDataManager()
 {
@@ -443,8 +433,11 @@ void RawDataManager::TransformToOtherSideView()
 	#pragma endregion
 	#pragma region TopView
 	Mat result = cudaV2.TransformToOtherSideView();
-	QImage qreulst = Mat2QImage(result, CV_8UC3);
-	OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
+	QImage qresult = Mat2QImage(result, CV_8UC3);
+	OtherSideResult->setPixmap(QPixmap::fromImage(qresult));
+
+	// 順便存一分到 外圍
+	cvtColor(result, OtherSideMat, CV_BGR2GRAY);
 	#pragma endregion
 	#pragma region 結束時間
 	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
@@ -637,6 +630,7 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 		Mat GrayResult;
 		cvtColor(result, GrayResult, CV_BGR2GRAY);
 		cv::imwrite("Images/OCTImages/OtherSide.png", GrayResult);
+		OtherSideMat = GrayResult.clone();
 
 		QImage qreulst = Mat2QImage(result, CV_8UC3);
 		OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
@@ -645,16 +639,60 @@ void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 	else
 		cout << "不能使用單層資料的資料!!" << endl;
 }
-void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)
+void RawDataManager::NetworkDataGenerateInRamV2()
 {
-	int SizeX = DManager.prop.SizeX;
-	int SizeZ = DManager.prop.SizeZ / 2;
+	#pragma region 例外判斷
+	if (ImageResultArray.size() != 250)
+	{
+		cout << "資料必須是立體資料!!" << endl;
+		return;
+	}
+	#pragma endregion
+	#pragma region 產生 Bounding Box
+	// 更新點雲
+	TLPointArray.clear();
+	BRPointArray.clear();
 
-	VolumeRenderClass *voxel = new VolumeRenderClass(SizeX, SizeZ, DManager.MappingMatrix, DManager.zRatio);
-	voxel->ImportData(boundingBoxPath);
-	VolumeDataArray.push_back(voxel);
-	IsLockVolumeData = true;
+	// 整個 Bounding Box Parse 過去
+	for (int i = 0; i < ImageResultArray.size(); i++)
+	{
+		QVector2D topLeft, buttomRight;
+		GetBoundingBox(ImageResultArray[i], topLeft, buttomRight);
+	}
+	#pragma endregion
+	cout << TLPointArray.size() << endl;
+
+	// 抓取 Bounding Box
+
+		//ss << "TopLeft (x, y), ButtomRight (x, y)" << endl;
+		
+	//	BoundingBoxFile.close();
+
+	//	// Top View
+	//	Mat result = cudaV2.TransformToOtherSideView();
+	//	Mat GrayResult;
+	//	cvtColor(result, GrayResult, CV_BGR2GRAY);
+	//	cv::imwrite("Images/OCTImages/OtherSide.png", GrayResult);
+
+	//	QImage qreulst = Mat2QImage(result, CV_8UC3);
+	//	OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
+	//	cout << "儲存完成!!" << endl;
+	//}
+	//else
+	//	cout << "不能使用單層資料的資料!!" << endl;
 }
+
+//void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)
+//{
+//	//assert 
+//	/*int SizeX = DManager.prop.SizeX;
+//	int SizeZ = DManager.prop.SizeZ / 2;
+//
+//	VolumeRenderClass *voxel = new VolumeRenderClass(SizeX, SizeZ, DManager.MappingMatrix, DManager.zRatio);
+//	voxel->ImportData(boundingBoxPath);
+//	VolumeDataArray.push_back(voxel);
+//	IsLockVolumeData = true;*/
+//}
 
 // 點雲相關
 void RawDataManager::PCWidgetUpdate()
