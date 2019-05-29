@@ -38,7 +38,7 @@ void DentistLabelTool::ReadBoundingBox()
 		#pragma omp parallel for
 		for (int j = 0; j < img.cols; j++)
 		{
-			double pixel = (double)img.at<uchar>(i, j);
+			float pixel = (float)img.at<uchar>(i, j);
 			data[i][j] = pixel;
 		}
 	}
