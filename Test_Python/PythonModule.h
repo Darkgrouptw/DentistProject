@@ -3,8 +3,12 @@
 #include <cassert>
 #include <string>
 
+// 避免跟 QT 關鍵字衝突
+#pragma push_macro("slots")
+#undef slots
 #include <Python.h>
 #include <numpy/arrayobject.h>
+#pragma pop_macro("slots")
 
 using namespace std;
 
