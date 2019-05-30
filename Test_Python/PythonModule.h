@@ -8,8 +8,6 @@
 
 using namespace std;
 
-#define SAVE_DELETE_PY(object) if(object != NULL) Py_DECREF(object); object = NULL;
-
 class PythonModule
 {
 public:
@@ -57,6 +55,15 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
 	//////////////////////////////////////////////////////////////////////////
-	void GetPythonError(PyObject*);
+	void GetPythonError();
 	int InitNumpy();
 };
+
+// 注意事項：請勿重複使用兩次，有 bug
+// 如果要使用兩次，就把 Py_Finalize 註解，應該就沒問題了吧@@
+// https://docs.python.org/2/c-api/init.html#c.Py_Finalize
+//
+// Python		C++
+// float32	=>	float
+// float64	=>	double
+// https://docs.scipy.org/doc/numpy-1.13.0/user/basics.types.html

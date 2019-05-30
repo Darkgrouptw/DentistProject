@@ -23,11 +23,14 @@ def TensorTest(a, b):
     print("Tensor Add: ", result)
 
 def NumpyArrayTest(arrayData):
-	print(arrayData.shape)
-	print(arrayData)
+    print(arrayData.shape)
+    print(arrayData)
 
 def NumpyOperationTest(arrayData):
-	# print(arrayData.shape)
-	# print(arrayData)
-	print("OperationTest: ", arrayData.shape)
-	return arrayData * 3
+    print("OperationTest: ", arrayData.shape)
+    return arrayData * 3
+
+def NumpyArrayConcatenate(arrayData1, arrayData2):
+    print("Array 1: ", arrayData1)
+    print("Array 2: ", arrayData2)
+    return np.concatenate([arrayData1, arrayData2], axis=0).reshape([1, -1])

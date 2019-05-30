@@ -14,7 +14,7 @@ PythonModule::~PythonModule()
 void PythonModule::SetArgs(int size)
 {
 	// 清空
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyArgs);
 
 	// 新增大小
 	pyArgs = PyTuple_New(size);
@@ -39,7 +39,7 @@ void PythonModule::AddArgs(double* value, int size, int index)
 	// 設定大小 & 值
 	npy_intp Dims[1] = { size };
 	PyObject* pyArray = PyArray_SimpleNewFromData(1, Dims, NPY_DOUBLE, value);
-	GetPythonError(pyArray);
+	GetPythonError();
 
 	PyTuple_SET_ITEM(pyArgs, index, pyArray);
 }
@@ -48,7 +48,7 @@ void PythonModule::AddArgs(double** value, int rows, int cols, int index)
 	// 設定大小 & 值
 	npy_intp Dims[2] = { rows, cols };
 	PyObject* pyArray = PyArray_SimpleNewFromData(2, Dims, NPY_DOUBLE, value);
-	GetPythonError(pyArray);
+	GetPythonError();
 
 	PyTuple_SET_ITEM(pyArgs, index, pyArray);
 }
@@ -58,15 +58,15 @@ void PythonModule::CallFunction(string FunctionName)
 {
 	// 拿取 Function
 	PyObject* pyFunc = PyObject_GetAttrString(pyModule, FunctionName.c_str());
-	GetPythonError(pyFunc);
+	GetPythonError();
 	PyErr_Print();
 
 	// 傳進 Function
 	PyEval_CallObject(pyFunc, pyArgs);
 
 	//清空
-	SAVE_DELETE_PY(pyFunc);
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyFunc);
+	Py_XDECREF(pyArgs);
 
 	// Last Check
 	PyErr_Print();
@@ -75,12 +75,12 @@ int PythonModule::CallFunction_ReturnInt(string FunctionName)
 {
 	// 拿取 Function
 	PyObject* pyFunc = PyObject_GetAttrString(pyModule, FunctionName.c_str());
-	GetPythonError(pyFunc);
+	GetPythonError();
 
 	// 傳進 Function
 	PyObject* pyReturn = NULL;
 	pyReturn = PyEval_CallObject(pyFunc, pyArgs);
-	GetPythonError(pyReturn);
+	GetPythonError();
 
 
 	// 取值
@@ -89,9 +89,9 @@ int PythonModule::CallFunction_ReturnInt(string FunctionName)
 	PyErr_Print();
 
 	//清空
-	SAVE_DELETE_PY(pyReturn);
-	SAVE_DELETE_PY(pyFunc);
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyReturn);
+	Py_XDECREF(pyFunc);
+	Py_XDECREF(pyArgs);
 
 	// Last Check
 	PyErr_Print();
@@ -102,12 +102,14 @@ double** PythonModule::CallFunction_ReturnNumpy2DArray(string FunctionName, int&
 {
 	// 拿取 Function
 	PyObject* pyFunc = PyObject_GetAttrString(pyModule, FunctionName.c_str());
-	GetPythonError(pyFunc);
+	GetPythonError();
+	if (!PyCallable_Check(pyFunc))
+		assert(false && "此 Function 不能使用 or 設定錯誤!!");
 
 	// 傳進 Function
 	PyObject* pyReturn = NULL;
 	pyReturn = PyEval_CallObject(pyFunc, pyArgs);
-	GetPythonError(pyReturn);
+	GetPythonError();
 
 	// 取值
 	npy_intp* Dims = NULL;
@@ -137,9 +139,9 @@ double** PythonModule::CallFunction_ReturnNumpy2DArray(string FunctionName, int&
 	PyErr_Print();
 
 	//清空
-	SAVE_DELETE_PY(pyReturn);
-	SAVE_DELETE_PY(pyFunc);
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyReturn);
+	Py_XDECREF(pyFunc);
+	Py_XDECREF(pyArgs);
 
 	// Last Check
 	PyErr_Print();
@@ -165,26 +167,26 @@ void PythonModule::Init(const char* ModuleName)
 	// 抓那個 Module
 	PyObject* pyCode = NULL;
 	pyCode = PyUnicode_FromString(ModuleName);
-	GetPythonError(pyCode);
+	GetPythonError();
 
 	// Import
 	pyModule = PyImport_Import(pyCode);
-	GetPythonError(pyModule);
+	GetPythonError();
 	Py_DECREF(pyCode);
 }
 void PythonModule::Close()
 {
-	SAVE_DELETE_PY(pyModule);
-	SAVE_DELETE_PY(pyArgs);
+	Py_DECREF(pyModule);	
+	Py_XDECREF(pyArgs);						// 差別只在 XDECREF 不會刪除 NULL
 
 	// 關閉 Python Interpreter
 	Py_Finalize();
 }
 
 // Helper Function
-void PythonModule::GetPythonError(PyObject* pointer)
+void PythonModule::GetPythonError()
 {
-	if (pointer == NULL)
+	if (PyErr_Occurred())
 	{
 		PyErr_Print();
 		assert(false);
