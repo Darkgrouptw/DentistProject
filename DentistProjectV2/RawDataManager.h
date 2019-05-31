@@ -3,7 +3,6 @@
 這邊是管理所有裝置的 class (包含 藍芽、OCT)
 */
 #include "TRCudaV2.cuh"
-#include "TensorflowNet_OtherSide.h"
 
 #include "DataManager.h"
 #include "BluetoothManager.h"
@@ -37,6 +36,8 @@
 #include <QQuaternion>
 #include <QVector2D>
 #include <QStringList>
+#include <QTemporaryDir>
+#include <QProcess>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -118,6 +119,10 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void NetworkDataGenerateV2(QString);										// 產生類神經網路的資料
 	void NetworkDataGenerateInRamV2();											// 產生相同的類神經網路資料，但不輸出
+	void PredictOtherSide();													// 預測 TopView
+	void PredictFull();															// 預測 Full 全部的圖
+	QTemporaryDir tempDir;
+	//QVector<Mat> PredictFull;
 	//void ImportVolumeDataTest(QString);										// 輸入 Label 資料做測試用
 	//QVector<VolumeRenderClass*> VolumeDataArray;								// Network 預測完的資料
 
@@ -175,15 +180,19 @@ private:
 	function<void()>				ShowImageIndex_Pointer;
 
 	//////////////////////////////////////////////////////////////////////////
-	// 網路
+	// 網路抓 Bounding Box
 	//////////////////////////////////////////////////////////////////////////
-	Mat					GetBoundingBox(Mat, QVector2D&, QVector2D&);			// 網路在抓取的時候，有一個 Bounding Box 可以減少拿到外側的機率
-	static bool			SortByContourPointSize(BoundingBoxDataStruct&,			// 根據 Contour 的點來排序
-											BoundingBoxDataStruct&);
-	Size				BlurSize = Size(9, 9);									// 模糊的區塊
-	int					BoundingThreshold = 8;									// 這邊是要根據多少去裁減
-	int					BoundingOffset = 0;										// 加上 Offset
-	//QVector<>
+	Mat								GetBoundingBox(Mat, QVector2D&, QVector2D&);			// 網路在抓取的時候，有一個 Bounding Box 可以減少拿到外側的機率
+	static bool						SortByContourPointSize(BoundingBoxDataStruct&,			// 根據 Contour 的點來排序
+														BoundingBoxDataStruct&);
+	Size							BlurSize = Size(9, 9);									// 模糊的區塊
+	int								BoundingThreshold = 8;									// 這邊是要根據多少去裁減
+	int								BoundingOffset = 0;										// 加上 Offset
+
+	//////////////////////////////////////////////////////////////////////////
+	// 其他
+	//////////////////////////////////////////////////////////////////////////
+	//TensorflowNet			net_OtherSide;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
@@ -216,7 +225,8 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QLabel*				ImageResult;											// 外部的原圖 UI Pointer
 	QLabel*				BorderDetectionResult;									// 最後找出來的結果圖
-	QLabel*				NetworkResult;											// 同上，但目前是沒有用
+	QLabel*				NetworkResult;											// 同上
+	QLabel*				NetworkOtherSide;										// 網路顯示
 	QLabel*				OtherSideResult;										// TopView 
 	QObject*			DisplayPanel;											// 畫圖的部分
 	QComboBox*			PCIndex;												// 選擇 PC 的 Index
@@ -231,13 +241,6 @@ private:
 	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
 	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
-
-	//////////////////////////////////////////////////////////////////////////
-	// TransformMatrix
-	//////////////////////////////////////////////////////////////////////////
-	static const int	CONST_SIZE_MATRIX = 12 + 1;								// 矩陣大小			
-	QString		PreMolarLoc = "./AlignmentMatrix/PreMolar.txt";					// Alignment 的位置
-	QMatrix4x4	PreMolarMatrix[CONST_SIZE_MATRIX];								// 矩陣
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數

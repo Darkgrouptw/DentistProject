@@ -13,7 +13,7 @@ template <typename T> PythonModule<T>::~PythonModule()
 template <typename T> void PythonModule<T>::SetArgs(int size)
 {
 	// 清空
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyArgs);
 
 	// 新增大小
 	pyArgs = PyTuple_New(size);
@@ -39,7 +39,7 @@ template <typename T> void PythonModule<T>::AddArgs(T* value, int size, int inde
 	// 設定大小 & 值
 	npy_intp Dims[1] = { size };
 	PyObject* pyArray = PyArray_SimpleNewFromData(1, Dims, NumpyTypeNumber(), value);
-	GetPythonError(pyArray);
+	GetPythonError();
 
 	PyTuple_SET_ITEM(pyArgs, index, pyArray);
 }
@@ -71,15 +71,16 @@ template <typename T> void PythonModule<T>::CallFunction(string FunctionName)
 {
 	// 拿取 Function
 	PyObject* pyFunc = PyObject_GetAttrString(pyModule, FunctionName.c_str());
-	GetPythonError(pyFunc);
-	PyErr_Print();
+	GetPythonError();
+	if (!PyCallable_Check(pyFunc))
+		assert(false && "此 Function 不能使用 or 設定錯誤!!");
 
 	// 傳進 Function
 	PyEval_CallObject(pyFunc, pyArgs);
 
 	//清空
-	SAVE_DELETE_PY(pyFunc);
-	SAVE_DELETE_PY(pyArgs);
+	Py_DECREF(pyFunc);
+	Py_XDECREF(pyArgs);
 
 	// Last Check
 	PyErr_Print();
@@ -88,12 +89,15 @@ template <typename T> int PythonModule<T>::CallFunction_ReturnInt(string Functio
 {
 	// 拿取 Function
 	PyObject* pyFunc = PyObject_GetAttrString(pyModule, FunctionName.c_str());
-	GetPythonError(pyFunc);
+	GetPythonError();
+	if (!PyCallable_Check(pyFunc))
+		assert(false && "此 Function 不能使用 or 設定錯誤!!");
+
 
 	// 傳進 Function
 	PyObject* pyReturn = NULL;
 	pyReturn = PyEval_CallObject(pyFunc, pyArgs);
-	GetPythonError(pyReturn);
+	GetPythonError();
 
 
 	// 取值
@@ -102,9 +106,9 @@ template <typename T> int PythonModule<T>::CallFunction_ReturnInt(string Functio
 	PyErr_Print();
 
 	//清空
-	SAVE_DELETE_PY(pyReturn);
-	SAVE_DELETE_PY(pyFunc);
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyReturn);
+	Py_DECREF(pyFunc);
+	Py_XDECREF(pyArgs);
 
 	// Last Check
 	PyErr_Print();
@@ -115,12 +119,15 @@ template <typename T> T** PythonModule<T>::CallFunction_ReturnNumpy2DArray(strin
 {
 	// 拿取 Function
 	PyObject* pyFunc = PyObject_GetAttrString(pyModule, FunctionName.c_str());
-	GetPythonError(pyFunc);
+	GetPythonError();
+	if (!PyCallable_Check(pyFunc))
+		assert(false && "此 Function 不能使用 or 設定錯誤!!");
+
 
 	// 傳進 Function
 	PyObject* pyReturn = NULL;
 	pyReturn = PyEval_CallObject(pyFunc, pyArgs);
-	GetPythonError(pyReturn);
+	GetPythonError();
 
 	// 取值
 	// 根據底下的連結可以知道
@@ -144,7 +151,7 @@ template <typename T> T** PythonModule<T>::CallFunction_ReturnNumpy2DArray(strin
 	memcpy(_NumpyList, npObject->data, sizeof(T) * Size1D);
 
 	// 再到2D
-	NumpyObject = new float*[npObject->dimensions[0]];
+	NumpyObject = new T*[npObject->dimensions[0]];
 	for (int i = 0; i < npObject->dimensions[0]; i++)
 		NumpyObject[i] = &_NumpyList[i * npObject->dimensions[1]];
 
@@ -155,9 +162,9 @@ template <typename T> T** PythonModule<T>::CallFunction_ReturnNumpy2DArray(strin
 	PyErr_Print();
 
 	//清空
-	SAVE_DELETE_PY(pyReturn);
-	SAVE_DELETE_PY(pyFunc);
-	SAVE_DELETE_PY(pyArgs);
+	Py_XDECREF(pyReturn);
+	Py_DECREF(pyFunc);
+	Py_XDECREF(pyArgs);
 
 	// Last Check
 	PyErr_Print();
@@ -185,26 +192,26 @@ template <typename T> void PythonModule<T>::Init(const char* ModuleName)
 	// 抓那個 Module
 	PyObject* pyCode = NULL;
 	pyCode = PyUnicode_FromString(ModuleName);
-	GetPythonError(pyCode);
+	GetPythonError();
 
 	// Import
 	pyModule = PyImport_Import(pyCode);
-	GetPythonError(pyModule);
+	GetPythonError();
 	Py_DECREF(pyCode);
 }
 template <typename T> void PythonModule<T>::Close()
 {
-	SAVE_DELETE_PY(pyModule);
-	SAVE_DELETE_PY(pyArgs);
+	Py_DECREF(pyModule);
+	Py_XDECREF(pyArgs);						// 差別只在 XDECREF 不會刪除 NULL
 
 	// 關閉 Python Interpreter
 	Py_Finalize();
 }
 
 // Helper Function
-template <typename T> void PythonModule<T>::GetPythonError(PyObject* pointer)
+template <typename T> void PythonModule<T>::GetPythonError()
 {
-	if (pointer == NULL)
+	if (PyErr_Occurred())
 	{
 		PyErr_Print();
 		assert(false);

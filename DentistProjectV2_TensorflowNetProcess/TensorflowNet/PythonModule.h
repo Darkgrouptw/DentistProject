@@ -13,8 +13,6 @@
 
 using namespace std;
 
-#define SAVE_DELETE_PY(object) if(object != NULL) Py_DECREF(object); object = NULL;
-
 template <typename T>
 class PythonModule
 {
@@ -63,7 +61,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
 	//////////////////////////////////////////////////////////////////////////
-	void GetPythonError(PyObject*);
+	void GetPythonError();
 	int InitNumpy();
 	int NumpyTypeNumber();
 };

@@ -122,6 +122,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.DisplayPanel);
 	objList.push_back(ui.PCIndex);
 	objList.push_back(ui.OtherSideResult);
+	objList.push_back(ui.NetworkResult_OtherSide);
 
 	rawManager.SendUIPointer(objList);
 
@@ -565,8 +566,11 @@ void DentistProjectV2::PredictResultTesting()
 	rawManager.NetworkDataGenerateInRamV2();
 
 	// 3. Python 預測資料
+	rawManager.PredictOtherSide();
+	
 
 	// 4. 預測整份的資料
+	rawManager.PredictFull();
 }
 
 // Volume Render 測試

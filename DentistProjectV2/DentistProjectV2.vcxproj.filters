@@ -49,12 +49,6 @@
     <Filter Include="TensorflowNet">
       <UniqueIdentifier>{cd18bff5-5467-4197-bd93-0398561665b8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\TensorflowNet">
-      <UniqueIdentifier>{e5149646-9bbb-43c6-94ad-4b3038eaeca1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\TensorflowNet">
-      <UniqueIdentifier>{53d45cfe-e345-442f-a6d5-0d9ec70312b8}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DentistProjectV2.cpp">
@@ -89,12 +83,6 @@
     </ClCompile>
     <ClCompile Include="VolumeRenderClass.cpp">
       <Filter>Source Files\Display</Filter>
-    </ClCompile>
-    <ClCompile Include="TensorflowNet\PythonModule.cpp">
-      <Filter>Source Files\TensorflowNet</Filter>
-    </ClCompile>
-    <ClCompile Include="TensorflowNet\TensorflowNet_OtherSide.cpp">
-      <Filter>Source Files\TensorflowNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -145,12 +133,6 @@
     </ClInclude>
     <ClInclude Include="VolumeRenderClass.h">
       <Filter>Header Files\Display</Filter>
-    </ClInclude>
-    <ClInclude Include="TensorflowNet\PythonModule.h">
-      <Filter>Header Files\TensorflowNet</Filter>
-    </ClInclude>
-    <ClInclude Include="TensorflowNet\TensorflowNet_OtherSide.h">
-      <Filter>Header Files\TensorflowNet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

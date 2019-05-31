@@ -46,17 +46,20 @@ RawDataManager::RawDataManager()
 }
 RawDataManager::~RawDataManager()
 {
+	// 刪除 tempDir
+	tempDir.remove();
 }
 
 // UI 相關
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 9 && "UI 對應有問題!!");
+	assert(UIPointer.size() == 10 && "UI 對應有問題!!");
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
 	OtherSideResult			= (QLabel*)UIPointer[8];
+	NetworkOtherSide		= (QLabel*)UIPointer[9];
 
 	// 後面兩個是 給 ScanThread
 	QSlider* slider			= (QSlider*)UIPointer[3];
@@ -658,28 +661,109 @@ void RawDataManager::NetworkDataGenerateInRamV2()
 	{
 		QVector2D topLeft, buttomRight;
 		GetBoundingBox(ImageResultArray[i], topLeft, buttomRight);
+		TLPointArray.push_back(topLeft);
+		BRPointArray.push_back(buttomRight);
 	}
 	#pragma endregion
-	cout << TLPointArray.size() << endl;
+}
+void RawDataManager::PredictOtherSide()
+{
+	assert(!OtherSideMat.empty() && "不能為空的!!");
+	cout << "Temp Dir: " << tempDir.path().toLocal8Bit().toStdString() << endl;
+	if (tempDir.isValid())
+	{
+		QString tensorflowProcessFilePath = "./DentistProjectV2_TensorflowNetProcess.exe";
+		if (QFile::exists(tensorflowProcessFilePath))
+		{
+			// 寫出檔案
+			QProcess tensorflowProcess;
+			QString tempImgPath = tempDir.filePath("OtherSide.png");
+			QString tempPredictImgPath = tempDir.filePath("Predict.png");
 
-	// 抓取 Bounding Box
+			// 塞參數
+			QStringList params;
+			params.append(tempImgPath);
+			params.append(tempPredictImgPath);
+			params.append("OtherSide");				// Mode: OtherSide
+			cv::imwrite(tempImgPath.toLocal8Bit().toStdString(), OtherSideMat);
 
-		//ss << "TopLeft (x, y), ButtomRight (x, y)" << endl;
-		
-	//	BoundingBoxFile.close();
+			// 開始 Process
+			tensorflowProcess.start(tensorflowProcessFilePath, params);
+			tensorflowProcess.waitForFinished();
+			cout << "======================================================" << endl;
+			cout << "Process Output: " << endl << endl;
+			cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
+			cout << "======================================================" << endl;
 
-	//	// Top View
-	//	Mat result = cudaV2.TransformToOtherSideView();
-	//	Mat GrayResult;
-	//	cvtColor(result, GrayResult, CV_BGR2GRAY);
-	//	cv::imwrite("Images/OCTImages/OtherSide.png", GrayResult);
+			Mat PredictOtherSide = imread(tempPredictImgPath.toLocal8Bit().toStdString(), CV_LOAD_IMAGE_GRAYSCALE);
+			imwrite("D:/bb.png", PredictOtherSide);
+			cvtColor(PredictOtherSide, PredictOtherSide, CV_GRAY2BGR);
+			QImage predictQImage = Mat2QImage(PredictOtherSide, CV_8UC3);
+			NetworkOtherSide->setPixmap(QPixmap::fromImage(predictQImage));
 
-	//	QImage qreulst = Mat2QImage(result, CV_8UC3);
-	//	OtherSideResult->setPixmap(QPixmap::fromImage(qreulst));
-	//	cout << "儲存完成!!" << endl;
-	//}
-	//else
-	//	cout << "不能使用單層資料的資料!!" << endl;
+			// 刪除其他影片
+			QFile::remove(tempImgPath);
+			QFile::remove(tempPredictImgPath);
+		}
+		else
+			assert(false && "確定要先編過 TensorflowNet Process!!");
+	}
+	else
+		assert(false && "確定站存資料夾已經創立!!");
+}
+void RawDataManager::PredictFull()
+{
+	assert(!OtherSideMat.empty() && "不能為空的!!");
+	if (tempDir.isValid())
+	{
+		QString tensorflowProcessFilePath = "./DentistProjectV2_TensorflowNetProcess.exe";
+		if (QFile::exists(tensorflowProcessFilePath))
+		{
+			// 寫出檔案
+			QProcess tensorflowProcess;
+
+			// 塞參數
+			QStringList params;
+			params.append(tempDir.path());
+			params.append("60,200");
+			params.append("Full");				// Mode: Full
+
+			// 寫出檔案
+			cout << "存出檔案結果!!" << endl;
+			for (int i = 60; i < 200; i++)
+			{
+				QVector2D TL = TLPointArray[i];
+				QVector2D BR = BRPointArray[i];
+				int width = BR[0] - TL[0];
+				int height = BR[1] - TL[1];
+				cv::imwrite(tempDir.filePath(QString::number(i) + ".png").toLocal8Bit().toStdString(),
+					cv::Mat(ImageResultArray[i], cv::Rect(TL[0], TL[1], width, height)));
+			}
+			//cv::imwrite(tempImgPath.toLocal8Bit().toStdString(), OtherSideMat);
+
+			//// 開始 Process
+			//tensorflowProcess.start(tensorflowProcessFilePath, params);
+			//tensorflowProcess.waitForFinished();
+			//cout << "======================================================" << endl;
+			//cout << "Process Output: " << endl << endl;
+			//cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
+			//cout << "======================================================" << endl;
+
+			//Mat PredictOtherSide = imread(tempPredictImgPath.toLocal8Bit().toStdString(), CV_LOAD_IMAGE_GRAYSCALE);
+			//imwrite("D:/bb.png", PredictOtherSide);
+			//cvtColor(PredictOtherSide, PredictOtherSide, CV_GRAY2BGR);
+			//QImage predictQImage = Mat2QImage(PredictOtherSide, CV_8UC3);
+			//NetworkOtherSide->setPixmap(QPixmap::fromImage(predictQImage));
+
+			//// 刪除其他影片
+			//QFile::remove(tempImgPath);
+			//QFile::remove(tempPredictImgPath);
+		}
+		else
+			assert(false && "確定要先編過 TensorflowNet Process!!");
+	}
+	else
+		assert(false && "確定站存資料夾已經創立!!");
 }
 
 //void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)
