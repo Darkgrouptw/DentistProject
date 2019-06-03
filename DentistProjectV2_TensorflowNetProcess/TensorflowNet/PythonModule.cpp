@@ -24,14 +24,22 @@ template <typename T> void PythonModule<T>::AddArgs(int value, int index)
 	assert(pyArgs != NULL && "必須初始化參數!!");
 	if (index >= ArgSize)
 		assert(false && "必須要大於 初始化的 Size");
-	PyTuple_SET_ITEM(pyArgs, index, Py_BuildValue("i", value));
+	PyTuple_SetItem(pyArgs, index, Py_BuildValue("i", value));
+	//PyTuple_SetItem()
+}
+template <typename T> void PythonModule<T>::AddArgs(string value, int index)
+{
+	assert(pyArgs != NULL && "必須初始化參數!!");
+	if (index >= ArgSize)
+		assert(false && "必須要大於 初始化的 Size");
+	PyTuple_SetItem(pyArgs, index, Py_BuildValue("s", value.c_str()));
 }
 template <typename T> void PythonModule<T>::AddArgs(T value, int index)
 {
 	assert(pyArgs != NULL && "必須初始化參數!!");
 	if (index >= ArgSize)
 		assert(false && "必須要大於 初始化的 Size");
-	PyTuple_SET_ITEM(pyArgs, index, Py_BuildValue("d", value));
+	PyTuple_SetItem(pyArgs, index, Py_BuildValue("d", value));
 }
 template <typename T> void PythonModule<T>::AddArgs(T* value, int size, int index)
 {
@@ -41,7 +49,7 @@ template <typename T> void PythonModule<T>::AddArgs(T* value, int size, int inde
 	PyObject* pyArray = PyArray_SimpleNewFromData(1, Dims, NumpyTypeNumber(), value);
 	GetPythonError();
 
-	PyTuple_SET_ITEM(pyArgs, index, pyArray);
+	PyTuple_SetItem(pyArgs, index, pyArray);
 }
 template <typename T> void PythonModule<T>::AddArgs(T** value, int rows, int cols, int index)
 {
@@ -63,7 +71,7 @@ template <typename T> void PythonModule<T>::AddArgs(T** value, int rows, int col
 		p += cols;
 	}
 
-	PyTuple_SET_ITEM(pyArgs, index, pyArray);
+	PyTuple_SetItem(pyArgs, index, pyArray);
 }
 
 // Return 的部分

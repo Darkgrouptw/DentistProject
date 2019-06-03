@@ -568,7 +568,6 @@ void DentistProjectV2::PredictResultTesting()
 	// 3. Python 預測資料
 	rawManager.PredictOtherSide();
 	
-
 	// 4. 預測整份的資料
 	rawManager.PredictFull();
 }

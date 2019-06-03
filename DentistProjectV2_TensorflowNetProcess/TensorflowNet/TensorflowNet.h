@@ -11,7 +11,7 @@ public:
 	// 網路相關
 	//////////////////////////////////////////////////////////////////////////
 	float**		Predict_OtherSide(float**);
-	//float		Predict_Full(float**);
+	void		Predict_Full(int, int, string);
 	void		DeleteArray(float**);
 
 private:

@@ -29,6 +29,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void SetArgs(int);
 	void AddArgs(int, int);
+	void AddArgs(string value, int index);
 	void AddArgs(T, int);
 	void AddArgs(T*, int, int);													// 使用完的值記得刪掉
 	void AddArgs(T**, int, int, int);											// 同上

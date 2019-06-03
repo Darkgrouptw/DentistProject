@@ -103,11 +103,11 @@ class Network_Prob:
     # 預測資料
     def Predict(self, Data):
         # Data
-        # print(Data.shape[])
-        topTime = int(np.ceil(Data.shape[0] / 128))
+        boxSize = 256
+        topTime = int(np.ceil(Data.shape[0] / boxSize))
         for i in tqdm(range(topTime)):
             feed_dict = {
-                self.InputData: Data[i * 128: (i + 1) * 128]
+                self.InputData: Data[i * boxSize: (i + 1) * boxSize]
             }
             resultTemp = self.Session.run(self.PredictProb, feed_dict=feed_dict)
 

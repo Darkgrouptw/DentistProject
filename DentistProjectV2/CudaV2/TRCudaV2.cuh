@@ -113,6 +113,6 @@ private:
 	const int NumPolynomial = 5;												// 使用 5 次項
 	const int MinValuePixel_TL = 2;												// 再算最小值的時候，是根據一塊確定沒有資料的部分，去算 MinValue，而這個是 Top Left 的 Pixel
 	const int MinValuePixel_BR = 10;											// Buttom Right 的 Pixel
-	const float MinValueScalar = 1.75f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間 (測試用)
+	const float MinValueScalar = 1.8f;											// 由於有大部分都是雜訊，用這個可以濾掉建議 1.8 ~ 2 之間 (測試用)
 	const float OtherSideMean = 50;												// 由於硬體的大小改變，會導至判斷上會有問題
 };

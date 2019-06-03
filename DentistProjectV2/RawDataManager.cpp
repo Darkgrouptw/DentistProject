@@ -1,4 +1,4 @@
-﻿#include <QOpenGLWidget>				// 因為會跟 OpenCV 3 重圖
+﻿#include <QOpenGLWidget>				// 因為會跟 OpenCV 3 衝突
 #include "OpenGLWidget.h"				// 住要是怕互 Call，Include 會成為無限遞迴
 #include "RawDataManager.h"
 
@@ -48,6 +48,7 @@ RawDataManager::~RawDataManager()
 {
 	// 刪除 tempDir
 	tempDir.remove();
+	cout << "刪除暫存!!" << endl;
 }
 
 // UI 相關
@@ -688,22 +689,36 @@ void RawDataManager::PredictOtherSide()
 			cv::imwrite(tempImgPath.toLocal8Bit().toStdString(), OtherSideMat);
 
 			// 開始 Process
+			QElapsedTimer counterTimer;
+			counterTimer.start();
+			//tensorflowProcess.setProcessChannelMode(QProcess::MergedChannels);
 			tensorflowProcess.start(tensorflowProcessFilePath, params);
-			tensorflowProcess.waitForFinished();
-			cout << "======================================================" << endl;
-			cout << "Process Output: " << endl << endl;
-			cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
-			cout << "======================================================" << endl;
+			if (tensorflowProcess.waitForFinished())
+			{
+				cout << "======================================================" << endl;
+				cout << "Process Output: " << endl << endl;
+				cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
+				#ifndef DISABLE_TENSORFLOW_DEBUG
+				cout << "Process Error: " << endl << endl;
+				cout << tensorflowProcess.readAllStandardError().toStdString() << endl;
+				#endif
+				cout << "======================================================" << endl;
+				cout << "時間: " << (double)(counterTimer.elapsed() / 1000) << " sec" << endl;
+			}
+			else
+			{
+				cout << "Process Timeout!!" << endl;
+				return;
+			}
 
 			Mat PredictOtherSide = imread(tempPredictImgPath.toLocal8Bit().toStdString(), CV_LOAD_IMAGE_GRAYSCALE);
-			imwrite("D:/bb.png", PredictOtherSide);
 			cvtColor(PredictOtherSide, PredictOtherSide, CV_GRAY2BGR);
 			QImage predictQImage = Mat2QImage(PredictOtherSide, CV_8UC3);
 			NetworkOtherSide->setPixmap(QPixmap::fromImage(predictQImage));
 
-			// 刪除其他影片
-			QFile::remove(tempImgPath);
-			QFile::remove(tempPredictImgPath);
+			// 刪除其他圖片
+			//QFile::remove(tempImgPath);
+			//QFile::remove(tempPredictImgPath);
 		}
 		else
 			assert(false && "確定要先編過 TensorflowNet Process!!");
@@ -713,7 +728,7 @@ void RawDataManager::PredictOtherSide()
 }
 void RawDataManager::PredictFull()
 {
-	assert(!OtherSideMat.empty() && "不能為空的!!");
+	assert(ImageResultArray.size() == 250 && "必須要有資料!!");
 	if (tempDir.isValid())
 	{
 		QString tensorflowProcessFilePath = "./DentistProjectV2_TensorflowNetProcess.exe";
@@ -730,7 +745,7 @@ void RawDataManager::PredictFull()
 
 			// 寫出檔案
 			cout << "存出檔案結果!!" << endl;
-			for (int i = 60; i < 200; i++)
+			for (int i = 60; i <= 200; i++)
 			{
 				QVector2D TL = TLPointArray[i];
 				QVector2D BR = BRPointArray[i];
@@ -739,25 +754,29 @@ void RawDataManager::PredictFull()
 				cv::imwrite(tempDir.filePath(QString::number(i) + ".png").toLocal8Bit().toStdString(),
 					cv::Mat(ImageResultArray[i], cv::Rect(TL[0], TL[1], width, height)));
 			}
-			//cv::imwrite(tempImgPath.toLocal8Bit().toStdString(), OtherSideMat);
 
-			//// 開始 Process
-			//tensorflowProcess.start(tensorflowProcessFilePath, params);
-			//tensorflowProcess.waitForFinished();
-			//cout << "======================================================" << endl;
-			//cout << "Process Output: " << endl << endl;
-			//cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
-			//cout << "======================================================" << endl;
+			// 開始 Process
+			QElapsedTimer counterTimer;
+			counterTimer.start();
+			tensorflowProcess.start(tensorflowProcessFilePath, params);
+			if (tensorflowProcess.waitForFinished(-1))
+			{
+				cout << "======================================================" << endl;
+				cout << "Process Output: " << endl << endl;
+				cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
+				#ifndef DISABLE_TENSORFLOW_DEBUG
+				cout << "Process Error: " << endl << endl;
+				cout << tensorflowProcess.readAllStandardError().toStdString() << endl;
+				#endif
+				cout << "======================================================" << endl;
+				cout << "時間: " << (double)(counterTimer.elapsed() / 1000) << " sec" << endl;
+			}
+			else
+			{
+				cout << "Process Timeout!!" << endl;
+				return;
+			}
 
-			//Mat PredictOtherSide = imread(tempPredictImgPath.toLocal8Bit().toStdString(), CV_LOAD_IMAGE_GRAYSCALE);
-			//imwrite("D:/bb.png", PredictOtherSide);
-			//cvtColor(PredictOtherSide, PredictOtherSide, CV_GRAY2BGR);
-			//QImage predictQImage = Mat2QImage(PredictOtherSide, CV_8UC3);
-			//NetworkOtherSide->setPixmap(QPixmap::fromImage(predictQImage));
-
-			//// 刪除其他影片
-			//QFile::remove(tempImgPath);
-			//QFile::remove(tempPredictImgPath);
 		}
 		else
 			assert(false && "確定要先編過 TensorflowNet Process!!");

@@ -5,6 +5,7 @@
 //#define SHOW_TRCUDAV2_TRANSFORM_TIME	// 顯示 Transform 成圖的時間等
 #define DISABLE_SINGLE_RESULT			// 關閉顯示真正掃描時單片的結果 (但 Debug 的時候，還是會顯示 Message)
 //#define DISABLE_MULTI_RESULT			// 關閉顯示真正掃描時多片的結果 (但 Debug 的時候，還是會顯示 Message)
+#define DISABLE_TENSORFLOW_ERROR_DEBUG	// 是否要關閉 Tensorflow 的 Error Debug
 
 /*
 ToDo
