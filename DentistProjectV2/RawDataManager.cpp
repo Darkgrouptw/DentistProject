@@ -698,7 +698,7 @@ void RawDataManager::PredictOtherSide()
 				cout << "======================================================" << endl;
 				cout << "Process Output: " << endl << endl;
 				cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
-				#ifndef DISABLE_TENSORFLOW_DEBUG
+				#ifndef DISABLE_TENSORFLOW_ERROR_DEBUG
 				cout << "Process Error: " << endl << endl;
 				cout << tensorflowProcess.readAllStandardError().toStdString() << endl;
 				#endif
@@ -764,7 +764,7 @@ void RawDataManager::PredictFull()
 				cout << "======================================================" << endl;
 				cout << "Process Output: " << endl << endl;
 				cout << tensorflowProcess.readAllStandardOutput().toStdString() << endl;
-				#ifndef DISABLE_TENSORFLOW_DEBUG
+				#ifndef DISABLE_TENSORFLOW_ERROR_DEBUG
 				cout << "Process Error: " << endl << endl;
 				cout << tensorflowProcess.readAllStandardError().toStdString() << endl;
 				#endif
