@@ -578,13 +578,21 @@ void DentistProjectV2::PredictResultTesting()
 	rawManager.NetworkDataGenerateInRamV2();
 
 	// 3. Python 預測資料
-	rawManager.PredictOtherSide();
+	//rawManager.PredictOtherSide();
 	
 	// 4. 預測整份的資料
-	rawManager.PredictFull();
+	//rawManager.PredictFull();
 	
-	//5. 把預測資料貼回原圖
-	rawManager.LoadPredictImageShow();
+	// 5. 把預測資料貼回原圖
+	rawManager.LoadPredictImage();
+
+	// 6. Smooth 結果並把點區塊刪除
+	rawManager.SmoothNetworkData();
+
+	// 7. 轉到 QImage 中
+
+	// 8. 顯示結果
+	//rawManager.ShowImageIndex(60);
 }
 
 // Volume Render 測試

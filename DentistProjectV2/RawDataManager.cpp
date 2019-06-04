@@ -826,17 +826,17 @@ void RawDataManager::PredictFull()
 	else
 		assert(false && "確定站存資料夾已經創立!!");
 }
-void RawDataManager::LoadPredictImageShow() {
-	//QString PredictImagePath = "C:/Users/castle/AppData/Local/Temp/DentistProjectV2-p3dLon/";
+void RawDataManager::LoadPredictImage() 
+{
+	QString testPath = "E:/DentistData/DentistProjectV2-p3dLon";
 	if (tempDir.isValid())
-	{
 		for (int i = 60; i <= 200; i++)
 		{
-			cv::Mat LoadImage = cv::imread(tempDir.filePath("Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
+			//cv::Mat LoadImage = cv::imread(tempDir.filePath("Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
+			cv::Mat LoadImage = cv::imread((testPath + "/Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
+			NetworkResultArray.push_back(ImageResultArray[i]);
 
-			NetworkResultArray.push_back(ImageResultArray[i].clone());
-
-			QVector2D TL = TLPointArray[i];
+			/*QVector2D TL = TLPointArray[i];
 			QVector2D BR = BRPointArray[i];
 			int width = BR[0] - TL[0];
 			int height = BR[1] - TL[1];
@@ -844,10 +844,49 @@ void RawDataManager::LoadPredictImageShow() {
 			LoadImage.copyTo(NetworkResultArray[i - 60](cv::Rect(TL[0], TL[1], width, height)));
 
 			QImage tempQImage = Mat2QImage(NetworkResultArray[i - 60], CV_8UC3);
-			QNetworkResultArray.push_back(tempQImage);
+			QNetworkResultArray.push_back(tempQImage);*/
 		}
-		ShowImageIndex(60);
+		//ShowImageIndex(60);
+}
+void RawDataManager::SmoothNetworkData()
+{
+	#pragma region 找出最大最小值
+	// r => Image rows
+	// y => 張數
+	// c => Image cols
+	// 0, 0 => 是圖片的左上角
+	int rMin = INT_MAX, rMax = 0,
+		yMin = 60, yMax = 200,
+		cMin = INT_MAX, cMax = 0;
+
+	assert(NetworkResultArray.size() == (200 - 60 + 1) && "必須要有 141 張圖!!");
+	for (int i = 0; i < NetworkResultArray.size(); i++)
+	{
+		int index = i + 60;					// Offset 60 張圖
+
+		// 取出點
+		QVector2D TL = TLPointArray[i];
+		QVector2D BR = BRPointArray[i];
+
+		if (cMin > TL.x()) cMin = TL.x();
+		if (rMin > TL.y()) rMin = TL.y();
+		if (cMax < BR.x()) cMax = BR.x();
+		if (rMax < BR.y()) rMax = BR.y();
 	}
+
+	// Clamp 到結果之間
+	cMax = clamp(cMax, 0, DManager.prop.SizeZ);
+	rMax = clamp(rMax, 0, DManager.prop.SizeX);
+	
+	//cout << "Row Max: " << rMax << " Col Max: " <<
+	#pragma endregion
+	#pragma region 開始 Smooth
+
+	#pragma endregion
+}
+void RawDataManager::NetworkDataToQImage()
+{
+
 }
 
 //void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)
@@ -1232,4 +1271,8 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 	//cout << "Score: " << score << endl;
 	FinalScore = score;
 	return matrix;
+}
+int RawDataManager::clamp(int value, int min, int max)
+{
+	return std::max(min, std::min(value, max));
 }

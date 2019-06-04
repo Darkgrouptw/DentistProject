@@ -121,7 +121,9 @@ public:
 	void NetworkDataGenerateInRamV2();											// 產生相同的類神經網路資料，但不輸出
 	void PredictOtherSide();													// 預測 TopView
 	void PredictFull();															// 預測 Full 全部的圖
-	void LoadPredictImageShow();												// 將預測的圖轉成 QImage 顯示
+	void LoadPredictImage();													// 將預測的圖讀進來
+	void SmoothNetworkData();													// 優化 Network 預測出來的雜點
+	void NetworkDataToQImage();													// 轉成 QImage
 	QTemporaryDir tempDir;														// 暫存的資料夾 (用於 Network)
 
 	//////////////////////////////////////////////////////////////////////////
@@ -235,6 +237,7 @@ private:
 	void				ConvertQVector2Point3D(QVector<QVector3D>&, vector<Point3D>&);	// 同上
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
 	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
+	int					clamp(int, int, int);
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數
