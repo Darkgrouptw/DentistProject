@@ -569,32 +569,35 @@ void RawDataManager::AlignmentPointCloud()
 		#pragma region 先將原本的點，先轉至正確位置
 		int LastID = PointCloudArray.size() - 1;
 
-		QMatrix4x4 LastRotationMatrix;
-		if (InitRotationMarix.size() == LastID)					// 慢慢移動到正確位置(已經轉過上一個旋轉矩陣)
-			LastRotationMatrix = InitRotationMarix[LastID - 1];	// 其他剛剛加進來的新的點
-		else if (InitRotationMarix.size() < LastID)
-			InitRotationMarix.append(QMatrix4x4());
+		////增加新進點雲Matrix
+		if (InitRotationMarix.size() != PointCloudArray.size()) 
+			InitRotationMarix.push_back(QMatrix4x4());
 
-		// 先將點轉到上一個的位置在開始轉
-		if (!LastRotationMatrix.isIdentity())
-		{
-			QVector<QVector3D> QLastPC;
+		////計算要轉至哪個Matrix
+		QMatrix4x4 LastRotationMatrix;
+		for (int i = 0; i < PointCloudArray.size(); i++)
+			LastRotationMatrix = InitRotationMarix[i] * LastRotationMatrix;
+
+		////如果是新Matrix表示要更新點雲位置
+		if (InitRotationMarix[LastID].isIdentity())
 			for (int i = 0; i < PointCloudArray[LastID].Points.size(); i++)
 			{
 				QVector4D point4D = QVector4D(PointCloudArray[LastID].Points[i], 1);
 				QVector3D pointToRightPlace = (LastRotationMatrix * point4D).toVector3D();		// 轉到正確的位置
-				QLastPC.append(pointToRightPlace);
+				PointCloudArray[LastID].Points[i] = pointToRightPlace;
 			}
-		}
+
 		#pragma endregion
 		#pragma region 拿最後一篇跟其他拼接
 		vector<Point3D> NewPC, LastPC;
-		ConvertQVector2Point3D(QLastPC, NewPC);
+		ConvertQVector2Point3D(PointCloudArray[LastID].Points, NewPC);
 		ConvertQVector2Point3D(PointCloudArray[LastID - 1].Points, LastPC);
 
 		// 轉換 Matrix
 		float score = 0;
 		QMatrix4x4 rotationMatrix = super4PCS_Align(&LastPC, &NewPC, score).transposed();
+
+		InitRotationMarix[LastID] = rotationMatrix * InitRotationMarix[LastID];
 
 		cout << "拼接最後分數: " << score << endl;
 		ConvertPoint3D2QVector(NewPC, PointCloudArray[LastID].Points);
@@ -604,9 +607,8 @@ void RawDataManager::AlignmentPointCloud()
 		// 如果分數小於一個 Threshold 那就丟掉
 		if (score < AlignScoreThreshold)
 		{
-			// 判斷在點於丟掉之前，是否有之前的旋轉矩陣
-			if (InitRotationMarix.size() > LastID)
-				InitRotationMarix.removeLast();
+			//// 如果丟掉移除最後一個矩陣
+			InitRotationMarix.removeLast();
 
 			PointCloudArray.removeLast();
 			SelectIndex = PointCloudArray.size() - 1;
@@ -614,17 +616,14 @@ void RawDataManager::AlignmentPointCloud()
 		}
 		else
 		{
-			// 判斷是否有加過，如果有就更新
-			if (InitRotationMarix.size() > LastID)
-				InitRotationMarix[InitRotationMarix.size() - 1] = rotationMatrix * LastRotationMatrix;
-			else
-				InitRotationMarix.push_back(rotationMatrix);
 			IsLockPC = true;	// 要重新更新點雲了
 		}
 		#pragma endregion
 	}
-	else
-		InitRotationMarix.append(QMatrix4x4());
+	else {
+		////第一片是單位矩陣
+		InitRotationMarix.push_back(QMatrix4x4());
+	}
 }
 void RawDataManager::CombinePointCloud(int FirstID, int LastID)
 {
