@@ -87,6 +87,11 @@ void RawDataManager::ShowImageIndex(int index)
 
 			QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
 			BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
+
+			if (QNetworkResultArray.size() > 0) {
+				QImage Pixmap_NetworkResult = QNetworkResultArray[index - 60];
+				NetworkResult->setPixmap(QPixmap::fromImage(Pixmap_NetworkResult));
+			}
 		}
 		else if (QImageResultArray.size() == 1)
 		{
@@ -783,6 +788,29 @@ void RawDataManager::PredictFull()
 	}
 	else
 		assert(false && "確定站存資料夾已經創立!!");
+}
+void RawDataManager::LoadPredictImageShow() {
+	//QString PredictImagePath = "C:/Users/castle/AppData/Local/Temp/DentistProjectV2-p3dLon/";
+	if (tempDir.isValid())
+	{
+		for (int i = 60; i <= 200; i++)
+		{
+			cv::Mat LoadImage = cv::imread(tempDir.filePath("Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
+
+			NetworkResultArray.push_back(ImageResultArray[i].clone());
+
+			QVector2D TL = TLPointArray[i];
+			QVector2D BR = BRPointArray[i];
+			int width = BR[0] - TL[0];
+			int height = BR[1] - TL[1];
+
+			LoadImage.copyTo(NetworkResultArray[i - 60](cv::Rect(TL[0], TL[1], width, height)));
+
+			QImage tempQImage = Mat2QImage(NetworkResultArray[i - 60], CV_8UC3);
+			QNetworkResultArray.push_back(tempQImage);
+		}
+		ShowImageIndex(60);
+	}
 }
 
 //void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)

@@ -126,6 +126,7 @@ public:
 	//QVector<Mat> PredictFull;
 	//void ImportVolumeDataTest(QString);										// 輸入 Label 資料做測試用
 	//QVector<VolumeRenderClass*> VolumeDataArray;								// Network 預測完的資料
+	void LoadPredictImageShow();
 
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲資料
@@ -205,7 +206,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QVector<Mat>		ImageResultArray;										// 原圖
 	QVector<Mat>		BorderDetectionResultArray;								// 邊界判斷完
-	QVector<Mat>		NetworkResultArray;										// 網路預測的結果
+	QVector<Mat>		NetworkResultArray;										// 網路預測的結果(0-140)
 	Mat					OtherSideMat;											// 存放單一大小的
 
 	//////////////////////////////////////////////////////////////////////////

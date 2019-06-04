@@ -559,6 +559,7 @@ void DentistProjectV2::NetworkDataGenerateV2()
 }
 void DentistProjectV2::PredictResultTesting()
 {
+	
 	// 1. 先讀 Data
 	ReadRawDataForBorderTest();
 
@@ -570,6 +571,9 @@ void DentistProjectV2::PredictResultTesting()
 	
 	// 4. 預測整份的資料
 	rawManager.PredictFull();
+	
+	//5. 把預測資料貼回原圖
+	rawManager.LoadPredictImageShow();
 }
 
 // Volume Render 測試
