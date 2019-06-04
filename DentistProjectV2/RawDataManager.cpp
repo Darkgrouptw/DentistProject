@@ -561,29 +561,62 @@ void RawDataManager::AlignmentPointCloud()
 	// 點雲拼接
 	if (PointCloudArray.size() > 1)
 	{
-		// 拿最後一篇跟其他拼接
+		#pragma region 先將原本的點，先轉至正確位置
 		int LastID = PointCloudArray.size() - 1;
+
+		QMatrix4x4 LastRotationMatrix;
+		if (InitRotationMarix.size() == LastID)					// 慢慢移動到正確位置(已經轉過上一個旋轉矩陣)
+			LastRotationMatrix = InitRotationMarix[LastID - 1];	// 其他剛剛加進來的新的點
+		else if (InitRotationMarix.size() < LastID)
+			InitRotationMarix.append(QMatrix4x4());
+
+		// 先將點轉到上一個的位置在開始轉
+		QVector<QVector3D> QLastPC;
+		for (int i = 0; i < PointCloudArray[LastID].Points.size(); i++)
+		{
+			QVector4D point4D = QVector4D(PointCloudArray[LastID].Points[i], 1);
+			QVector3D pointToRightPlace = (LastRotationMatrix * point4D).toVector3D();		// 轉到正確的位置
+			QLastPC.append(pointToRightPlace);
+		}
+		#pragma endregion
+		#pragma region 拿最後一篇跟其他拼接
 		vector<Point3D> NewPC, LastPC;
-		ConvertQVector2Point3D(PointCloudArray[LastID].Points, NewPC);
+		ConvertQVector2Point3D(QLastPC, NewPC);
 		ConvertQVector2Point3D(PointCloudArray[LastID - 1].Points, LastPC);
 
 		// 轉換 Matrix
 		float score = 0;
-		super4PCS_Align(&LastPC, &NewPC, score);
+		QMatrix4x4 rotationMatrix = super4PCS_Align(&LastPC, &NewPC, score).transposed();
+
 		cout << "拼接最後分數: " << score << endl;
 		ConvertPoint3D2QVector(NewPC, PointCloudArray[LastID].Points);
-
+		#pragma endregion
+		#pragma region 判斷否要保留
 		// 這邊再去做判斷
 		// 如果分數小於一個 Threshold 那就丟掉
 		if (score < AlignScoreThreshold)
 		{
+			// 判斷在點於丟掉之前，是否有之前的旋轉矩陣
+			if (InitRotationMarix.size() > LastID)
+				InitRotationMarix.removeLast();
+
 			PointCloudArray.removeLast();
 			SelectIndex = PointCloudArray.size() - 1;
 			PCWidgetUpdate();
 		}
 		else
+		{
+			// 判斷是否有加過，如果有就更新
+			if (InitRotationMarix.size() > LastID)
+				InitRotationMarix[InitRotationMarix.size() - 1] = rotationMatrix * LastRotationMatrix;
+			else
+				InitRotationMarix.push_back(rotationMatrix);
 			IsLockPC = true;	// 要重新更新點雲了
+		}
+		#pragma endregion
 	}
+	else
+		InitRotationMarix.append(QMatrix4x4());
 }
 void RawDataManager::CombinePointCloud(int FirstID, int LastID)
 {
@@ -820,15 +853,40 @@ void RawDataManager::PCWidgetUpdate()
 	// 取消
 	IsWidgetUpdate = false;
 }
-void RawDataManager::RotationAngle(int rotateTimes)
+void RawDataManager::TransformMultiDataToAlignment(QStringList PCList)
 {
-	// 先確定有這片點雲
-	if (SelectIndex >= 0)
+	#pragma region 先確認資料是正確的
+	bool IsCurrent = true;
+
+	// 確認是否有按照順序
+	for (int i = 0; i < PCList.size(); i++)
+		IsCurrent = IsCurrent & PCList[i].endsWith(QString::number(i + 1) + ".xyz");
+
+	if (!IsCurrent)
 	{
-		// Point
-		PointCloudArray[SelectIndex].RotateConstantAngle(rotateTimes);
-		IsLockPC = true;
+		cout << "資料可能不正確!" << endl;
+		return;
 	}
+	#pragma endregion
+	#pragma region 點雲拼接
+	PointCloudArray.clear();
+	//for (int i = 0; i < PCList.size(); i++)
+	for (int i = 0; i < 5; i++)
+	{
+		PointCloudInfo pcInfo;
+		pcInfo.ReadFromXYZ(PCList[i]);
+		PointCloudArray.append(pcInfo);
+
+		for (int j = 0; j < 3; j++)
+			AlignmentPointCloud();
+	}
+
+	// SelectIndex
+	SelectIndex = PointCloudArray.size() - 1;
+
+	// 需更新
+	PCWidgetUpdate();
+	#pragma endregion
 }
 void RawDataManager::TransformMultiDataToPointCloud(QStringList rawDataList)
 {
@@ -871,8 +929,8 @@ void RawDataManager::TransformMultiDataToPointCloud(QStringList rawDataList)
 		QQuaternion quat;
 		SavePointCloud(quat);
 
-		if (i > 0)
-			PointCloudArray[i].RotateConstantAngle(i - 1);
+		/*if (i > 0)
+			PointCloudArray[i].RotateConstantAngle(i - 1);*/
 	}
 
 	// 要存檔的
@@ -885,7 +943,7 @@ void RawDataManager::TransformMultiDataToPointCloud(QStringList rawDataList)
 			SaveFileName += "C";
 		else
 			SaveFileName += QString::number(i);
-		PointCloudArray[i].SaveASC(SaveFileName + ".xyz");
+		PointCloudArray[i].SaveXYZ(SaveFileName + ".xyz");
 	}
 	#pragma endregion
 }

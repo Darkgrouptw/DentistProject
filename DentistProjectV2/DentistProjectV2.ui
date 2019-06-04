@@ -805,7 +805,7 @@
         <string>合併所有點雲</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="RotationAngleTest">
+      <widget class="QPushButton" name="AlignmentAllPCTest">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -814,11 +814,12 @@
          <x>10</x>
          <y>110</y>
          <width>131</width>
-         <height>23</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="text">
-        <string>旋轉測試</string>
+        <string>一系列 PointCloud
+拼接測試</string>
        </property>
       </widget>
       <widget class="QPushButton" name="PassScanDataToPC">
@@ -828,13 +829,31 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>140</y>
+         <y>160</y>
          <width>131</width>
-         <height>61</height>
+         <height>41</height>
         </rect>
        </property>
        <property name="text">
-        <string>一系列掃描圖轉模型</string>
+        <string>一系列 RawData
+掃描圖轉點雲</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="PCSaveMatrixTest">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>232</y>
+         <width>131</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>儲存點雲及矩陣
+(誤差用)</string>
        </property>
       </widget>
      </widget>

@@ -8,12 +8,12 @@ PointCloudInfo::~PointCloudInfo()
 }
 
 // 讀存檔
-void PointCloudInfo::ReadFromASC(QString FileName)
+void PointCloudInfo::ReadFromXYZ(QString FileName)
 {
 	// 開啟檔案
 	QFile file(FileName);
 	assert(file.open(QIODevice::ReadOnly));
-	cout << "讀取點雲: " << FileName.toStdString() << endl;
+	cout << "讀取點雲: " << FileName.toLocal8Bit().toStdString() << endl;
 
 	// 初始化變數
 	float a, b, c;
@@ -33,7 +33,7 @@ void PointCloudInfo::ReadFromASC(QString FileName)
 	file.close();
 	cout << "讀取完成!!" << endl;
 }
-void PointCloudInfo::SaveASC(QString FileName)
+void PointCloudInfo::SaveXYZ(QString FileName)
 {
 	// 開啟檔案
 	QFile file(FileName);
@@ -54,30 +54,3 @@ void PointCloudInfo::SaveASC(QString FileName)
 }
 
 // 拼接
-void PointCloudInfo::RotateConstantAngle(int times)
-{
-	#pragma region 先算出 CenterPos
-	QVector3D centerPos;
-	for (int i = 0; i < Points.size(); i++)
-		centerPos += Points[i];
-	centerPos /= Points.size();
-	#pragma endregion
-	#pragma region 旋轉某個角度
-	for (int i = 0; i < Points.size(); i++)
-	{
-		// 點雲
-		QVector3D p = (Points[i] - centerPos);
-
-		// 旋轉矩陣
-		QMatrix4x4 rotationMatrix;
-		rotationMatrix.rotate(-45, 1, 0, 0);
-		for (int j = 0; j < times; j++)
-			rotationMatrix.rotate(ROTATION_ANGLE, 0, 1, 0);
-		p = (rotationMatrix * QVector4D(p, 1)).toVector3D();
-
-		// 轉回原本的角度
-		p += QVector3D(0, centerPos.y(), 0);
-		Points[i] = p;
-	}
-	#pragma endregion
-}

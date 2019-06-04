@@ -42,8 +42,9 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.AlignLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(AlignLastTwoPCEvent()));
 	connect(ui.CombineLastTwoPCButton,						SIGNAL(clicked()),				this,	SLOT(CombineLastTwoPCEvent()));
 	connect(ui.CombineAllPCButton,							SIGNAL(clicked()),				this,	SLOT(CombineAllPCEvent()));
-	connect(ui.RotationAngleTest,							SIGNAL(clicked()),				this,	SLOT(RotationAngleTestEvent()));
+	connect(ui.AlignmentAllPCTest,							SIGNAL(clicked()),				this,	SLOT(AlignmentAllPCTestEvent()));
 	connect(ui.PassScanDataToPC,							SIGNAL(clicked()),				this,	SLOT(TransformMultiDataToPCEvent()));
+	//connect(ui.PCSaveMatrixTest,							SIGNAL(clicked()),				this,	SLOT());
 
 	// Network 相關
 	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
@@ -472,12 +473,12 @@ void DentistProjectV2::PCIndexChangeEvnet(int)
 }
 void DentistProjectV2::ReadPCEvent()
 {
-	QString PointCloudFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("讀取點雲"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	QString PointCloudFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("讀取點雲"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
 	if (PointCloudFileName != "")
 	{
 		int index = rawManager.SelectIndex;
 		PointCloudInfo info;
-		info.ReadFromASC(PointCloudFileName);
+		info.ReadFromXYZ(PointCloudFileName);
 		rawManager.PointCloudArray.push_back(info);
 
 		// 更新相關設定
@@ -487,7 +488,7 @@ void DentistProjectV2::ReadPCEvent()
 }
 void DentistProjectV2::SavePCEvent()
 {
-	QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/NetworkData/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
 	if (PointCloudFileName != "")
 	{
 		// 修正副檔名
@@ -495,7 +496,7 @@ void DentistProjectV2::SavePCEvent()
 			PointCloudFileName += ".xyz";
 
 		int index = rawManager.SelectIndex;
-		rawManager.PointCloudArray[index].SaveASC(PointCloudFileName);
+		rawManager.PointCloudArray[index].SaveXYZ(PointCloudFileName);
 	}
 }
 void DentistProjectV2::DeletePCEvent()
@@ -525,14 +526,21 @@ void DentistProjectV2::CombineAllPCEvent()
 		for (int i = rawManager.PointCloudArray.size() - 1; i > 0; i--)
 			rawManager.CombinePointCloud(0, i);
 }
-void DentistProjectV2::RotationAngleTestEvent()
+void DentistProjectV2::AlignmentAllPCTestEvent()
 {
-	rawManager.RotationAngle(1);
+	QStringList PCList = QFileDialog::getOpenFileNames(this,
+		codec->toUnicode("點雲的部分"),
+		"E:/DentistData/PointCloud/",
+		codec->toUnicode(""), nullptr,
+		QFileDialog::DontUseNativeDialog);
+
+	if (PCList.size() == 12)
+		rawManager.TransformMultiDataToAlignment(PCList);
 }
 void DentistProjectV2::TransformMultiDataToPCEvent()
 {
 	QStringList RawDataList = QFileDialog::getOpenFileNames(this,
-		codec->toUnicode("讀取掃描狀況"),
+		codec->toUnicode("讀取 RawData"),
 		"E:/DentistData/ScanData/2019.05.15/",
 		codec->toUnicode(""), nullptr,
 		QFileDialog::DontUseNativeDialog);

@@ -39,6 +39,7 @@
 #include <QTemporaryDir>
 #include <QProcess>
 #include <QElapsedTimer>
+#include <QMatrix4x4>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -87,8 +88,6 @@ public:
 	void SendUIPointer(QVector<QObject*>);
 	void ShowImageIndex(int);
 
-	//void ReadPointCloudData(QString);
-
 	//////////////////////////////////////////////////////////////////////////
 	// OCT 相關的步驟
 	//
@@ -122,22 +121,20 @@ public:
 	void NetworkDataGenerateInRamV2();											// 產生相同的類神經網路資料，但不輸出
 	void PredictOtherSide();													// 預測 TopView
 	void PredictFull();															// 預測 Full 全部的圖
-	QTemporaryDir tempDir;
-	//QVector<Mat> PredictFull;
-	//void ImportVolumeDataTest(QString);										// 輸入 Label 資料做測試用
-	//QVector<VolumeRenderClass*> VolumeDataArray;								// Network 預測完的資料
+	QTemporaryDir tempDir;														// 暫存的資料夾 (用於 Network)
 
 	//////////////////////////////////////////////////////////////////////////
 	// 點雲資料
 	//////////////////////////////////////////////////////////////////////////
 	QVector<PointCloudInfo> PointCloudArray;									// 每次掃描都會把結果船進去
+	QVector<QMatrix4x4> InitRotationMarix;										// 原始點雲的旋轉矩陣
 	int					SelectIndex = -1;										// 目前選擇地的片數
 	bool				IsLockPC = false;										// Lock PC 是來判斷是否有新資料，有新資料就會 Lock，更新結束，就會取消 Lock
 	bool				IsLockVolumeData = false;								// 同上，可能後面會取代
 	bool				IsWidgetUpdate = false;									// 是否有介面在更新
 	QVector<QQuaternion> QuaternionList;										// 修改用		
 	void				PCWidgetUpdate();										// 更新點部分的資料
-	void				RotationAngle(int);										// 更新旋轉的角度
+	void				TransformMultiDataToAlignment(QStringList);				// 更新旋轉的角度
 	void				TransformMultiDataToPointCloud(QStringList);			// 將資料轉成點雲
 
 	//////////////////////////////////////////////////////////////////////////
@@ -189,11 +186,6 @@ private:
 	Size							BlurSize = Size(9, 9);									// 模糊的區塊
 	int								BoundingThreshold = 8;									// 這邊是要根據多少去裁減
 	int								BoundingOffset = 0;										// 加上 Offset
-
-	//////////////////////////////////////////////////////////////////////////
-	// 其他
-	//////////////////////////////////////////////////////////////////////////
-	//TensorflowNet			net_OtherSide;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 4PCS 常數
