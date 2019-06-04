@@ -121,6 +121,7 @@ public:
 	void NetworkDataGenerateInRamV2();											// 產生相同的類神經網路資料，但不輸出
 	void PredictOtherSide();													// 預測 TopView
 	void PredictFull();															// 預測 Full 全部的圖
+	void LoadPredictImageShow();												// 將預測的圖轉成 QImage 顯示
 	QTemporaryDir tempDir;														// 暫存的資料夾 (用於 Network)
 
 	//////////////////////////////////////////////////////////////////////////
@@ -197,7 +198,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QVector<Mat>		ImageResultArray;										// 原圖
 	QVector<Mat>		BorderDetectionResultArray;								// 邊界判斷完
-	QVector<Mat>		NetworkResultArray;										// 網路預測的結果
+	QVector<Mat>		NetworkResultArray;										// 網路預測的結果(0-140)
 	Mat					OtherSideMat;											// 存放單一大小的
 
 	//////////////////////////////////////////////////////////////////////////
