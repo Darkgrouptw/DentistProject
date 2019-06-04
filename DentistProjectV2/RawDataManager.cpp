@@ -576,12 +576,15 @@ void RawDataManager::AlignmentPointCloud()
 			InitRotationMarix.append(QMatrix4x4());
 
 		// 先將點轉到上一個的位置在開始轉
-		QVector<QVector3D> QLastPC;
-		for (int i = 0; i < PointCloudArray[LastID].Points.size(); i++)
+		if (!LastRotationMatrix.isIdentity())
 		{
-			QVector4D point4D = QVector4D(PointCloudArray[LastID].Points[i], 1);
-			QVector3D pointToRightPlace = (LastRotationMatrix * point4D).toVector3D();		// 轉到正確的位置
-			QLastPC.append(pointToRightPlace);
+			QVector<QVector3D> QLastPC;
+			for (int i = 0; i < PointCloudArray[LastID].Points.size(); i++)
+			{
+				QVector4D point4D = QVector4D(PointCloudArray[LastID].Points[i], 1);
+				QVector3D pointToRightPlace = (LastRotationMatrix * point4D).toVector3D();		// 轉到正確的位置
+				QLastPC.append(pointToRightPlace);
+			}
 		}
 		#pragma endregion
 		#pragma region 拿最後一篇跟其他拼接
@@ -631,12 +634,14 @@ void RawDataManager::CombinePointCloud(int FirstID, int LastID)
 		QVector3D p = PointCloudArray[LastID].Points[i];
 		PointCloudArray[FirstID].Points.append(p);
 	}
+	InitRotationMarix[FirstID] = InitRotationMarix[LastID];
 
 	// 把顯示部分設定為合併後的那一個
 	SelectIndex = FirstID;
 
 	// 刪除那片點雲
 	PointCloudArray.removeAt(LastID);
+	InitRotationMarix.removeAt(LastID);
 
 	// 更新資料
 	PCWidgetUpdate();

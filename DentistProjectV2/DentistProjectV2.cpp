@@ -505,6 +505,9 @@ void DentistProjectV2::DeletePCEvent()
 	{
 		// 刪除選擇的部分
 		rawManager.PointCloudArray.erase(rawManager.PointCloudArray.begin() + rawManager.SelectIndex);
+		if (rawManager.PointCloudArray.size() > rawManager.SelectIndex)
+			rawManager.InitRotationMarix.erase(rawManager.InitRotationMarix.begin() + rawManager.SelectIndex);
+
 		if (rawManager.SelectIndex == rawManager.PointCloudArray.size())			// 因為上面一行已經減去，所以這邊不用在減一
 			rawManager.SelectIndex--;
 		rawManager.PCWidgetUpdate();
