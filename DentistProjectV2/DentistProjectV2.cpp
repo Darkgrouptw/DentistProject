@@ -473,17 +473,21 @@ void DentistProjectV2::PCIndexChangeEvnet(int)
 }
 void DentistProjectV2::ReadPCEvent()
 {
-	QString PointCloudFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("讀取點雲"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
-	if (PointCloudFileName != "")
+	QStringList PointCloudFileList = QFileDialog::getOpenFileNames(this, codec->toUnicode("讀取點雲"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	
+	for (int i = 0; i < PointCloudFileList.count(); i++)
 	{
-		int index = rawManager.SelectIndex;
-		PointCloudInfo info;
-		info.ReadFromXYZ(PointCloudFileName);
-		rawManager.PointCloudArray.push_back(info);
+		if (PointCloudFileList[i] != "")
+		{
+			int index = rawManager.SelectIndex;
+			PointCloudInfo info;
+			info.ReadFromXYZ(PointCloudFileList[i]);
+			rawManager.PointCloudArray.push_back(info);
 
-		// 更新相關設定
-		rawManager.SelectIndex = rawManager.PointCloudArray.size() - 1;
-		rawManager.PCWidgetUpdate();
+			// 更新相關設定
+			rawManager.SelectIndex = rawManager.PointCloudArray.size() - 1;
+			rawManager.PCWidgetUpdate();
+		}
 	}
 }
 void DentistProjectV2::SavePCEvent()
