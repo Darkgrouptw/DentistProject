@@ -18,14 +18,12 @@ void ScanningWorkerThread::InitScanFunctionPointer(
 	function<void(QString, bool)>* ScanSingle,
 	function<void(QString, bool)>* ScanMulti,
 	function<void(bool)>* ToImage,
-	function<void()>* ToOtherSide,
-	function<QQuaternion()>* Quaternion)
+	function<void()>* ToOtherSide)
 {
 	ScanSingleDataFromDeviceV2 = ScanSingle;
 	ScanMultiDataFromDeviceV2 = ScanMulti;
 	TransformToIMG = ToImage;
 	TransformToOtherSideView = ToOtherSide;
-	GetQuaternionFromDevice = Quaternion;
 }
 void ScanningWorkerThread::IntitShakeDetectFunctionPointer(
 	function<void(int*&)>* CopyBorderInfo,
@@ -172,7 +170,7 @@ void ScanningWorkerThread::ScanProcess()
 		(*TransformToOtherSideView)();
 
 		// 拿旋轉矩陣
-		QQuaternion currentQuat = (*GetQuaternionFromDevice)();
+		QQuaternion currentQuat;
 		#pragma endregion
 		#pragma region 6. 顯示
 		(*ShowImageIndex)();
@@ -237,7 +235,7 @@ void ScanningWorkerThread::ScanOnceProcess()
 		(*TransformToOtherSideView)();
 
 		// 拿旋轉矩陣
-		QQuaternion currentQuat = (*GetQuaternionFromDevice)();
+		QQuaternion currentQuat;
 		#pragma endregion
 		#pragma region 3. 顯示
 		(*ShowImageIndex)();

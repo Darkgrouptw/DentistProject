@@ -30,7 +30,6 @@ public:
 	// 儲存的資料
 	//////////////////////////////////////////////////////////////////////////
 	QVector<QVector3D>	Points;													// 點 (這邊的點)
-	QVector3D			CenterPoints;
-	float CenterX, CenterY, CenterZ;
+	QVector3D			CenterPoints;											// 中心點
 private:
 };

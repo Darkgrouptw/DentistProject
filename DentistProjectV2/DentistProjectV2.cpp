@@ -7,18 +7,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	UpdateGLTimer = new QTimer();
 	#pragma endregion
 	#pragma region 事件連結
-	// 藍芽部分
-	connect(ui.BtnSearchCom,								SIGNAL(clicked()),				this,	SLOT(SearchCOM()));
-	connect(ui.BtnConnectCOM,								SIGNAL(clicked()),				this,	SLOT(ConnectCOM()));
-	connect(ui.BtnScanBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ScanBLEDevice()));
-	connect(ui.BtnConnectBLEDevice,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDeivce()));
-	connect(ui.ResetRotationMode,							SIGNAL(clicked()),				this,	SLOT(SetRotationMode()));
-	connect(ui.GyroscopeResetToZero,						SIGNAL(clicked()),				this,	SLOT(GyroResetToZero()));
-	connect(ui.BLEConnect_OneBtn,							SIGNAL(clicked()),				this,	SLOT(ConnectBLEDevice_OneBtn()));
-	
-	// 藍芽測試
-	connect(ui.PointCloudAlignmentTestBtn,					SIGNAL(clicked()),				this,	SLOT(PointCloudAlignmentTest()));
-
 	// OCT 相關(主要)
 	connect(ui.SaveLocationBtn,								SIGNAL(clicked()),				this,	SLOT(ChooseSaveLocaton()));
 	connect(ui.AutoSaveSingleRawDataWhileScan_CheckBox,		SIGNAL(stateChanged(int)),		this,	SLOT(AutoSaveWhileScan_ChangeEvent(int)));
@@ -44,7 +32,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.CombineAllPCButton,							SIGNAL(clicked()),				this,	SLOT(CombineAllPCEvent()));
 	connect(ui.AlignmentAllPCTest,							SIGNAL(clicked()),				this,	SLOT(AlignmentAllPCTestEvent()));
 	connect(ui.PassScanDataToPC,							SIGNAL(clicked()),				this,	SLOT(TransformMultiDataToPCEvent()));
-	connect(ui.PCSaveMatrixTest,							SIGNAL(clicked()),				this,	SLOT(RotationTest()));
+	connect(ui.AveragePCErrorTest,							SIGNAL(clicked()),				this,	SLOT(AveragePCErrorTestEvent()));
 
 	// Network 相關
 	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
@@ -109,8 +97,6 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.EularText);
 	objList.push_back(this);
 	objList.push_back(ui.BLEDeviceList);
-	
-	rawManager.bleManager.SendUIPointer(objList);
 
 	// OCT 顯示的部分
 	objList.clear();
@@ -132,74 +118,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	#pragma endregion
 }
 
-// 藍芽事件
-void DentistProjectV2::SearchCOM()
-{
-	QStringList COMListArray = rawManager.bleManager.GetCOMPortsArray();
-	ui.COMList->clear();
-	ui.COMList->addItems(COMListArray);
-}
-void DentistProjectV2::ConnectCOM()
-{
-	rawManager.bleManager.Initalize(ui.COMList->currentText());
-}
-void DentistProjectV2::ScanBLEDevice()
-{
-	if (rawManager.bleManager.IsInitialize())
-		rawManager.bleManager.Scan();
-}
-void DentistProjectV2::ConnectBLEDeivce()
-{
-	rawManager.bleManager.Connect(ui.BLEDeviceList->currentIndex());
-}
-void DentistProjectV2::SetRotationMode()
-{
-	if (ui.ResetRotationMode->text() == RotationModeOFF_String)
-	{
-		ui.DisplayPanel->SetRotationMode(true);
-		ui.ResetRotationMode->setText(RotationModeON_String);
-		ui.ResetRotationMode->setDefault(true);
-	}
-	else
-	{
-		ui.DisplayPanel->SetRotationMode(false);
-		ui.ResetRotationMode->setText(RotationModeOFF_String);
-		ui.ResetRotationMode->setDefault(false);
-	}
-}
-void DentistProjectV2::GyroResetToZero()
-{
-	rawManager.bleManager.SetOffsetQuat();
-}
-void DentistProjectV2::ConnectBLEDevice_OneBtn()
-{
-	#pragma region 預先設定
-	rawManager.bleManager.SetConnectDirectly(BLEDeviceName.toStdString(), BLEDeviceAddress.toStdString());
-	#pragma endregion
-	#pragma region COM
-	QStringList COMListArray = rawManager.bleManager.GetCOMPortsArray();
-	ui.COMList->addItems(COMListArray);
-	for (int i = 0; i < ExceptCOMName.size(); i++)
-		for (int j = 0; j < COMListArray.size(); j++)
-			if (ExceptCOMName[i] == COMListArray[j])
-			{
-				COMListArray.removeAt(j);
-				break;
-			}
-	
-	// 例外判斷
-	if (COMListArray.size() == 0)
-		assert(false && "COM 設定可能有錯誤!!");
-
-	ui.COMList->setCurrentText(COMListArray[0]);
-	#pragma endregion
-	#pragma region 連結 COM & 自動連結
-	rawManager.bleManager.Initalize(ui.COMList->currentText());
-	#pragma endregion
-
-}
-
-// 藍芽、九軸測試
+// 九軸資料測試測試
 void DentistProjectV2::PointCloudAlignmentTest()
 {
 	QVector<QString> FileInfo;
@@ -476,7 +395,6 @@ void DentistProjectV2::ReadPCEvent()
 	QStringList PointCloudFileList = QFileDialog::getOpenFileNames(this, codec->toUnicode("讀取點雲"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
 	
 	for (int i = 0; i < PointCloudFileList.count(); i++)
-	{
 		if (PointCloudFileList[i] != "")
 		{
 			int index = rawManager.SelectIndex;
@@ -488,7 +406,6 @@ void DentistProjectV2::ReadPCEvent()
 			rawManager.SelectIndex = rawManager.PointCloudArray.size() - 1;
 			rawManager.PCWidgetUpdate();
 		}
-	}
 }
 void DentistProjectV2::SavePCEvent()
 {
@@ -555,10 +472,9 @@ void DentistProjectV2::TransformMultiDataToPCEvent()
 	if (RawDataList.size() == 13)
 		rawManager.TransformMultiDataToPointCloud(RawDataList);
 }
-
-void DentistProjectV2::RotationTest() {
-	rawManager.CenterPointTest();
-	ui.DisplayPanel->SetFixMode(true);
+void DentistProjectV2::AveragePCErrorTestEvent() 
+{
+	rawManager.AverageErrorPC();
 }
 
 // Network 相關

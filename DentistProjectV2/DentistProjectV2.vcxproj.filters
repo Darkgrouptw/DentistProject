@@ -54,9 +54,6 @@
     <ClCompile Include="CudaV2\EigenUtility.cpp">
       <Filter>CudaV2</Filter>
     </ClCompile>
-    <ClCompile Include="BluetoothManager.cpp">
-      <Filter>Source Files\RawDataManager</Filter>
-    </ClCompile>
     <ClCompile Include="DataManager.cpp">
       <Filter>Source Files\RawDataManager</Filter>
     </ClCompile>
@@ -103,9 +100,6 @@
     </ClInclude>
     <ClInclude Include="GlobalDefine.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BluetoothManager.h">
-      <Filter>Header Files\RawDataManager</Filter>
     </ClInclude>
     <ClInclude Include="DataManager.h">
       <Filter>Header Files\RawDataManager</Filter>

@@ -28,17 +28,15 @@ void PointCloudInfo::ReadFromXYZ(QString FileName)
 		QVector3D p(a, b, c);
 		Points.push_back(p);
 
-		CenterX += a;
-		CenterY += b;
-		CenterZ += c;
+		// 順便算中心點
+		CenterPoints += p;
 	}
 	
 	// 關閉檔案
 	file.close();
-	cout << "讀取完成!!" << endl;
+	CenterPoints /= Points.size();
 
-	QVector3D p(CenterX, CenterY, CenterZ);
-	CenterPoints = p / Points.size();
+	cout << "讀取完成!!" << endl;
 }
 void PointCloudInfo::SaveXYZ(QString FileName)
 {

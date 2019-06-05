@@ -2,10 +2,10 @@
 /*
 這邊是管理所有裝置的 class (包含 藍芽、OCT)
 */
+#using <System.dll>
 #include "TRCudaV2.cuh"
 
 #include "DataManager.h"
-#include "BluetoothManager.h"
 #include "PointCloudInfo.h"
 #include "VolumeRenderClass.h"
 #include "ScanningWorkerThread.h"
@@ -40,10 +40,13 @@
 #include <QProcess>
 #include <QElapsedTimer>
 #include <QMatrix4x4>
+#include <QTextCodec>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
+using namespace System::IO::Ports;
 
 // 讀資料的部分
 enum RawDataType
@@ -104,7 +107,7 @@ public:
 	void ScanMultiDataFromDeviceV2(QString, bool);								// 輸入儲存路徑 和 要步要儲存
 	void TransformToIMG(bool);													// 轉換成圖檔 (是否要加入邊界資訊在圖檔內)
 	void TransformToOtherSideView();											// 轉出TopView 
-	QQuaternion GetQuaternion();												// 從藍芽中拿資料出來
+	//QQuaternion GetQuaternion();												// 從藍芽中拿資料出來
 	void SetScanOCTMode(bool, QString*, bool, bool, bool, bool);				// 開始掃描 OCT
 	void SetScanOCTOnceMode();													// 只掃描一張
 	void CopySingleBorder(int *&);												// 存單張 Border
@@ -140,15 +143,10 @@ public:
 	void				PCWidgetUpdate();										// 更新點部分的資料
 	void				TransformMultiDataToAlignment(QStringList);				// 更新旋轉的角度
 	void				TransformMultiDataToPointCloud(QStringList);			// 將資料轉成點雲
-	void				CenterPointTest();
+	void				AverageErrorPC();
 	QVector3D			CenterPoint;
 	QVector4D			PlaneZValue;
 	QVector<QVector3D>	PlanePoint;
-
-	//////////////////////////////////////////////////////////////////////////
-	// 藍芽的部分
-	//////////////////////////////////////////////////////////////////////////
-	BluetoothManager	bleManager;
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -177,7 +175,6 @@ private:
 	function<void(QString, bool)>	ScanMulti_Pointer;
 	function<void(bool)>			TransforImage_Pointer;
 	function<void()>				TransformToOtherSideView_Pointer;
-	function<QQuaternion()>			GetQuaternion_Pointer;
 	function<void(int*&)>			CopySingleBorder_Pointer;
 	function<bool(int*, bool)>		ShakeDetect_Single_Pointer;
 	function<bool(bool, bool)>		ShakeDetect_Multi_Pointer;

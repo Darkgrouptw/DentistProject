@@ -67,7 +67,7 @@ public:
 	void		SetRawDataManager(RawDataManager*);
 	int			OCTViewType = 0;
 
-	void		SetFixMode(bool);
+	// void		SetFixMode(bool);
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 初始化
@@ -84,6 +84,9 @@ private:
 	void							DrawResetRotation();
 	//void							DrawVolumeData();
 	//void							DrawAxis();
+	#ifdef DEBUG_DRAW_AVERAGE_ERROR_PC
+	void							DrawAverageDebugPC();
+	#endif
 
 	const float						GridSize = 10;
 	QVector2D						GridMin = QVector2D(-GridSize, -GridSize);
@@ -175,6 +178,4 @@ private:
 	QPoint							PressPoint;
 	QPoint							CurrentPoint;
 	#pragma endregion
-
-	bool							FixMode = false;
 };

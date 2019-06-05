@@ -37,8 +37,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
-    <IncludePath>..\OtherPackages\BluetoothDevice\Include;..\OtherPackages\Super4PCS\Eigen\Eigen\src;..\OtherPackages\OpenCV\Include;..\OtherPackages\OpenCV\Include\opencv;..\OtherPackages\Super4PCS\include\super4pcs\algorithms;..\OtherPackages\Super4PCS\include\super4pcs\io;..\OtherPackages\Super4PCS\include;..\OtherPackages;..\OtherPackages\OpenMesh\include;CudaV2\;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
-    <LibraryPath>..\OtherPackages\BluetoothDevice\Lib;..\OtherPackages\Super4PCS\lib;..\OtherPackages\Super4PCS\lib\algorithms\Release;..\OtherPackages\Super4PCS\lib\io\Release;..\OtherPackages\OpenCV\Lib;..\OtherPackages\OpenMesh\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <IncludePath>..\OtherPackages\Super4PCS\Eigen\Eigen\src;..\OtherPackages\OpenCV\Include;..\OtherPackages\OpenCV\Include\opencv;..\OtherPackages\Super4PCS\include\super4pcs\algorithms;..\OtherPackages\Super4PCS\include\super4pcs\io;..\OtherPackages\Super4PCS\include;..\OtherPackages;..\OtherPackages\OpenMesh\include;CudaV2\;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <LibraryPath>..\OtherPackages\Super4PCS\lib;..\OtherPackages\Super4PCS\lib\algorithms\Release;..\OtherPackages\Super4PCS\lib\io\Release;..\OtherPackages\OpenCV\Lib;..\OtherPackages\OpenMesh\lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
     <Message Importance="High" Text="QtMsBuild: could not locate qt.targets, qt.props; project may not build correctly." />
@@ -103,8 +103,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;opengl32.lib;glu32.lib;LibGlove.lib;Qt5OpenGL.lib;Qt5Widgets.lib;OpenMeshCore.lib;opencv_world341.lib;cuda.lib;cudart.lib;cufft.lib;cublas.lib;cublas_device.lib;super4pcs_algo.lib;super4pcs_io.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalOptions>/LTCG %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;opengl32.lib;glu32.lib;Qt5OpenGL.lib;Qt5Widgets.lib;OpenMeshCore.lib;opencv_world341.lib;cuda.lib;cudart.lib;cufft.lib;cublas.lib;cublas_device.lib;super4pcs_algo.lib;super4pcs_io.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <QtMoc>
       <OutputFile>.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</OutputFile>
@@ -126,7 +125,6 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BluetoothManager.cpp" />
     <ClCompile Include="CudaV2\EigenUtility.cpp" />
     <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="DentistProjectV2.cpp" />
@@ -153,7 +151,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BluetoothManager.h" />
     <ClInclude Include="CudaV2\EigenUtility.h" />
     <ClInclude Include="CudaV2\TRCudaV2.cuh" />
     <ClInclude Include="CudaV2\UtilityTools.cuh" />

@@ -54,34 +54,10 @@ void OpenGLWidget::paintGL()
 	}
 	//DrawVolumeData();
 
-	if (FixMode)
-	{
-		glPushMatrix();
-		glRotatef(90, 1, 0, 0);
-		glTranslatef(0, -5, -5);
-
-		for (int i = 0; i < rawManager->PointCloudArray.size(); i++) {
-
-			glBegin(GL_LINES);
-			glColor3f(1.0, 0.0, 0.0);
-			glVertex3f(rawManager->CenterPoint.x(), rawManager->CenterPoint.y(), rawManager->CenterPoint.z());
-			glVertex3f(rawManager->PointCloudArray[i].CenterPoints.x(), rawManager->PointCloudArray[i].CenterPoints.y(), rawManager->PointCloudArray[i].CenterPoints.z());
-			glEnd();
-			
-		}
-		
-		glBegin(GL_QUADS);
-		glColor3f(0.0,1.0,0.0);
-		glVertex3f(rawManager->PlanePoint[0].x(), rawManager->PlanePoint[0].y(), rawManager->PlanePoint[0].z());
-		glVertex3f(rawManager->PlanePoint[1].x(), rawManager->PlanePoint[1].y(), rawManager->PlanePoint[1].z());
-		glVertex3f(rawManager->PlanePoint[2].x(), rawManager->PlanePoint[2].y(), rawManager->PlanePoint[2].z());
-		glVertex3f(rawManager->PlanePoint[3].x(), rawManager->PlanePoint[3].y(), rawManager->PlanePoint[3].z());
-		glEnd();
-
-		glPopMatrix();
-		
-	}
-
+	#ifdef DEBUG_DRAW_AVERAGE_ERROR_PC
+	// Debug 用
+	DrawAverageDebugPC();
+	#endif
 }
 
 // 滑鼠事件
@@ -131,11 +107,6 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event)
 void OpenGLWidget::SetRotationMode(bool SetBool)
 {
 	RotationMode = SetBool;
-	this->update();
-}
-void OpenGLWidget::SetFixMode(bool SetBool)
-{
-	FixMode = SetBool;
 	this->update();
 }
 
@@ -344,13 +315,9 @@ void OpenGLWidget::DrawResetRotation()
 	QOpenGLShaderProgram* program = ProgramList[1].program;
 	program->bind();
 
-	QMatrix4x4 rotationM;
-	rotationM.setToIdentity();
-	rotationM.rotate(rawManager->bleManager.GetQuaternionFromDevice());
-
 	program->setUniformValue(ProgramList[1].ProjectionMLoc, ProjectionMatrix);
 	program->setUniformValue(ProgramList[1].ViewMLoc,		ViewMatrix);
-	program->setUniformValue(ProgramList[1].ModelMLoc,		GyroTranslateM * rotationM);
+	program->setUniformValue(ProgramList[1].ModelMLoc,		GyroTranslateM);
 
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, GyroModelVertexBuffer);
@@ -360,6 +327,35 @@ void OpenGLWidget::DrawResetRotation()
 
 	program->release();
 }
+#ifdef DEBUG_DRAW_AVERAGE_ERROR_PC
+void OpenGLWidget::DrawAverageDebugPC()
+{
+	glPushMatrix();
+	glRotatef(90, 1, 0, 0);
+	glTranslatef(0, -5, -5);
+
+	for (int i = 0; i < rawManager->PointCloudArray.size(); i++) {
+
+		glBegin(GL_LINES);
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3f(rawManager->CenterPoint.x(), rawManager->CenterPoint.y(), rawManager->CenterPoint.z());
+		glVertex3f(rawManager->PointCloudArray[i].CenterPoints.x(), rawManager->PointCloudArray[i].CenterPoints.y(), rawManager->PointCloudArray[i].CenterPoints.z());
+		glEnd();
+
+	}
+
+	glBegin(GL_QUADS);
+	glColor3f(0.0, 1.0, 0.0);
+	glVertex3f(rawManager->PlanePoint[0].x(), rawManager->PlanePoint[0].y(), rawManager->PlanePoint[0].z());
+	glVertex3f(rawManager->PlanePoint[1].x(), rawManager->PlanePoint[1].y(), rawManager->PlanePoint[1].z());
+	glVertex3f(rawManager->PlanePoint[2].x(), rawManager->PlanePoint[2].y(), rawManager->PlanePoint[2].z());
+	glVertex3f(rawManager->PlanePoint[3].x(), rawManager->PlanePoint[3].y(), rawManager->PlanePoint[3].z());
+	glEnd();
+
+	glPopMatrix();
+}
+#endif
+
 //void OpenGLWidget::DrawVolumeData()
 //{
 //	if (rawManager != NULL && rawManager->VolumeDataArray.size() > 0)

@@ -41,8 +41,7 @@ public:
 		function<void(QString, bool)>*,											// Single
 		function<void(QString, bool)>*,											// Multi
 		function<void(bool)>*,													// ToImage
-		function<void()>*,														// ToOtherSide
-		function<QQuaternion()>*												// QQuaternion
+		function<void()>*														// ToOtherSide
 	);
 	void IntitShakeDetectFunctionPointer(
 		function<void(int*&)>*,													// Copy 單張資訊
@@ -112,7 +111,6 @@ private:
 	function<void(QString, bool)>*	ScanMultiDataFromDeviceV2 = NULL;			// 掃描多張資料
 	function<void(bool)>*			TransformToIMG = NULL;						// 將資料轉成圖 (準備顯示前)
 	function<void()>*				TransformToOtherSideView = NULL;			// TopView 
-	function<QQuaternion()>*		GetQuaternionFromDevice = NULL;				// 從裝置拿旋轉量
 	function<void(int*&)>*			CopySingleBorder = NULL;					// 抓出單張資訊
 	function<bool(int*, bool)>*		ShakeDetect_Single = NULL;					// 是否有晃動 (Single)
 	function<bool(bool, bool)>*		ShakeDetect_Multi = NULL;					// 是否有晃動 (Multi)

@@ -13,7 +13,6 @@ RawDataManager::RawDataManager()
 	ScanMulti_Pointer			= bind(&RawDataManager::ScanMultiDataFromDeviceV2,		this, placeholders::_1, placeholders::_2);
 	TransforImage_Pointer		= bind(&RawDataManager::TransformToIMG,					this, placeholders::_1);
 	TransformToOtherSideView_Pointer = bind(&RawDataManager::TransformToOtherSideView,	this);
-	GetQuaternion_Pointer		= bind(&RawDataManager::GetQuaternion,					this);
 	CopySingleBorder_Pointer	= bind(&RawDataManager::CopySingleBorder,				this, placeholders::_1);
 	ShakeDetect_Single_Pointer	= bind(&RawDataManager::ShakeDetect_Single,				this, placeholders::_1, placeholders::_2);
 	ShakeDetect_Multi_Pointer	= bind(&RawDataManager::ShakeDetect_Multi,				this, placeholders::_1, placeholders::_2);
@@ -23,7 +22,7 @@ RawDataManager::RawDataManager()
 
 	// 傳進 Scan Thread 中
 	Worker = gcnew ScanningWorkerThread(DManager.prop.SizeX);
-	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer, &TransformToOtherSideView_Pointer, &GetQuaternion_Pointer);
+	Worker->InitScanFunctionPointer(&ScanSingle_Pointer, &ScanMulti_Pointer, &TransforImage_Pointer, &TransformToOtherSideView_Pointer);
 	Worker->IntitShakeDetectFunctionPointer(&CopySingleBorder_Pointer, &ShakeDetect_Single_Pointer, &ShakeDetect_Multi_Pointer);
 	Worker->InitShowFunctionPointer(&SavePointCloud_Pointer, &AlignmentPointCloud_Pointer, &ShowImageIndex_Pointer);
 	#pragma endregion
@@ -459,10 +458,6 @@ void RawDataManager::TransformToOtherSideView()
 	#endif
 	#pragma endregion
 }
-QQuaternion RawDataManager::GetQuaternion()
-{
-	return bleManager.GetQuaternionFromDevice();
-}
 void RawDataManager::SetScanOCTMode(bool IsStart, QString* EndText, bool NeedSave_Single_RawData, bool NeedSave_Multi_RawData, bool NeedSave_ImageData, bool AutoDelete_ShakeData)
 {
 	// 如果開始的話，就清空資料
@@ -648,65 +643,6 @@ void RawDataManager::CombinePointCloud(int FirstID, int LastID)
 
 	// 更新資料
 	PCWidgetUpdate();
-}
-
-void RawDataManager::CenterPointTest() 
-{
-	float CenterX, CenterY, CenterZ;
-	int TotalPointSize;
-	for (int i = 0; i < PointCloudArray.size(); i++) {
-		CenterX += PointCloudArray[i].CenterX;
-		CenterY += PointCloudArray[i].CenterY;
-		CenterZ += PointCloudArray[i].CenterZ;
-		TotalPointSize += PointCloudArray[i].Points.size();
-
-	}
-	QVector3D p(CenterX, CenterY, CenterZ);
-	CenterPoint = p / (float)TotalPointSize;
-
-	cout << CenterPoint.x() << " " << CenterPoint.y() << " " << CenterPoint.z() << endl;
-
-	
-	QVector3D GuessVec(0.0, 0.0, 0.0);
-
-	QVector<QVector3D> ForTestPoint;
-	for (int i = 0; i < PointCloudArray.size(); i++) {
-		ForTestPoint.push_back(PointCloudArray[i].CenterPoints);
-		cout << i << " : " << PointCloudArray[i].CenterPoints.x() << " " << PointCloudArray[i].CenterPoints.y() << " " << PointCloudArray[i].CenterPoints.z() << endl;
-	}
-	float* MatrixA = new float[PointCloudArray.size() * 3];
-	float* MatrixB = new float[PointCloudArray.size()];
-	float* params;
-
-	for (int i = 0; i < PointCloudArray.size(); i++)
-	{
-		MatrixA[i * 3] = ForTestPoint[i].x();
-		MatrixA[i * 3 + 1] = ForTestPoint[i].y();
-		MatrixA[i * 3 + 2] = 1;
-		MatrixB[i] = ForTestPoint[i].z();
-	}
-	
-	Eigen::MatrixXf EigenMatrixA = Eigen::Map<Eigen::MatrixXf>(MatrixA, PointCloudArray.size(), 3);
-	Eigen::MatrixXf EigenMatrixB = Eigen::Map<Eigen::MatrixXf>(MatrixB, PointCloudArray.size(), 1);
-	
-	EigenMatrixB = EigenMatrixA.transpose() * EigenMatrixB;
-	EigenMatrixA = EigenMatrixA.transpose() * EigenMatrixA;
-	
-	Eigen::MatrixXf X = EigenMatrixA.householderQr().solve(EigenMatrixB);
-	params = X.data();
-
-	cout << params[0] << " " << params[1] << " " << params[2] << endl;
-
-	PlaneZValue.setX(-params[0] * 5.0 - params[1] * 5.0 - params[2]);
-	PlaneZValue.setY(-params[0] * 5.0 - params[1] * -5.0 - params[2]);
-	PlaneZValue.setZ(-params[0] * -5.0 - params[1] * -5.0 - params[2]);
-	PlaneZValue.setW(-params[0] * -5.0 - params[1] * 5.0 - params[2]);
-	
-	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.x() + CenterPoint.z()));
-	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.y() + CenterPoint.z()));
-	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.z() + CenterPoint.z()));
-	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.w() + CenterPoint.z()));
-
 }
 
 // Network or Volume 相關的 Function
@@ -1180,6 +1116,67 @@ void RawDataManager::TransformMultiDataToPointCloud(QStringList rawDataList)
 		PointCloudArray[i].SaveXYZ(SaveFileName + ".xyz");
 	}
 	#pragma endregion
+}
+void RawDataManager::AverageErrorPC()
+{
+	#pragma region 算出中心點
+	int TotalPointSize = 0;
+	QVector3D tempP;
+	for (int i = 0; i < PointCloudArray.size(); i++) 
+	{
+		int pointSize = PointCloudArray[i].Points.size();
+		tempP += PointCloudArray[i].CenterPoints * pointSize;
+		TotalPointSize += pointSize;
+
+	}
+	CenterPoint /= TotalPointSize;
+	cout << CenterPoint.x() << " " << CenterPoint.y() << " " << CenterPoint.z() << endl;
+	#pragma endregion
+	#pragma region Debug 出結果
+
+	#pragma endregion
+
+
+	QVector3D GuessVec(0.0, 0.0, 0.0);
+
+	QVector<QVector3D> ForTestPoint;
+	for (int i = 0; i < PointCloudArray.size(); i++) {
+		ForTestPoint.push_back(PointCloudArray[i].CenterPoints);
+		cout << i << " : " << PointCloudArray[i].CenterPoints.x() << " " << PointCloudArray[i].CenterPoints.y() << " " << PointCloudArray[i].CenterPoints.z() << endl;
+	}
+	float* MatrixA = new float[PointCloudArray.size() * 3];
+	float* MatrixB = new float[PointCloudArray.size()];
+	float* params;
+
+	for (int i = 0; i < PointCloudArray.size(); i++)
+	{
+		MatrixA[i * 3] = ForTestPoint[i].x();
+		MatrixA[i * 3 + 1] = ForTestPoint[i].y();
+		MatrixA[i * 3 + 2] = 1;
+		MatrixB[i] = ForTestPoint[i].z();
+	}
+
+	Eigen::MatrixXf EigenMatrixA = Eigen::Map<Eigen::MatrixXf>(MatrixA, PointCloudArray.size(), 3);
+	Eigen::MatrixXf EigenMatrixB = Eigen::Map<Eigen::MatrixXf>(MatrixB, PointCloudArray.size(), 1);
+
+	EigenMatrixB = EigenMatrixA.transpose() * EigenMatrixB;
+	EigenMatrixA = EigenMatrixA.transpose() * EigenMatrixA;
+
+	Eigen::MatrixXf X = EigenMatrixA.householderQr().solve(EigenMatrixB);
+	params = X.data();
+
+	cout << params[0] << " " << params[1] << " " << params[2] << endl;
+
+	PlaneZValue.setX(-params[0] * 5.0 - params[1] * 5.0 - params[2]);
+	PlaneZValue.setY(-params[0] * 5.0 - params[1] * -5.0 - params[2]);
+	PlaneZValue.setZ(-params[0] * -5.0 - params[1] * -5.0 - params[2]);
+	PlaneZValue.setW(-params[0] * -5.0 - params[1] * 5.0 - params[2]);
+
+	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.x() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.y() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.z() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.w() + CenterPoint.z()));
+
 }
 
 // 網路

@@ -88,7 +88,7 @@ public:
     QPushButton *CombineAllPCButton;
     QPushButton *AlignmentAllPCTest;
     QPushButton *PassScanDataToPC;
-    QPushButton *PCSaveMatrixTest;
+    QPushButton *AveragePCErrorTest;
     QGroupBox *PCInfoBox;
     QLabel *ChoosePCIndexText;
     QComboBox *PCIndex;
@@ -329,10 +329,10 @@ public:
         PassScanDataToPC->setObjectName(QStringLiteral("PassScanDataToPC"));
         PassScanDataToPC->setEnabled(true);
         PassScanDataToPC->setGeometry(QRect(10, 160, 131, 41));
-        PCSaveMatrixTest = new QPushButton(AlignBox);
-        PCSaveMatrixTest->setObjectName(QStringLiteral("PCSaveMatrixTest"));
-        PCSaveMatrixTest->setEnabled(true);
-        PCSaveMatrixTest->setGeometry(QRect(10, 232, 131, 41));
+        AveragePCErrorTest = new QPushButton(AlignBox);
+        AveragePCErrorTest->setObjectName(QStringLiteral("AveragePCErrorTest"));
+        AveragePCErrorTest->setEnabled(true);
+        AveragePCErrorTest->setGeometry(QRect(10, 232, 131, 41));
         PCInfoBox = new QGroupBox(Tab_PC);
         PCInfoBox->setObjectName(QStringLiteral("PCInfoBox"));
         PCInfoBox->setGeometry(QRect(10, 10, 521, 281));
@@ -405,7 +405,7 @@ public:
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(1);
+        tabWidget->setCurrentIndex(2);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -471,8 +471,8 @@ public:
 "\346\213\274\346\216\245\346\270\254\350\251\246", nullptr));
         PassScanDataToPC->setText(QApplication::translate("DentistProjectV2Class", "\344\270\200\347\263\273\345\210\227 RawData\n"
 "\346\216\203\346\217\217\345\234\226\350\275\211\351\273\236\351\233\262", nullptr));
-        PCSaveMatrixTest->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\351\273\236\351\233\262\345\217\212\347\237\251\351\231\243\n"
-"(\350\252\244\345\267\256\347\224\250)", nullptr));
+        AveragePCErrorTest->setText(QApplication::translate("DentistProjectV2Class", "\345\271\263\345\235\207\345\244\232\347\211\207\351\273\236\351\233\262\350\252\244\345\267\256\n"
+"(\346\270\254\350\251\246\347\224\250)", nullptr));
         PCInfoBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\350\263\207\350\250\212", nullptr));
         ChoosePCIndexText->setText(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262Index", nullptr));
         PCOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\345\204\262\345\255\230\345\222\214\350\256\200\345\217\226", nullptr));

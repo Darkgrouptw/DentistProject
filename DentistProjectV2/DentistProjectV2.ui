@@ -219,7 +219,7 @@
      </sizepolicy>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Tab_Deivce">
      <attribute name="title">
@@ -839,7 +839,7 @@
 掃描圖轉點雲</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="PCSaveMatrixTest">
+      <widget class="QPushButton" name="AveragePCErrorTest">
        <property name="enabled">
         <bool>true</bool>
        </property>
@@ -852,8 +852,8 @@
         </rect>
        </property>
        <property name="text">
-        <string>儲存點雲及矩陣
-(誤差用)</string>
+        <string>平均多片點雲誤差
+(測試用)</string>
        </property>
       </widget>
      </widget>

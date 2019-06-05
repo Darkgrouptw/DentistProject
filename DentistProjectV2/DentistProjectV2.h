@@ -56,17 +56,6 @@ private:
 
 private slots:
 	//////////////////////////////////////////////////////////////////////////
-	// 藍芽
-	//////////////////////////////////////////////////////////////////////////
-	void SearchCOM();															// 找 COM
-	void ConnectCOM();															// 連結 COM
-	void ScanBLEDevice();														// 找可用的 BLE Device
-	void ConnectBLEDeivce();													// 連結
-	void SetRotationMode();														// Rotation 設定模式
-	void GyroResetToZero();														// 九軸歸零
-	void ConnectBLEDevice_OneBtn();												// 一鍵建立連結
-
-	//////////////////////////////////////////////////////////////////////////
 	// 藍芽、九軸測試
 	//////////////////////////////////////////////////////////////////////////
 	void PointCloudAlignmentTest();												// 測試點雲能不能拼接起來
@@ -100,7 +89,7 @@ private slots:
 	void CombineAllPCEvent();													// 合併全部並輸出點雲
 	void AlignmentAllPCTestEvent();												// 旋轉拼接測試
 	void TransformMultiDataToPCEvent();											// 轉掃描資料
-	void RotationTest();
+	void AveragePCErrorTestEvent();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Network 相關
