@@ -53,6 +53,35 @@ void OpenGLWidget::paintGL()
 		//DrawVolumeData();
 	}
 	//DrawVolumeData();
+
+	if (FixMode)
+	{
+		glPushMatrix();
+		glRotatef(90, 1, 0, 0);
+		glTranslatef(0, -5, -5);
+
+		for (int i = 0; i < rawManager->PointCloudArray.size(); i++) {
+
+			glBegin(GL_LINES);
+			glColor3f(1.0, 0.0, 0.0);
+			glVertex3f(rawManager->CenterPoint.x(), rawManager->CenterPoint.y(), rawManager->CenterPoint.z());
+			glVertex3f(rawManager->PointCloudArray[i].CenterPoints.x(), rawManager->PointCloudArray[i].CenterPoints.y(), rawManager->PointCloudArray[i].CenterPoints.z());
+			glEnd();
+			
+		}
+		
+		glBegin(GL_QUADS);
+		glColor3f(0.0,1.0,0.0);
+		glVertex3f(rawManager->PlanePoint[0].x(), rawManager->PlanePoint[0].y(), rawManager->PlanePoint[0].z());
+		glVertex3f(rawManager->PlanePoint[1].x(), rawManager->PlanePoint[1].y(), rawManager->PlanePoint[1].z());
+		glVertex3f(rawManager->PlanePoint[2].x(), rawManager->PlanePoint[2].y(), rawManager->PlanePoint[2].z());
+		glVertex3f(rawManager->PlanePoint[3].x(), rawManager->PlanePoint[3].y(), rawManager->PlanePoint[3].z());
+		glEnd();
+
+		glPopMatrix();
+		
+	}
+
 }
 
 // 滑鼠事件
@@ -102,6 +131,11 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event)
 void OpenGLWidget::SetRotationMode(bool SetBool)
 {
 	RotationMode = SetBool;
+	this->update();
+}
+void OpenGLWidget::SetFixMode(bool SetBool)
+{
+	FixMode = SetBool;
 	this->update();
 }
 

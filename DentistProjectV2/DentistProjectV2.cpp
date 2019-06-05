@@ -44,7 +44,7 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.CombineAllPCButton,							SIGNAL(clicked()),				this,	SLOT(CombineAllPCEvent()));
 	connect(ui.AlignmentAllPCTest,							SIGNAL(clicked()),				this,	SLOT(AlignmentAllPCTestEvent()));
 	connect(ui.PassScanDataToPC,							SIGNAL(clicked()),				this,	SLOT(TransformMultiDataToPCEvent()));
-	//connect(ui.PCSaveMatrixTest,							SIGNAL(clicked()),				this,	SLOT());
+	connect(ui.PCSaveMatrixTest,							SIGNAL(clicked()),				this,	SLOT(RotationTest()));
 
 	// Network 相關
 	connect(ui.DataGenerationBtn,							SIGNAL(clicked()),				this,	SLOT(NetworkDataGenerateV2()));
@@ -550,6 +550,11 @@ void DentistProjectV2::TransformMultiDataToPCEvent()
 
 	if (RawDataList.size() == 13)
 		rawManager.TransformMultiDataToPointCloud(RawDataList);
+}
+
+void DentistProjectV2::RotationTest() {
+	rawManager.CenterPointTest();
+	ui.DisplayPanel->SetFixMode(true);
 }
 
 // Network 相關

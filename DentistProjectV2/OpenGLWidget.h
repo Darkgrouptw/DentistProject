@@ -67,6 +67,7 @@ public:
 	void		SetRawDataManager(RawDataManager*);
 	int			OCTViewType = 0;
 
+	void		SetFixMode(bool);
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 初始化
@@ -174,4 +175,6 @@ private:
 	QPoint							PressPoint;
 	QPoint							CurrentPoint;
 	#pragma endregion
+
+	bool							FixMode = false;
 };

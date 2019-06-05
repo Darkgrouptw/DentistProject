@@ -650,6 +650,65 @@ void RawDataManager::CombinePointCloud(int FirstID, int LastID)
 	PCWidgetUpdate();
 }
 
+void RawDataManager::CenterPointTest() 
+{
+	float CenterX, CenterY, CenterZ;
+	int TotalPointSize;
+	for (int i = 0; i < PointCloudArray.size(); i++) {
+		CenterX += PointCloudArray[i].CenterX;
+		CenterY += PointCloudArray[i].CenterY;
+		CenterZ += PointCloudArray[i].CenterZ;
+		TotalPointSize += PointCloudArray[i].Points.size();
+
+	}
+	QVector3D p(CenterX, CenterY, CenterZ);
+	CenterPoint = p / (float)TotalPointSize;
+
+	cout << CenterPoint.x() << " " << CenterPoint.y() << " " << CenterPoint.z() << endl;
+
+	
+	QVector3D GuessVec(0.0, 0.0, 0.0);
+
+	QVector<QVector3D> ForTestPoint;
+	for (int i = 0; i < PointCloudArray.size(); i++) {
+		ForTestPoint.push_back(PointCloudArray[i].CenterPoints);
+		cout << i << " : " << PointCloudArray[i].CenterPoints.x() << " " << PointCloudArray[i].CenterPoints.y() << " " << PointCloudArray[i].CenterPoints.z() << endl;
+	}
+	float* MatrixA = new float[PointCloudArray.size() * 3];
+	float* MatrixB = new float[PointCloudArray.size()];
+	float* params;
+
+	for (int i = 0; i < PointCloudArray.size(); i++)
+	{
+		MatrixA[i * 3] = ForTestPoint[i].x();
+		MatrixA[i * 3 + 1] = ForTestPoint[i].y();
+		MatrixA[i * 3 + 2] = 1;
+		MatrixB[i] = ForTestPoint[i].z();
+	}
+	
+	Eigen::MatrixXf EigenMatrixA = Eigen::Map<Eigen::MatrixXf>(MatrixA, PointCloudArray.size(), 3);
+	Eigen::MatrixXf EigenMatrixB = Eigen::Map<Eigen::MatrixXf>(MatrixB, PointCloudArray.size(), 1);
+	
+	EigenMatrixB = EigenMatrixA.transpose() * EigenMatrixB;
+	EigenMatrixA = EigenMatrixA.transpose() * EigenMatrixA;
+	
+	Eigen::MatrixXf X = EigenMatrixA.householderQr().solve(EigenMatrixB);
+	params = X.data();
+
+	cout << params[0] << " " << params[1] << " " << params[2] << endl;
+
+	PlaneZValue.setX(-params[0] * 5.0 - params[1] * 5.0 - params[2]);
+	PlaneZValue.setY(-params[0] * 5.0 - params[1] * -5.0 - params[2]);
+	PlaneZValue.setZ(-params[0] * -5.0 - params[1] * -5.0 - params[2]);
+	PlaneZValue.setW(-params[0] * -5.0 - params[1] * 5.0 - params[2]);
+	
+	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.x() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.y() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.z() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.w() + CenterPoint.z()));
+
+}
+
 // Network or Volume 相關的 Function
 void RawDataManager::NetworkDataGenerateV2(QString rawDataPath)
 {

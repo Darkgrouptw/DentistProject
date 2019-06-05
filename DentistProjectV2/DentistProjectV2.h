@@ -100,6 +100,7 @@ private slots:
 	void CombineAllPCEvent();													// 合併全部並輸出點雲
 	void AlignmentAllPCTestEvent();												// 旋轉拼接測試
 	void TransformMultiDataToPCEvent();											// 轉掃描資料
+	void RotationTest();
 
 	//////////////////////////////////////////////////////////////////////////
 	// Network 相關

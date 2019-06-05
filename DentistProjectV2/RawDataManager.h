@@ -140,6 +140,10 @@ public:
 	void				PCWidgetUpdate();										// 更新點部分的資料
 	void				TransformMultiDataToAlignment(QStringList);				// 更新旋轉的角度
 	void				TransformMultiDataToPointCloud(QStringList);			// 將資料轉成點雲
+	void				CenterPointTest();
+	QVector3D			CenterPoint;
+	QVector4D			PlaneZValue;
+	QVector<QVector3D>	PlanePoint;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽的部分
