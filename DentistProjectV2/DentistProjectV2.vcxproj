@@ -96,6 +96,7 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <Optimization>MaxSpeed</Optimization>
       <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,6 +156,7 @@
     <ClInclude Include="BluetoothManager.h" />
     <ClInclude Include="CudaV2\EigenUtility.h" />
     <ClInclude Include="CudaV2\TRCudaV2.cuh" />
+    <ClInclude Include="CudaV2\UtilityTools.cuh" />
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="GlobalDefine.h" />
     <ClInclude Include="OBJLoader.h" />
@@ -170,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaV2\TRCudaV2.cu" />
+    <CudaCompile Include="CudaV2\UtilityTools.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\DentistProjectV2\Shaders\DrawGound.frag" />

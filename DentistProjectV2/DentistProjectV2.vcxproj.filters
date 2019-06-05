@@ -131,9 +131,15 @@
     <ClInclude Include="VolumeRenderClass.h">
       <Filter>Header Files\Display</Filter>
     </ClInclude>
+    <ClInclude Include="CudaV2\UtilityTools.cuh">
+      <Filter>CudaV2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="CudaV2\TRCudaV2.cu">
+      <Filter>CudaV2</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CudaV2\UtilityTools.cu">
       <Filter>CudaV2</Filter>
     </CudaCompile>
   </ItemGroup>
