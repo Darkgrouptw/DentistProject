@@ -52,5 +52,3 @@ void PointCloudInfo::SaveXYZ(QString FileName)
 	file.close();
 	cout << "存檔完成!!" << endl;
 }
-
-// 拼接

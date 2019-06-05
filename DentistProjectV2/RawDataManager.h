@@ -119,6 +119,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void NetworkDataGenerateV2(QString);										// 產生類神經網路的資料
 	void NetworkDataGenerateInRamV2();											// 產生相同的類神經網路資料，但不輸出
+	bool CheckIsValidData();													// 有的時候 Eigen 會算出有問題的解，所以
 	void PredictOtherSide();													// 預測 TopView
 	void PredictFull();															// 預測 Full 全部的圖
 	void LoadPredictImage();													// 將預測的圖讀進來
@@ -215,6 +216,10 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QVector<QVector2D>	TLPointArray;											// Bounding Box Array
 	QVector<QVector2D>	BRPointArray;											// 同上
+	float				CONST_BG_WEIGHT = 1;
+	float				CONST_TEETH_WEIGHT = 1;
+	float				CONST_MEET_WEIGHT = 1;
+	float				CONST_BONE_WEIGHT = 1;
 
 	//////////////////////////////////////////////////////////////////////////
 	// UI Pointer

@@ -576,6 +576,11 @@ void DentistProjectV2::PredictResultTesting()
 
 	// 2. 接著要抓出
 	rawManager.NetworkDataGenerateInRamV2();
+	if (!rawManager.CheckIsValidData())
+	{
+		cout << "Eigen 算有錯誤!!" << endl;
+		return;
+	}
 
 	// 3. Python 預測資料
 	//rawManager.PredictOtherSide();
@@ -590,9 +595,10 @@ void DentistProjectV2::PredictResultTesting()
 	rawManager.SmoothNetworkData();
 
 	// 7. 轉到 QImage 中
+	rawManager.NetworkDataToQImage();
 
 	// 8. 顯示結果
-	//rawManager.ShowImageIndex(60);
+	rawManager.ShowImageIndex(60);
 }
 
 // Volume Render 測試

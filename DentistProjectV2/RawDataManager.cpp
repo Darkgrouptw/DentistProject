@@ -88,7 +88,8 @@ void RawDataManager::ShowImageIndex(int index)
 			QImage Pixmap_BorderDetectionResult = QBorderDetectionResultArray[index];
 			BorderDetectionResult->setPixmap(QPixmap::fromImage(Pixmap_BorderDetectionResult));
 
-			if (QNetworkResultArray.size() > 0) {
+			if (QNetworkResultArray.size() > 0) 
+			{
 				QImage Pixmap_NetworkResult = QNetworkResultArray[index - 60];
 				NetworkResult->setPixmap(QPixmap::fromImage(Pixmap_NetworkResult));
 			}
@@ -389,6 +390,9 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 
 	QImageResultArray.clear();
 	QBorderDetectionResultArray.clear();
+
+	NetworkResultArray.clear();
+	QNetworkResultArray.clear();
 	#pragma endregion
 	#pragma region 塞進 Array
 	vector<Mat> TempMatArray;
@@ -709,6 +713,17 @@ void RawDataManager::NetworkDataGenerateInRamV2()
 	}
 	#pragma endregion
 }
+bool RawDataManager::CheckIsValidData()
+{
+	if (TLPointArray.size() != 250 || BRPointArray.size() != 250)
+		return false;
+
+	QVector2D BoundingBox = BRPointArray[60] - TLPointArray[60];
+	if (BoundingBox.x() < 150 || BoundingBox.y() < 150)
+		return false;
+	return true;
+}
+
 void RawDataManager::PredictOtherSide()
 {
 	assert(!OtherSideMat.empty() && "不能為空的!!");
@@ -832,21 +847,17 @@ void RawDataManager::LoadPredictImage()
 	if (tempDir.isValid())
 		for (int i = 60; i <= 200; i++)
 		{
-			//cv::Mat LoadImage = cv::imread(tempDir.filePath("Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
+			cv::Mat BlankImg = cv::Mat(ImageResultArray[0].size(), CV_8UC3);
 			cv::Mat LoadImage = cv::imread((testPath + "/Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
-			NetworkResultArray.push_back(ImageResultArray[i]);
 
-			/*QVector2D TL = TLPointArray[i];
+			QVector2D TL = TLPointArray[i];
 			QVector2D BR = BRPointArray[i];
 			int width = BR[0] - TL[0];
 			int height = BR[1] - TL[1];
 
-			LoadImage.copyTo(NetworkResultArray[i - 60](cv::Rect(TL[0], TL[1], width, height)));
-
-			QImage tempQImage = Mat2QImage(NetworkResultArray[i - 60], CV_8UC3);
-			QNetworkResultArray.push_back(tempQImage);*/
+			LoadImage.copyTo(BlankImg(cv::Rect(TL[0], TL[1], width, height)));
+			NetworkResultArray.push_back(BlankImg);
 		}
-		//ShowImageIndex(60);
 }
 void RawDataManager::SmoothNetworkData()
 {
@@ -875,18 +886,111 @@ void RawDataManager::SmoothNetworkData()
 	}
 
 	// Clamp 到結果之間
-	cMax = clamp(cMax, 0, DManager.prop.SizeZ);
-	rMax = clamp(rMax, 0, DManager.prop.SizeX);
+	cMax = clamp(cMax, 0, DManager.prop.SizeZ - 1);
+	rMax = clamp(rMax, 0, DManager.prop.SizeX - 1);
 	
-	//cout << "Row Max: " << rMax << " Col Max: " <<
+	cout << "Row: " << rMin << " " << rMax << " Col Max: " << cMin << " " << cMax << endl;
 	#pragma endregion
-	#pragma region 開始 Smooth
+	#pragma region 創建 Table 矩陣
+	int yCount = (yMax - yMin) + 1;
+	int rCount = (rMax - rMin) + 1;
+	int cCount = (cMax - cMin) + 1;
 
+	// [  ] [  ] [  ] [  ]
+	// 張數 Rows Cols 種類(0 ~ 4)
+	int* __TotalSumAreaTable = new int[yCount * rCount * cCount];
+	int** _TotalSumAreaTable = new int*[yCount * rCount];
+	int*** TotalSumAreaTable = new int**[yCount];
+	memset(__TotalSumAreaTable, 0, sizeof(int) * yCount * rCount * cCount);
+
+	// 傳位置
+	for (int i = 0; i < yCount; i++)
+	{
+		for (int j = 0; j < rCount; j++)
+		{
+			int Dim2offsetIndex = i * rCount +						// 張數
+								j;									// Row
+			_TotalSumAreaTable[Dim2offsetIndex] = &__TotalSumAreaTable[Dim2offsetIndex * cCount];
+		}
+		int Dim1offsetIndex = i;									// 張數
+		TotalSumAreaTable[Dim1offsetIndex] = &_TotalSumAreaTable[Dim1offsetIndex * rCount];
+	}
 	#pragma endregion
+	#pragma region 跑每一個點去拿結果
+	int WindowSize = 11;
+	#pragma omp parallel for 
+	for (int i = 0; i < yCount; i++)
+		for (int j = 0; j < rCount; j++)
+			for (int k = 0; k < cCount; k++)
+			{
+				// 跑過每一個點把結果加起來平均
+				int TotalCount = 0;
+				QVector<float> CountArray = { 0,0,0,0 };		// 背景、牙齒、牙齦、齒槽骨
+				int halfSize = (WindowSize - 1) / 2;
+				for (int ii = -halfSize; ii <= halfSize; ii++)
+					for (int jj = -halfSize; jj <= halfSize; jj++)
+						for (int kk = -halfSize; kk <= halfSize; kk++)
+						{
+							// 判斷有沒有在範圍內，如果沒有在範圍內，就跳出
+							if ((i + ii) < 0		|| (rMin + j + jj) < 0			|| (cMin + k + kk) < 0 ||
+								(i + ii) >= yCount	|| (rMin + j + jj) >= rCount	|| (cMin + k + kk) >= cCount)
+								continue;
+
+							Vec3b color = NetworkResultArray[i + ii].at<Vec3b>(rMin + j + jj, cMin + k + kk);		// B G R
+							if (color[0] == 255 && color[1] == 0 && color[2] == 0)
+								CountArray[3]++;
+							else if (color[0] == 0 && color[1] == 255 && color[2] == 0)
+								CountArray[2]++;
+							else if (color[0] == 0 && color[1] == 0 && color[2] == 255)
+								CountArray[1]++;
+							else if (color[0] == 0 && color[1] == 0 && color[2] == 0)
+								CountArray[0]++;
+							TotalCount++;
+						}
+
+				// 呈上 Weight
+				CountArray[0] *= CONST_BG_WEIGHT;
+				CountArray[1] *= CONST_TEETH_WEIGHT;
+				CountArray[2] *= CONST_MEET_WEIGHT;
+				CountArray[3] *= CONST_BONE_WEIGHT;
+
+				float* max_ele = std::max_element(CountArray.begin(), CountArray.end());
+				int MaxIndex = max_ele - CountArray.begin(); 
+				TotalSumAreaTable[i][j][k] = MaxIndex;
+			}
+	#pragma endregion
+	#pragma region Smooth 平面
+	#pragma omp parallel for 
+	for (int i = 0; i < yCount; i++)
+		for (int j = 0; j < rCount; j++)
+			for (int k = 0; k < cCount; k++)
+			{
+				// 抓出來
+				int MaxIndex = TotalSumAreaTable[i][j][k];
+
+				Vec3b changeColor = Vec3b(0, 0, 0);
+				if (MaxIndex == 1) changeColor = Vec3b(0, 0, 255);
+				if (MaxIndex == 2) changeColor = Vec3b(0, 255, 0);
+				if (MaxIndex == 3) changeColor = Vec3b(255, 0, 0);
+
+				// 貼上
+				NetworkResultArray[i].at<Vec3b>(rMin + j, cMin + k) = changeColor;
+			}
+
+	// 清除記憶體
+	delete[] __TotalSumAreaTable;
+	delete[] _TotalSumAreaTable;
+	delete[] TotalSumAreaTable;
+	#pragma endregion
+
 }
 void RawDataManager::NetworkDataToQImage()
 {
-
+	for (int i = 0; i < NetworkResultArray.size(); i++)
+	{
+		QImage qimg = Mat2QImage(NetworkResultArray[i], CV_8UC3);
+		QNetworkResultArray.append(qimg);
+	}
 }
 
 //void RawDataManager::ImportVolumeDataTest(QString boundingBoxPath)
