@@ -330,18 +330,49 @@ void OpenGLWidget::DrawResetRotation()
 #ifdef DEBUG_DRAW_AVERAGE_ERROR_PC
 void OpenGLWidget::DrawAverageDebugPC()
 {
+	#pragma region 坐標軸測試
 	glPushMatrix();
-	glRotatef(90, 1, 0, 0);
-	glTranslatef(0, -5, -5);
+	glLoadIdentity();
+	glLoadMatrixf(OCTView_ModelMatrix->data());
+	glLineWidth(3);
 
-	for (int i = 0; i < rawManager->PointCloudArray.size(); i++) {
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_LINES);
+		glVertex3f(1.0, 0.0, 0.0);
+		glVertex3f(0, 0, 0);
+	glEnd();
 
+	glColor3f(1.0, 1.0, 0.0);
+	glBegin(GL_LINES);
+		glVertex3f(0.0, 1.0, 0.0);
+		glVertex3f(0, 0, 0);
+	glEnd();
+
+	glColor3f(0.0, 0.0, 1.0);
+	glBegin(GL_LINES);
+	glVertex3f(0.0, 0.0, 1.0);
+	glVertex3f(0, 0, 0);
+	glEnd();
+
+	glPopMatrix();
+	#pragma endregion
+
+	// 先判斷是否有判斷過
+	if (rawManager->AllCenterPoint.x() == 0 && rawManager->AllCenterPoint.y() == 0 && rawManager->AllCenterPoint.z() == 0)
+		return;
+
+	glPushMatrix();
+	glLoadIdentity();
+	glLoadMatrixf(OCTView_ModelMatrix->data());
+
+	// 線
+	for (int i = 0; i < rawManager->PointCloudArray.size(); i++) 
+	{
 		glBegin(GL_LINES);
 		glColor3f(1.0, 0.0, 0.0);
-		glVertex3f(rawManager->CenterPoint.x(), rawManager->CenterPoint.y(), rawManager->CenterPoint.z());
+		glVertex3f(rawManager->AllCenterPoint.x(), rawManager->AllCenterPoint.y(), rawManager->AllCenterPoint.z());
 		glVertex3f(rawManager->PointCloudArray[i].CenterPoints.x(), rawManager->PointCloudArray[i].CenterPoints.y(), rawManager->PointCloudArray[i].CenterPoints.z());
 		glEnd();
-
 	}
 
 	glBegin(GL_QUADS);
@@ -351,6 +382,16 @@ void OpenGLWidget::DrawAverageDebugPC()
 	glVertex3f(rawManager->PlanePoint[2].x(), rawManager->PlanePoint[2].y(), rawManager->PlanePoint[2].z());
 	glVertex3f(rawManager->PlanePoint[3].x(), rawManager->PlanePoint[3].y(), rawManager->PlanePoint[3].z());
 	glEnd();
+
+	// 畫 Upper Vecot
+	if (rawManager->UpperVector != QVector3D())
+	{
+		glColor3f(1.0, 1.0, 0.0);
+		glBegin(GL_LINES);
+		glVertex3f(rawManager->AllCenterPoint.x(), rawManager->AllCenterPoint.y(), rawManager->AllCenterPoint.z());
+		glVertex3f(rawManager->UpperVector.x(), rawManager->UpperVector.y(), rawManager->UpperVector.z());
+		glEnd();
+	}
 
 	glPopMatrix();
 }

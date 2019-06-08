@@ -3,6 +3,8 @@
 
 using namespace Eigen;
 
+typedef Matrix<float, -1, -1, Eigen::RowMajor> MatrixXRf;
+
 EigenUtility::EigenUtility()
 {
 }
@@ -17,9 +19,9 @@ void EigenUtility::SetAverageValue(float average)
 }
 void EigenUtility::SolveByEigen(float* MatrixA, float* MatrixB, int NumPolynomial)
 {
-	MatrixXf EigenMatrixA = Map<MatrixXf>(MatrixA, NumPolynomial + 1, NumPolynomial + 1);
-	MatrixXf EigenMatrixB = Map<MatrixXf>(MatrixB, NumPolynomial + 1, 1);
-	MatrixXf X = EigenMatrixA.householderQr().solve(EigenMatrixB);
+	MatrixXRf EigenMatrixA = Map<MatrixXRf>(MatrixA, NumPolynomial + 1, NumPolynomial + 1);
+	MatrixXRf EigenMatrixB = Map<MatrixXRf>(MatrixB, NumPolynomial + 1, 1);
+	MatrixXRf X = EigenMatrixA.ldlt().solve(EigenMatrixB);
 	params = X.data();
 
 	// 設定原本的變數

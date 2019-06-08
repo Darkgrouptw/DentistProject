@@ -1119,6 +1119,12 @@ void RawDataManager::TransformMultiDataToPointCloud(QStringList rawDataList)
 }
 void RawDataManager::AverageErrorPC()
 {
+	#ifndef DEBUG_DRAW_AVERAGE_ERROR_PC
+	QVector3D			AllCenterPoint;
+	QVector<QVector3D>	PlanePoint;
+	QVector3D			UpperVector;
+	#endif
+
 	#pragma region 算出中心點
 	int TotalPointSize = 0;
 	QVector3D tempP;
@@ -1129,54 +1135,133 @@ void RawDataManager::AverageErrorPC()
 		TotalPointSize += pointSize;
 
 	}
-	CenterPoint /= TotalPointSize;
-	cout << CenterPoint.x() << " " << CenterPoint.y() << " " << CenterPoint.z() << endl;
+	AllCenterPoint = tempP / TotalPointSize;
+	cout << AllCenterPoint.x() << " " << AllCenterPoint.y() << " " << AllCenterPoint.z() << endl;
 	#pragma endregion
 	#pragma region Debug 出結果
-
+	for (int i = 0; i < PointCloudArray.size(); i++)
+		cout << "CenterPos: " << i << " : " << PointCloudArray[i].CenterPoints.x() << " " << PointCloudArray[i].CenterPoints.y() << " " << PointCloudArray[i].CenterPoints.z() << endl;
 	#pragma endregion
-
-
-	QVector3D GuessVec(0.0, 0.0, 0.0);
-
-	QVector<QVector3D> ForTestPoint;
-	for (int i = 0; i < PointCloudArray.size(); i++) {
-		ForTestPoint.push_back(PointCloudArray[i].CenterPoints);
-		cout << i << " : " << PointCloudArray[i].CenterPoints.x() << " " << PointCloudArray[i].CenterPoints.y() << " " << PointCloudArray[i].CenterPoints.z() << endl;
-	}
+	#pragma region 算投影的平面
 	float* MatrixA = new float[PointCloudArray.size() * 3];
 	float* MatrixB = new float[PointCloudArray.size()];
 	float* params;
 
 	for (int i = 0; i < PointCloudArray.size(); i++)
 	{
-		MatrixA[i * 3] = ForTestPoint[i].x();
-		MatrixA[i * 3 + 1] = ForTestPoint[i].y();
+		MatrixA[i * 3 + 0] = PointCloudArray[i].CenterPoints.x();
+		MatrixA[i * 3 + 1] = PointCloudArray[i].CenterPoints.y();
 		MatrixA[i * 3 + 2] = 1;
-		MatrixB[i] = ForTestPoint[i].z();
+		MatrixB[i] = PointCloudArray[i].CenterPoints.z();
 	}
 
-	Eigen::MatrixXf EigenMatrixA = Eigen::Map<Eigen::MatrixXf>(MatrixA, PointCloudArray.size(), 3);
-	Eigen::MatrixXf EigenMatrixB = Eigen::Map<Eigen::MatrixXf>(MatrixB, PointCloudArray.size(), 1);
+	MatrixXRf EigenMatrixA = Map<MatrixXRf>(MatrixA, PointCloudArray.size(), 3);
+	MatrixXRf EigenMatrixB = Map<MatrixXRf>(MatrixB, PointCloudArray.size(), 1);
+
+	cout << "====================================================" << endl;
+	cout << "A: " << endl << EigenMatrixA << endl;
+	cout << "B: " << endl << EigenMatrixB << endl;
 
 	EigenMatrixB = EigenMatrixA.transpose() * EigenMatrixB;
 	EigenMatrixA = EigenMatrixA.transpose() * EigenMatrixA;
 
-	Eigen::MatrixXf X = EigenMatrixA.householderQr().solve(EigenMatrixB);
+	MatrixXRf X = EigenMatrixA.ldlt().solve(EigenMatrixB);
 	params = X.data();
 
 	cout << params[0] << " " << params[1] << " " << params[2] << endl;
 
-	PlaneZValue.setX(-params[0] * 5.0 - params[1] * 5.0 - params[2]);
-	PlaneZValue.setY(-params[0] * 5.0 - params[1] * -5.0 - params[2]);
-	PlaneZValue.setZ(-params[0] * -5.0 - params[1] * -5.0 - params[2]);
-	PlaneZValue.setW(-params[0] * -5.0 - params[1] * 5.0 - params[2]);
+	QVector4D PlaneZValue;
+	PlaneZValue.setX(FunctionPlane(5, 10 + 5, params));
+	PlaneZValue.setY(FunctionPlane(5, 10 + -5, params));
+	PlaneZValue.setZ(FunctionPlane(-5, 10 + -5, params));
+	PlaneZValue.setW(FunctionPlane(-5, 10 + 5, params));
 
-	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.x() + CenterPoint.z()));
-	PlanePoint.push_back(QVector3D(5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.y() + CenterPoint.z()));
-	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), -5.0 + CenterPoint.y(), PlaneZValue.z() + CenterPoint.z()));
-	PlanePoint.push_back(QVector3D(-5.0 + CenterPoint.x(), 5.0 + CenterPoint.y(), PlaneZValue.w() + CenterPoint.z()));
+	PlanePoint.push_back(QVector3D(5.0, 10 + 5.0, PlaneZValue.x()));
+	PlanePoint.push_back(QVector3D(5.0, 10 + -5.0, PlaneZValue.y()));
+	PlanePoint.push_back(QVector3D(-5.0, 10 + -5.0, PlaneZValue.z()));
+	PlanePoint.push_back(QVector3D(-5.0, 10 + 5.0, PlaneZValue.w()));
 
+	delete[] MatrixA;
+	delete[] MatrixB;
+	#pragma endregion
+	#pragma region 投影到平面上 (這邊垂直投影)
+	QVector<QVector2D> PCPoints;
+	QVector<float> PCAngle;
+
+	// 賽結果進去 (扣掉中心點)
+	QVector2D Center2D = QVector2D(AllCenterPoint.x(), AllCenterPoint.y());
+	for (int i = 0; i < PointCloudArray.size(); i++)
+	{
+		QVector2D tempP = QVector2D(PointCloudArray[i].CenterPoints.x(), PointCloudArray[i].CenterPoints.y()) - Center2D;
+		PCPoints.push_back(tempP);
+		//cout << i << " : " << tempP.x() << " " << tempP.y() << endl;
+	}
+
+	// 算角度
+	for (int i = 0; i < PCPoints.size() - 1; i++)
+	{
+		float tempValue = QVector2D::dotProduct(PCPoints[i], PCPoints[i + 1]) / PCPoints[i].length() / PCPoints[i + 1].length();
+		tempValue = acosf(tempValue) * 180 / 3.14159f;
+		PCAngle.push_back(tempValue);
+		cout << "Angle " << i << " :" << tempValue << endl;
+
+		// 如果是最後一個就算出誤差的角度
+		if (i == PCAngle.size() - 2)
+		{
+			tempValue = QVector2D::dotProduct(PCPoints[i + 1], PCPoints[i + 2]) / PCPoints[i + 1].length() / PCPoints[i + 2].length();
+			tempValue = acosf(tempValue) * 180 / 3.14159f;
+			PCAngle.push_back(tempValue);
+			cout << "Last Angle :" << tempValue << endl;
+		}
+	}
+
+	// 平均到的角度
+	cout << "====================================================" << endl;
+	float AverAngle = PCAngle[PCAngle.length() - 1] / PCPoints.length();		// 要平均的角度
+	QVector<QVector2D> AfterAverPCCenter;
+	for (int i = 0; i < PCAngle.length() - 1; i++)
+	{
+		QVector2D VectorA = QVector2D(PCPoints[i + 0].x(), 0);										// Y 壓到 0
+		QVector2D VectorB = QVector2D(PCPoints[i + 1].x(), PCPoints[i + 1].y() - PCPoints[i].y());
+		VectorB = (VectorB.normalized() * cos(PCAngle[i] + AverAngle)) * PCPoints[i + 1].length();
+
+		AfterAverPCCenter.push_back(VectorB + QVector2D(0, PCPoints[i].y()));
+		cout << "After " << i << ": " << AfterAverPCCenter[AfterAverPCCenter.size() - 1].x() << " " << AfterAverPCCenter[AfterAverPCCenter.size() - 1].y() << endl;
+	}
+	#pragma endregion
+	#pragma region 算 Upper 的 向量
+	// 算平面的 Normal
+	UpperVector = QVector3D(AllCenterPoint.x() + params[0], AllCenterPoint.y() + params[1], AllCenterPoint.z() - 1);
+	QVector3D Normalize_UpperVector = UpperVector.normalized();
+
+	// 開始位移點雲
+	for (int i = 0; i < PCAngle.size(); i++)
+	{
+		int PCIndex = i + 1;
+		QVector3D offsetPoint = PointCloudArray[PCIndex].CenterPoints - AllCenterPoint;		// 要先拉回中心點的距離
+		QMatrix4x4 rotationMatrix;
+		rotationMatrix.rotate(
+			PCAngle[i],
+			Normalize_UpperVector.x(),
+			Normalize_UpperVector.y(),
+			Normalize_UpperVector.z()
+		);
+		QVector3D FinalOffsetToCenterPoint = rotationMatrix * offsetPoint;
+		for (int j = 0; j < PointCloudArray[PCIndex].Points.size(); j++)
+		{
+			// 拉到中心點
+			QVector4D tempP = QVector4D(PointCloudArray[PCIndex].Points[j] - offsetPoint, 1);
+			tempP = rotationMatrix * tempP;
+			PointCloudArray[PCIndex].Points[j] = tempP.toVector3D() + FinalOffsetToCenterPoint;
+		}
+	}
+	
+	#pragma endregion
+	#pragma region 最後平均誤差
+
+	// 打開給別人更新
+	IsLockPC = true;
+	#pragma endregion
 }
 
 // 網路
@@ -1435,4 +1520,12 @@ QMatrix4x4 RawDataManager::super4PCS_Align(vector<Point3D> *PC1, vector<Point3D>
 int RawDataManager::clamp(int value, int min, int max)
 {
 	return std::max(min, std::min(value, max));
+}
+float RawDataManager::FunctionPlane(float x, float y, float* params)
+{
+	float total = 0;
+	total += x * params[0];
+	total += y * params[1];
+	total += params[2];
+	return total;
 }

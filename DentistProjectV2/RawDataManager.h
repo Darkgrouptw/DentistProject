@@ -78,6 +78,9 @@ struct BoundingBoxDataStruct
 };
 
 using namespace GlobalRegistration;
+using namespace Eigen;
+
+typedef Matrix<float, -1, -1, Eigen::RowMajor> MatrixXRf;
 
 class RawDataManager
 {
@@ -144,9 +147,11 @@ public:
 	void				TransformMultiDataToAlignment(QStringList);				// 更新旋轉的角度
 	void				TransformMultiDataToPointCloud(QStringList);			// 將資料轉成點雲
 	void				AverageErrorPC();
-	QVector3D			CenterPoint;
-	QVector4D			PlaneZValue;
+	#ifdef DEBUG_DRAW_AVERAGE_ERROR_PC
+	QVector3D			AllCenterPoint;
 	QVector<QVector3D>	PlanePoint;
+	QVector3D			UpperVector;
+	#endif
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -244,6 +249,7 @@ private:
 	void				ConvertPoint3D2QVector(vector<Point3D>&, QVector<QVector3D>&);	// 同上
 	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
 	int					clamp(int, int, int);
+	float				FunctionPlane(float, float, float*);
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數
