@@ -4,6 +4,7 @@
 */
 #using <System.dll>
 #include "TRCudaV2.cuh"
+#include "UtilityTools.cuh"
 
 #include "DataManager.h"
 #include "PointCloudInfo.h"
@@ -159,6 +160,7 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	DataManager			DManager;
 	TRCudaV2			cudaV2;
+	UtilityTools		utilityTools;
 	gcroot<ScanningWorkerThread^> Worker;
 
 	//////////////////////////////////////////////////////////////////////////
