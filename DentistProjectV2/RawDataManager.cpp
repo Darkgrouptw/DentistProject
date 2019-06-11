@@ -1194,7 +1194,6 @@ void RawDataManager::AverageErrorPC()
 	{
 		QVector2D tempP = QVector2D(PointCloudArray[i].CenterPoints.x(), PointCloudArray[i].CenterPoints.y()) - Center2D;
 		PCPoints.push_back(tempP);
-		//cout << i << " : " << tempP.x() << " " << tempP.y() << endl;
 	}
 
 	// 算角度
@@ -1205,10 +1204,10 @@ void RawDataManager::AverageErrorPC()
 		PCAngle.push_back(tempValue);
 		cout << "Angle " << i << " :" << tempValue << endl;
 
-		// 如果是最後一個就算出誤差的角度
-		if (i == PCAngle.size() - 2)
+		// 如果是最後一個就算出(與第一片)誤差的角度
+		if (i == PCPoints.size() - 2)
 		{
-			tempValue = QVector2D::dotProduct(PCPoints[i + 1], PCPoints[i + 2]) / PCPoints[i + 1].length() / PCPoints[i + 2].length();
+			tempValue = QVector2D::dotProduct(PCPoints[i + 1], PCPoints[0]) / PCPoints[i + 1].length() / PCPoints[0].length();
 			tempValue = acosf(tempValue) * 180 / 3.14159f;
 			PCAngle.push_back(tempValue);
 			cout << "Last Angle :" << tempValue << endl;
@@ -1235,7 +1234,7 @@ void RawDataManager::AverageErrorPC()
 	QVector3D Normalize_UpperVector = UpperVector.normalized();
 
 	// 開始位移點雲
-	for (int i = 0; i < PCAngle.size(); i++)
+	for (int i = 0; i < PCAngle.size() - 1; i++)
 	{
 		int PCIndex = i + 1;
 		QVector3D offsetPoint = PointCloudArray[PCIndex].CenterPoints - AllCenterPoint;		// 要先拉回中心點的距離
