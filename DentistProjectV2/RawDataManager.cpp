@@ -859,36 +859,36 @@ void RawDataManager::SmoothNetworkData()
 	clock_t smoothtime = clock();
 
 	 #pragma region 找出最大最小值
-	 	// r => Image rows
-	 	// y => 張數
-	 	// c => Image cols
-	 	// 0, 0 => 是圖片的左上角
-	 	int rMin = INT_MAX, rMax = 0,
-	 		yMin = 60, yMax = 200,
-	 		cMin = INT_MAX, cMax = 0;
+	// r => Image rows
+	// y => 張數
+	// c => Image cols
+	// 0, 0 => 是圖片的左上角
+	int rMin = INT_MAX, rMax = 0,
+	 	yMin = 60, yMax = 200,
+	 	cMin = INT_MAX, cMax = 0;
 	 
-	 	assert(NetworkResultArray.size() == (200 - 60 + 1) && "必須要有 141 張圖!!");
-	 	for (int i = 0; i < NetworkResultArray.size(); i++)
-	 	{
-	 		int index = i + 60;					// Offset 60 張圖
+	assert(NetworkResultArray.size() == (200 - 60 + 1) && "必須要有 141 張圖!!");
+	for (int i = 0; i < NetworkResultArray.size(); i++)
+	{
+	 	int index = i + 60;					// Offset 60 張圖
 	 
-	 		// 取出點
-	 		QVector2D TL = TLPointArray[i];
-	 		QVector2D BR = BRPointArray[i];
+	 	// 取出點
+	 	QVector2D TL = TLPointArray[i];
+	 	QVector2D BR = BRPointArray[i];
 	 
-	 		if (cMin > TL.x()) cMin = TL.x();
-	 		if (rMin > TL.y()) rMin = TL.y();
-	 		if (cMax < BR.x()) cMax = BR.x();
-	 		if (rMax < BR.y()) rMax = BR.y();
-	 	}
+	 	if (cMin > TL.x()) cMin = TL.x();
+	 	if (rMin > TL.y()) rMin = TL.y();
+	 	if (cMax < BR.x()) cMax = BR.x();
+	 	if (rMax < BR.y()) rMax = BR.y();
+	}
 	 
-	 	// Clamp 到結果之間
-	 	cMax = clamp(cMax, 0, DManager.prop.SizeZ - 1);
-	 	rMax = clamp(rMax, 0, DManager.prop.SizeX - 1);
+	// Clamp 到結果之間
+	cMax = clamp(cMax, 0, DManager.prop.SizeZ - 1);
+	rMax = clamp(rMax, 0, DManager.prop.SizeX - 1);
 	 	
-	 	cout << "Row: " << rMin << " " << rMax << " Col Max: " << cMin << " " << cMax << endl;
+	cout << "Row: " << rMin << " " << rMax << " Col Max: " << cMin << " " << cMax << endl;
 	 #pragma endregion
-
+	#pragma region Cuda 的部分
 	std::vector<cv::Mat> NetworkResultSmooth = NetworkResultArray.toStdVector();
 
 	// NetworkResultSmooth type為16 => CV_8UC3
@@ -912,6 +912,7 @@ void RawDataManager::SmoothNetworkData()
 		TestResult[i].copyTo(BlankImg(cv::Rect(cMin, rMin, width, height)));
 		NetworkResultArray.push_back(BlankImg);
 	}
+	#pragma endregion
 }
 void RawDataManager::NetworkDataToQImage()
 {
