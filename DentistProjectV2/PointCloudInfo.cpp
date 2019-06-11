@@ -27,14 +27,11 @@ void PointCloudInfo::ReadFromXYZ(QString FileName)
 
 		QVector3D p(a, b, c);
 		Points.push_back(p);
-
-		// 順便算中心點
-		CenterPoints += p;
 	}
 	
 	// 關閉檔案
 	file.close();
-	CenterPoints /= Points.size();
+	ReCalcCenterPos();		// 並算出中心點
 
 	cout << "讀取完成!!" << endl;
 }
@@ -56,4 +53,13 @@ void PointCloudInfo::SaveXYZ(QString FileName)
 	// 關閉檔案
 	file.close();
 	cout << "存檔完成!!" << endl;
+}
+
+// 其他呼叫函式
+void PointCloudInfo::ReCalcCenterPos()
+{
+	CenterPoint = QVector3D();
+	for (int i = 0; i < Points.size(); i++)
+		CenterPoint += Points[i];
+	CenterPoint /= Points.size();
 }

@@ -371,7 +371,7 @@ void OpenGLWidget::DrawAverageDebugPC()
 		glBegin(GL_LINES);
 		glColor3f(1.0, 0.0, 0.0);
 		glVertex3f(rawManager->AllCenterPoint.x(), rawManager->AllCenterPoint.y(), rawManager->AllCenterPoint.z());
-		glVertex3f(rawManager->PointCloudArray[i].CenterPoints.x(), rawManager->PointCloudArray[i].CenterPoints.y(), rawManager->PointCloudArray[i].CenterPoints.z());
+		glVertex3f(rawManager->PointCloudArray[i].CenterPoint.x(), rawManager->PointCloudArray[i].CenterPoint.y(), rawManager->PointCloudArray[i].CenterPoint.z());
 		glEnd();
 	}
 

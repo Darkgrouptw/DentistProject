@@ -1131,7 +1131,7 @@ void RawDataManager::AverageErrorPC()
 	for (int i = 0; i < PointCloudArray.size(); i++) 
 	{
 		int pointSize = PointCloudArray[i].Points.size();
-		tempP += PointCloudArray[i].CenterPoints * pointSize;
+		tempP += PointCloudArray[i].CenterPoint * pointSize;
 		TotalPointSize += pointSize;
 
 	}
@@ -1140,7 +1140,7 @@ void RawDataManager::AverageErrorPC()
 	#pragma endregion
 	#pragma region Debug 出結果
 	for (int i = 0; i < PointCloudArray.size(); i++)
-		cout << "CenterPos: " << i << " : " << PointCloudArray[i].CenterPoints.x() << " " << PointCloudArray[i].CenterPoints.y() << " " << PointCloudArray[i].CenterPoints.z() << endl;
+		cout << "CenterPos: " << i << " : " << PointCloudArray[i].CenterPoint.x() << " " << PointCloudArray[i].CenterPoint.y() << " " << PointCloudArray[i].CenterPoint.z() << endl;
 	#pragma endregion
 	#pragma region 算投影的平面
 	float* MatrixA = new float[PointCloudArray.size() * 3];
@@ -1149,10 +1149,10 @@ void RawDataManager::AverageErrorPC()
 
 	for (int i = 0; i < PointCloudArray.size(); i++)
 	{
-		MatrixA[i * 3 + 0] = PointCloudArray[i].CenterPoints.x();
-		MatrixA[i * 3 + 1] = PointCloudArray[i].CenterPoints.y();
+		MatrixA[i * 3 + 0] = PointCloudArray[i].CenterPoint.x();
+		MatrixA[i * 3 + 1] = PointCloudArray[i].CenterPoint.y();
 		MatrixA[i * 3 + 2] = 1;
-		MatrixB[i] = PointCloudArray[i].CenterPoints.z();
+		MatrixB[i] = PointCloudArray[i].CenterPoint.z();
 	}
 
 	MatrixXRf EigenMatrixA = Map<MatrixXRf>(MatrixA, PointCloudArray.size(), 3);
@@ -1192,7 +1192,7 @@ void RawDataManager::AverageErrorPC()
 	QVector2D Center2D = QVector2D(AllCenterPoint.x(), AllCenterPoint.y());
 	for (int i = 0; i < PointCloudArray.size(); i++)
 	{
-		QVector2D tempP = QVector2D(PointCloudArray[i].CenterPoints.x(), PointCloudArray[i].CenterPoints.y()) - Center2D;
+		QVector2D tempP = QVector2D(PointCloudArray[i].CenterPoint.x(), PointCloudArray[i].CenterPoint.y()) - Center2D;
 		PCPoints.push_back(tempP);
 	}
 
@@ -1216,7 +1216,7 @@ void RawDataManager::AverageErrorPC()
 
 	// 平均到的角度
 	cout << "====================================================" << endl;
-	float AverAngle = PCAngle[PCAngle.length() - 1] / PCPoints.length();		// 要平均的角度
+	float AverAngle = PCAngle[PCAngle.length() - 1] / (PCPoints.length() - 1);		// 要平均的角度
 	QVector<QVector2D> AfterAverPCCenter;
 	for (int i = 0; i < PCAngle.length() - 1; i++)
 	{
@@ -1231,13 +1231,13 @@ void RawDataManager::AverageErrorPC()
 	#pragma region 算 Upper 的 向量
 	// 算平面的 Normal
 	UpperVector = QVector3D(AllCenterPoint.x() + params[0], AllCenterPoint.y() + params[1], AllCenterPoint.z() - 1);
-	QVector3D Normalize_UpperVector = UpperVector.normalized();
+	QVector3D Normalize_UpperVector = (UpperVector - AllCenterPoint).normalized();
 
 	// 開始位移點雲
 	for (int i = 0; i < PCAngle.size() - 1; i++)
 	{
 		int PCIndex = i + 1;
-		QVector3D offsetPoint = PointCloudArray[PCIndex].CenterPoints - AllCenterPoint;		// 要先拉回中心點的距離
+		QVector3D offsetPoint = PointCloudArray[PCIndex].CenterPoint - AllCenterPoint;		// 要先拉回中心點的距離
 		QMatrix4x4 rotationMatrix;
 		rotationMatrix.rotate(
 			PCAngle[i],
@@ -1249,12 +1249,14 @@ void RawDataManager::AverageErrorPC()
 		for (int j = 0; j < PointCloudArray[PCIndex].Points.size(); j++)
 		{
 			// 拉到中心點
-			QVector4D tempP = QVector4D(PointCloudArray[PCIndex].Points[j] - offsetPoint, 1);
+			QVector4D tempP = QVector4D(PointCloudArray[PCIndex].Points[j] - PointCloudArray[PCIndex].CenterPoint, 1);
 			tempP = rotationMatrix * tempP;
-			PointCloudArray[PCIndex].Points[j] = tempP.toVector3D() + FinalOffsetToCenterPoint;
+			PointCloudArray[PCIndex].Points[j] = tempP.toVector3D() + FinalOffsetToCenterPoint + AllCenterPoint;
 		}
+
+		// 重新算中心點
+		PointCloudArray[PCIndex].ReCalcCenterPos();
 	}
-	
 	#pragma endregion
 	#pragma region 最後平均誤差
 
