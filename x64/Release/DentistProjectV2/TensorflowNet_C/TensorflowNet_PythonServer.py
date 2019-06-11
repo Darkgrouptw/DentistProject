@@ -72,6 +72,7 @@ def InitTensorflow():
     net_OtherSide.LoadWeight(logDir)
 
 # 預測單張
+# 輸入是一個 np array 型態且灰階 (250, 250)
 def PredictImg_OtherSide(img):
     # 拆圖片
     DataArray = _ExtractTheImg(img)
@@ -82,6 +83,7 @@ def PredictImg_OtherSide(img):
     return predictData
 
 # 預測全部
+# 輸入是一個 list 裝著 60 ~ 200 張的 np array
 def PredictImg_Full(imgs):
     # 預測結果
     result = []
