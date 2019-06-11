@@ -20,13 +20,6 @@ ColorFullPredict = np.array(
     ],
     dtype = np.uint8
 )
-
-# 網路相關變數
-net_Full = 0
-net_OtherSide = 0
-
-
-
 #################################################
 # Helper Function
 #################################################
@@ -57,34 +50,32 @@ def _ExtractTheImg(InputImg):
 #################################################
 # API
 #################################################
-# 初始化
-def InitTensorflow():
-    global net_Full, net_OtherSide
-
-    # Network_Full
-    logDir = "./logs/Full_kernel_5"
-    net_Full = Network_Prob(WindowSize, WindowSize, 4, lr, 5, logDir, False)
-    net_Full.LoadWeight(logDir)
-
-    # Network_OtherSide
-    logDir = "./logs/OtherSide_kernel_7"
-    net_OtherSide = Network_Prob(WindowSize, WindowSize, 1, lr, 7, logDir, False)
-    net_OtherSide.LoadWeight(logDir)
-
 # 預測單張
 # 輸入是一個 np array 型態且灰階 (250, 250)
 def PredictImg_OtherSide(img):
+    # Network_Full
+    logDir = "./logs/Full_kernel_5"
+    net = Network_Prob(WindowSize, WindowSize, 4, lr, 5, logDir, False)
+    net.LoadWeight(logDir)
+
     # 拆圖片
     DataArray = _ExtractTheImg(img)
 
     # 預測結果
-    predictData = net_OtherSide.Predict(DataArray)
+    predictData = net.Predict(DataArray)
     predictData = predictData.reshape([250, 250]) * 255
+
+    net.Release()
     return predictData
 
 # 預測全部
 # 輸入是一個 list 裝著 60 ~ 200 張的 np array
 def PredictImg_Full(imgs):
+    # Network_OtherSide
+    logDir = "./logs/OtherSide_kernel_7"
+    net = Network_Prob(WindowSize, WindowSize, 1, lr, 7, logDir, False)
+    net.LoadWeight(logDir)
+
     # 預測結果
     result = []
     for i in range(len(imgs)):
@@ -99,10 +90,6 @@ def PredictImg_Full(imgs):
 
         # 回傳圖片
         result.append(imgColor)
-    return result
 
-# 刪除
-def Release():
-    global net_Full, net_OtherSide
-    net_Full.Release()
-    net_OtherSide.Release()
+    net.Release()
+    return result
