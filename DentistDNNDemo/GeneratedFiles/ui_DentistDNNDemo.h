@@ -19,7 +19,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QWidget>
-#include "displaypanel.h"
+#include "openglwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -27,8 +27,7 @@ class Ui_DentistDNNDemoClass
 {
 public:
     QWidget *centralWidget;
-    DisplayPanel *openGLWidget;
-    DisplayPanel *openGLWidget_2;
+    OpenGLWidget *DisplayPanel;
     QScrollBar *horizontalScrollBar;
     QGroupBox *groupBox;
     QPushButton *TestRenderingBtn;
@@ -40,12 +39,9 @@ public:
         DentistDNNDemoClass->resize(1200, 550);
         centralWidget = new QWidget(DentistDNNDemoClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        openGLWidget = new DisplayPanel(centralWidget);
-        openGLWidget->setObjectName(QStringLiteral("openGLWidget"));
-        openGLWidget->setGeometry(QRect(0, 0, 500, 500));
-        openGLWidget_2 = new DisplayPanel(centralWidget);
-        openGLWidget_2->setObjectName(QStringLiteral("openGLWidget_2"));
-        openGLWidget_2->setGeometry(QRect(510, 0, 500, 500));
+        DisplayPanel = new OpenGLWidget(centralWidget);
+        DisplayPanel->setObjectName(QStringLiteral("DisplayPanel"));
+        DisplayPanel->setGeometry(QRect(0, 0, 500, 500));
         horizontalScrollBar = new QScrollBar(centralWidget);
         horizontalScrollBar->setObjectName(QStringLiteral("horizontalScrollBar"));
         horizontalScrollBar->setGeometry(QRect(0, 500, 501, 16));

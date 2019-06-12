@@ -34,6 +34,18 @@
     <Filter Include="Source Files\Display">
       <UniqueIdentifier>{840fb04a-3a77-48cf-b009-cc889b6ed85f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{da6e06c5-f0ed-4081-896f-719b8a8dc7e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Plane">
+      <UniqueIdentifier>{4577fa0f-e993-4735-860d-994d7142cae3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Thin Algorithm">
+      <UniqueIdentifier>{70e4bbe3-da94-409d-a525-f1c4e6996fec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Thin Algorithm">
+      <UniqueIdentifier>{f39fc727-e14e-487a-accb-0d5e8c156a16}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -42,8 +54,11 @@
     <ClCompile Include="DentistDNNDemo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DisplayPanel.cpp">
+    <ClCompile Include="OpenGLWidget.cpp">
       <Filter>Source Files\Display</Filter>
+    </ClCompile>
+    <ClCompile Include="zhangsuen.cpp">
+      <Filter>Source Files\Thin Algorithm</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -62,8 +77,19 @@
     </QtRcc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DisplayPanel.h">
+    <ClInclude Include="OpenGLWidget.h">
       <Filter>Header Files\Display</Filter>
     </ClInclude>
+    <ClInclude Include="zhangsuen.h">
+      <Filter>Header Files\Thin Algorithm</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\x64\Release\DentistDNNDemo\Shaders\Plane.fsh">
+      <Filter>Shaders\Plane</Filter>
+    </None>
+    <None Include="..\x64\Release\DentistDNNDemo\Shaders\Plane.vsh">
+      <Filter>Shaders\Plane</Filter>
+    </None>
   </ItemGroup>
 </Project>

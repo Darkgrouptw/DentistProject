@@ -1,0 +1,52 @@
+﻿#pragma once
+#include "zhangsuen.h"
+
+#include <iostream>
+
+#include <QImage>
+#include <QVector>
+#include <QOpenGLWidget>
+#include <QOpenGLShader>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLFunctions_4_5_Core>
+#include <QOpenGLTexture>
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace cv;
+
+class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
+{
+public:
+	OpenGLWidget(QWidget *);
+	~OpenGLWidget();
+
+	//////////////////////////////////////////////////////////////////////////
+	// 繪畫 Function
+	//////////////////////////////////////////////////////////////////////////
+	void initializeGL();
+	void paintGL();
+
+	//////////////////////////////////////////////////////////////////////////
+	// 外部呼叫函式
+	//////////////////////////////////////////////////////////////////////////
+	void ProcessImg(Mat, Mat);
+
+private:
+	//////////////////////////////////////////////////////////////////////////
+	// 繪圖相關
+	//////////////////////////////////////////////////////////////////////////
+	QOpenGLShaderProgram	*Program = NULL;
+	GLuint					VertexBuffer = -1;
+	GLuint					UVBuffer = -1;
+	QOpenGLTexture			*OtherSideTexture = NULL;
+	QOpenGLTexture			*ProbTexture = NULL;
+
+	//////////////////////////////////////////////////////////////////////////
+	// Helper Function
+	//////////////////////////////////////////////////////////////////////////
+	QImage Mat2QImage(cv::Mat const&, int);
+};
+
