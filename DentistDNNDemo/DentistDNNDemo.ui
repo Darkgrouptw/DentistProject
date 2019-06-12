@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DentistDNNDemoClass</class>
+ <widget class="QMainWindow" name="DentistDNNDemoClass">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>550</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>DentistDNNDemo</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="DisplayPanel" name="openGLWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>500</width>
+      <height>500</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="DisplayPanel" name="openGLWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>0</y>
+      <width>500</width>
+      <height>500</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QScrollBar" name="horizontalScrollBar">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>500</y>
+      <width>501</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>1020</x>
+      <y>280</y>
+      <width>171</width>
+      <height>221</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Test Function</string>
+    </property>
+    <widget class="QPushButton" name="TestRenderingBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>測試 Rendering 的 Function</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>DisplayPanel</class>
+   <extends>QOpenGLWidget</extends>
+   <header>displaypanel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="DentistDNNDemo.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -19,13 +19,13 @@ void EigenUtility::SetAverageValue(float average)
 }
 void EigenUtility::SolveByEigen(float* MatrixA, float* MatrixB, int NumPolynomial)
 {
+	// 設定原本的變數
+	this->NumPolynomial = NumPolynomial;
+
 	MatrixXRf EigenMatrixA = Map<MatrixXRf>(MatrixA, NumPolynomial + 1, NumPolynomial + 1);
 	MatrixXRf EigenMatrixB = Map<MatrixXRf>(MatrixB, NumPolynomial + 1, 1);
 	MatrixXRf X = EigenMatrixA.ldlt().solve(EigenMatrixB);
 	params = X.data();
-
-	// 設定原本的變數
-	this->NumPolynomial = NumPolynomial;
 }
 float* EigenUtility::GetFunctionArray(int SizeZ, int YAverage)
 {
