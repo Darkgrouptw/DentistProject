@@ -2,6 +2,8 @@
 #include "zhangsuen.h"
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #include <QImage>
 #include <QVector>
@@ -15,7 +17,16 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+using namespace std;
 using namespace cv;
+
+// Bounding Box 的 DataStruct
+struct BoundingBoxDataStruct
+{
+	vector<cv::Point> contoursRaw;				// 這個是原始的邊界
+	vector<cv::Point> contoursPoly;				// 這個是對輪廓做多邊形擬合之後的邊界
+	Rect boundingRect;							// 框框框起來
+};
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_5_Core
 {
@@ -32,7 +43,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 外部呼叫函式
 	//////////////////////////////////////////////////////////////////////////
-	void ProcessImg(Mat, Mat);
+	void ProcessImg(Mat, Mat, QVector<Mat>);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -45,8 +56,14 @@ private:
 	QOpenGLTexture			*ProbTexture = NULL;
 
 	//////////////////////////////////////////////////////////////////////////
+	//
+	//////////////////////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////
 	// Helper Function
 	//////////////////////////////////////////////////////////////////////////
-	QImage Mat2QImage(cv::Mat const&, int);
+	QImage Mat2QImage(Mat const&, int);
+	Mat GetBoundingBox(Mat, QVector2D&, QVector2D&);
+	static bool SortByContourPointSize(BoundingBoxDataStruct&, BoundingBoxDataStruct&);
 };
 

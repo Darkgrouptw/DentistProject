@@ -25,10 +25,10 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 
 	for (int i = 0; i <= 140; i++)
 	{
-		Mat mat = imread((TestFilePath + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
+		Mat mat = imread((TestFilePath + "Smooth/" + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
 		FullMat.push_back(mat);
 	}
-	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict);
+	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat);
 	#pragma endregion
 	#pragma region 刷新
 	ui.DisplayPanel->update();

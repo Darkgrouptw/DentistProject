@@ -74,7 +74,7 @@ void OpenGLWidget::paintGL()
 }
 
 // 外部呼叫函式
-void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob)
+void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat)
 {
 	#pragma region 反轉顏色
 	threshold(prob.clone(), prob, 150, 255, THRESH_BINARY);
@@ -82,7 +82,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob)
 	bitwise_not(prob.clone(), prob);
 	thin(prob, false, false, false);
 	#pragma endregion
-
+	#pragma region OtherSide Clone
 	cvtColor(otherSide.clone(), otherSide, CV_GRAY2BGR);
 	cvtColor(prob.clone(), prob, CV_GRAY2BGR);
 
@@ -91,10 +91,38 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob)
 		delete OtherSideTexture;
 		delete ProbTexture;
 	}
-	OtherSideTexture	= new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
-	ProbTexture			= new QOpenGLTexture(Mat2QImage(prob, CV_8UC3));
-}
+	#pragma endregion
+	#pragma region 抓出結果
+	// 每一張圖片的結果
+	vector<Mat> ChannelMat;
+	QVector2D TL, BR;
+	QVector<int> LastY;
+	//int LastY = -1;
+	for (int i = 0; i < FullMat.size(); i++)
+	{
+		// 抓取藍色的部分，去抓取 Bounding Box
+		split(FullMat[i], ChannelMat);
+		Mat img = GetBoundingBox(ChannelMat[0], TL, BR);
+		
+		LastY.append(TL.y());
+	}
+	#pragma endregion
+	#pragma region 畫上結果 並 轉成 QOpenGLTexture
+	// 畫結果
+	for (int i = 1; i < LastY.size(); i++)
+	{
+		cv::Point LeftPoint = cv::Point(i - 1 + 60, LastY[i - 1]);
+		cv::Point RightPoint = cv::Point(i + 60, LastY[i]);
 
+		if (LastY[i - 1] != -1 && LastY[i] != -1)
+			line(prob, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
+	}
+
+	// 轉 QOpenGLtexture
+	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
+	ProbTexture = new QOpenGLTexture(Mat2QImage(prob, CV_8UC3));
+	#pragma endregion
+}
 
 // Helper Function
 QImage OpenGLWidget::Mat2QImage(cv::Mat const& src, int Type)
@@ -111,4 +139,58 @@ QImage OpenGLWidget::Mat2QImage(cv::Mat const& src, int Type)
 	dest.bits();												// enforce deep copy, see documentation 
 																// of QImage::QImage ( const uchar * data, int width, int height, Format format )
 	return dest;
+}
+Mat OpenGLWidget::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& ButtomRight)
+{
+	#pragma region 根據閘值，去抓邊界
+	// 先根據閘值，並抓取邊界
+	Mat threshold_output;
+	vector<vector<cv::Point> > contours;
+	vector<Vec4i> hierarchy;
+	threshold(img, threshold_output, 8, 255, THRESH_BINARY);
+	findContours(threshold_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+	// 先給占存 Array
+	vector<BoundingBoxDataStruct> dataInfo(contours.size());
+	#pragma endregion
+	#pragma region 抓出最大的框框
+	// 抓出擬合的結果
+	for (size_t img = 0; img < contours.size(); img++)
+	{
+		BoundingBoxDataStruct data;
+		approxPolyDP(Mat(contours[img]), data.contoursPoly, 3, true);
+		data.boundingRect = boundingRect(Mat(data.contoursPoly));
+
+		// 加進陣列
+		dataInfo[img] = data;
+	}
+	Mat drawing = img.clone();
+	cvtColor(drawing.clone(), drawing, CV_GRAY2BGR);
+	sort(dataInfo.begin(), dataInfo.end(), SortByContourPointSize);
+
+	// 抓出最亮，且最大的
+	int i = 0;
+	vector<vector<cv::Point>> contoursPoly(1);
+	contoursPoly[0] = dataInfo[i].contoursPoly;
+
+	// 邊界
+	cv::Point tl = dataInfo[i].boundingRect.tl();
+	tl.x = max(0, tl.x);
+	tl.y = max(0, tl.y);
+	cv::Point br = dataInfo[i].boundingRect.br();
+	br.x = min(1024, br.x);
+	br.y = min(250, br.y);
+
+	rectangle(drawing, tl, br, Scalar(0, 255, 255), 2, 8, 0);
+
+	TopLeft.setX(tl.x);
+	TopLeft.setY(tl.y);
+	ButtomRight.setX(br.x);
+	ButtomRight.setY(br.y);
+	#pragma endregion
+	return drawing;
+}
+bool OpenGLWidget::SortByContourPointSize(BoundingBoxDataStruct& c1, BoundingBoxDataStruct& c2)
+{
+	return c1.boundingRect.area() > c2.boundingRect.area();
 }
