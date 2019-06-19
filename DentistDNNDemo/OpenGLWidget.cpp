@@ -74,13 +74,22 @@ void OpenGLWidget::paintGL()
 }
 
 // 外部呼叫函式
-void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat)
+void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR)
 {
 	#pragma region 反轉顏色
 	threshold(prob.clone(), prob, 150, 255, THRESH_BINARY);
 
 	bitwise_not(prob.clone(), prob);
 	thin(prob, false, false, false);
+	#pragma endregion
+	#pragma region 算出牙肉位置(Pixel)
+	for (int col = 60; col <= 200; col++)
+		for (int row = prob.rows - 1; row >= 0; row--)
+			if (prob.at<uchar>(row, col) == 0) {
+				MeatBounding.push_back(row);
+				break;
+			}
+			else if (row == 0)MeatBounding.push_back(-1);
 	#pragma endregion
 	#pragma region OtherSide Clone
 	cvtColor(otherSide.clone(), otherSide, CV_GRAY2BGR);
@@ -104,10 +113,10 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat)
 		split(FullMat[i], ChannelMat);
 		Mat img = GetBoundingBox(ChannelMat[0], TL, BR);
 		
-		LastY.append(TL.y());
+		LastY.append(TL.y() + OriginTL.y());
 	}
 	#pragma endregion
-	#pragma region 畫上結果 並 轉成 QOpenGLTexture
+	#pragma region 畫上結果
 	// 畫結果
 	for (int i = 1; i < LastY.size(); i++)
 	{
@@ -117,7 +126,17 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat)
 		if (LastY[i - 1] != -1 && LastY[i] != -1)
 			line(prob, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
 	}
-
+	#pragma endregion
+	#pragma region 算出齒槽骨位置(Pixel)
+	for (int col = 60; col <= 200; col++)
+		for (int row = prob.rows - 1; row >= 0; row--)
+			if (prob.at<Vec3b>(row, col)[0] == 0) {
+				DiseaseBounding.push_back(row);
+				break;
+			}
+			else if (row == MeatBounding[col - 60])DiseaseBounding.push_back(-1);
+	#pragma endregion
+	#pragma region 轉成 QOpenGLTexture
 	// 轉 QOpenGLtexture
 	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
 	ProbTexture = new QOpenGLTexture(Mat2QImage(prob, CV_8UC3));

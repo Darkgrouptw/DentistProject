@@ -116,6 +116,13 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	// 傳送 rawManager 到 OpenGL Widget
 	ui.DisplayPanel->SetRawDataManager(&rawManager);
 	#pragma endregion
+	#pragma region TcpNetwork
+	tcpSocket = new QTcpSocket(this);
+
+	connect(tcpSocket,										SIGNAL(connected()),			this,	SLOT(TcpConnected()));
+	connect(tcpSocket,										SIGNAL(disconnected()),			this,	SLOT(TcpDisConnected()));
+	connect(tcpSocket,										SIGNAL(readyRead()),			this,	SLOT(TcpreadyRead()));
+	#pragma endregion
 }
 
 // 九軸資料測試測試
@@ -496,7 +503,6 @@ void DentistProjectV2::NetworkDataGenerateV2()
 }
 void DentistProjectV2::PredictResultTesting()
 {
-	
 	// 1. 先讀 Data
 	ReadRawDataForBorderTest();
 
@@ -508,6 +514,12 @@ void DentistProjectV2::PredictResultTesting()
 		return;
 	}
 
+	// 3. 存出所有Network需要圖片
+	rawManager.SaveNetworkImage();
+
+	// 4. 傳上伺服器Predict
+	TcpNetwork();
+
 	// 3. Python 預測資料
 	//rawManager.PredictOtherSide();
 	
@@ -515,16 +527,144 @@ void DentistProjectV2::PredictResultTesting()
 	//rawManager.PredictFull();
 	
 	// 5. 把預測資料貼回原圖
-	rawManager.LoadPredictImage();
+	//rawManager.LoadPredictImage();
 
 	// 6. Smooth 結果並把點區塊刪除
-	rawManager.SmoothNetworkData();
+	//rawManager.SmoothNetworkData();
 
 	// 7. 轉到 QImage 中
-	rawManager.NetworkDataToQImage();
+	//rawManager.NetworkDataToQImage();
 
 	// 8. 顯示結果
-	rawManager.ShowImageIndex(60);
+	//rawManager.ShowImageIndex(60);
+}
+void DentistProjectV2::TcpConnected()
+{
+	qDebug() << "socket connected";
+
+	QString string = Requestmsg;
+	tcpSocket->write(string.toLatin1());
+	qDebug() << "Send: " << string;
+}
+void DentistProjectV2::TcpDisConnected()
+{
+	qDebug() << "socket disconnected";
+
+	if (Requestmsg == "Sent") {
+		Sefile.close();
+		Requestmsg = "Wait";
+		tcpSocket->connectToHost("140.118.175.94", 10000);
+	}
+	else if (Requestmsg == "Wait") {
+		Requestmsg = "Recv";
+		isStart = true;
+		tcpSocket->connectToHost("140.118.175.94", 10000);
+	}
+	else if (Requestmsg == "Recv") {
+		isStart = false;
+		Sefile.close();
+		useUNRAR();
+	}
+}
+void DentistProjectV2::TcpreadyRead()
+{
+	qDebug() << "client readyRead";
+
+	QByteArray buf = tcpSocket->readAll();
+	QString string = QString::fromUtf8(buf.data());
+	//qDebug() << "Read: " << buf;
+
+	if (string == "StartSent") {
+		useRAR();
+		SentTest();
+		tcpSocket->disconnectFromHost();
+	}
+	else if (string == "WorkDone") {
+		cout << "PyOK" << endl;
+		tcpSocket->disconnectFromHost();
+	}
+	else {
+		RecvTest(buf);
+	}
+}
+void DentistProjectV2::TcpNetwork()
+{
+	Requestmsg = "Sent";
+	tcpSocket->connectToHost("140.118.175.94", 10000);
+}
+void DentistProjectV2::SentTest()
+{
+	//QString filePath = QFileDialog::getOpenFileName(this, "open", "./");
+	QString filePath = "./Image.zip";
+	if (filePath.isEmpty() == false) {
+		fileName.clear();
+		fileSize = 0;
+
+		// 獲取文件訊息 : 名字、大小
+		QFileInfo info(filePath);
+		fileName = info.fileName();
+		fileSize = info.size();
+		sendSize = 0;
+		cout << fileName.toStdString() << " " << fileSize << endl;
+
+		// 讀檔
+		Sefile.setFileName(filePath);
+		if (Sefile.open(QIODevice::ReadOnly) == false) {
+			cout << "File Not Open !" << endl;
+		}
+		else {
+			QString head = QString("%1##%2").arg(fileName).arg(fileSize);
+			qint64 len = tcpSocket->write(head.toUtf8());
+
+			if (len < 0) {
+				cout << "head Fail" << endl;
+				Sefile.close();
+			}
+			qint64 slen = 0;
+			do {
+				char buf[BUF_SIZE] = { 0 };
+				slen = 0;
+				slen = Sefile.read(buf, BUF_SIZE);
+				slen = tcpSocket->write(buf, slen);
+				sendSize += slen;
+			} while (slen > 0);
+		}
+	}
+}
+void DentistProjectV2::RecvTest(QByteArray buf)
+{
+	if (isStart == true) {
+		isStart = false;
+
+		QString filePath = "./received_file.zip";
+
+		if (filePath.isEmpty() == false) {
+			fileName.clear();
+			fileSize = 0;
+			QFileInfo info(filePath);
+			fileName = info.fileName();
+			Sefile.setFileName(fileName);
+		}
+		if (Sefile.open(QIODevice::WriteOnly) == false) {
+			cout << "File Not Open !" << endl;
+		}
+		Sefile.write(buf);
+	}
+	else {
+		Sefile.write(buf);
+	}
+}
+void DentistProjectV2::useRAR()
+{
+	std::string AAA = "WinRAR.exe a -afzip Image.zip ./Predicts/*";
+
+	system(AAA.c_str());
+}
+void DentistProjectV2::useUNRAR()
+{
+	std::string AAA = "WinRAR.exe x received_file.zip";
+
+	system(AAA.c_str());
 }
 
 // Volume Render 測試
