@@ -132,6 +132,8 @@ public:
 	void LoadPredictImage();													// 將預測的圖讀進來
 	void SmoothNetworkData();													// 優化 Network 預測出來的雜點
 	void NetworkDataToQImage();													// 轉成 QImage
+	void SaveNetworkImage();
+
 	QTemporaryDir tempDir;														// 暫存的資料夾 (用於 Network)
 
 	//////////////////////////////////////////////////////////////////////////

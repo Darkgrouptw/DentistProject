@@ -3,6 +3,7 @@
 #include "ui_DentistProjectV2.h"
 
 #include <iostream>
+
 #include <QFileDialog>
 #include <QTimer>
 #include <QFile>
@@ -11,9 +12,14 @@
 #include <QTime>
 #include <QVector>
 #include <QMessageBox>
+#include <QAbstractSocket>
+#include <QTcpSocket>
+#include <QThread>
 
 #include "GlobalDefine.h"
 #include "RawDataManager.h"
+
+#define BUF_SIZE 1024*4
 
 using namespace std;
 
@@ -39,6 +45,25 @@ private:
 	RawDataManager	rawManager;													// 所有跟裝置有關的 (藍芽、OCT)
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 	QTimer*	UpdateGLTimer = NULL;
+
+	
+	QTcpSocket *tcpSocket;
+
+	QFile Sefile;
+	QString fileName;
+	qint64 fileSize;
+	qint64 sendSize;
+	qint64 recvSize;
+
+	QString Requestmsg;
+
+	bool isStart = false; // 接收資料時的Lock
+	void TcpNetwork();
+	void useRAR();
+	void useUNRAR();
+	void SentTest();
+	void RecvTest(QByteArray);
+	
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽相關參數
@@ -97,6 +122,7 @@ private slots:
 	void NetworkDataGenerateV2();												// 產生類神經網路
 	void PredictResultTesting();												// 測試預測的結果
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Volumne Render 的測試
 	//////////////////////////////////////////////////////////////////////////
@@ -108,4 +134,8 @@ private slots:
 	void ScanNumSlider_Change(int);												// 這個是右邊視窗的顯示
 	void DisplayPanelUpdate();													// 這個是 GL 視窗的更新
 	void OCTViewOptionChange(int);												// 看的方向改變
+
+	void TcpConnected();
+	void TcpDisConnected();
+	void TcpreadyRead();
 };

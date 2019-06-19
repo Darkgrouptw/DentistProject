@@ -718,6 +718,27 @@ bool RawDataManager::CheckIsValidData()
 		return false;
 	return true;
 }
+void RawDataManager::SaveNetworkImage()
+{
+	QDir NetworkUpLoadPath = "./Predicts/";
+	if (tempDir.isValid()) {
+		QString tempImgPath = NetworkUpLoadPath.filePath("OtherSide.png");
+		cv::imwrite(tempImgPath.toLocal8Bit().toStdString(), OtherSideMat);
+
+		for (int i = 60; i <= 200; i++)
+		{
+			QVector2D TL = TLPointArray[i];
+			QVector2D BR = BRPointArray[i];
+			int width = BR[0] - TL[0];
+			int height = BR[1] - TL[1];
+			cv::imwrite(NetworkUpLoadPath.filePath(QString::number(i) + ".png").toLocal8Bit().toStdString(),
+				cv::Mat(ImageResultArray[i], cv::Rect(TL[0], TL[1], width, height)));
+		}
+	}
+	else {
+		cout << "Save Fail !" << endl;
+	}
+}
 
 void RawDataManager::PredictOtherSide()
 {

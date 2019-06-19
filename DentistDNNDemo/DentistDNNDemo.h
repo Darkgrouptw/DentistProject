@@ -5,6 +5,8 @@
 #include <iostream>
 
 #include <QVector>
+#include <QVector2D>
+#include <QFile>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -22,6 +24,12 @@ public:
 
 private:
 	Ui::DentistDNNDemoClass ui;
+
+	// Read BoundingBoxFunc
+	void ReadBounding(QString);
+	// Bounding
+	QVector2D OrginTL = QVector2D(9999, 9999);
+	QVector2D OrginBR = QVector2D(-1, -1);
 
 private slots:
 	//////////////////////////////////////////////////////////////////////////
