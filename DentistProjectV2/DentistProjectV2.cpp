@@ -401,6 +401,7 @@ void DentistProjectV2::ReadPCEvent()
 			PointCloudInfo info;
 			info.ReadFromXYZ(PointCloudFileList[i]);
 			rawManager.PointCloudArray.push_back(info);
+			rawManager.InitRotationMarix.push_back(QMatrix4x4());
 
 			// 更新相關設定
 			rawManager.SelectIndex = rawManager.PointCloudArray.size() - 1;

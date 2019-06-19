@@ -42,7 +42,7 @@ __global__ static void RawDataToOriginalData(char* FileRawData, int* OCTRawData,
 		return;
 	}
 
-	OCTRawData[id] = (int)((uchar)FileRawData[id * 2] + (uchar)FileRawData[id * 2 + 1] * 256);
+	OCTRawData[id] = (int)((uchar)FileRawData[id * 2]) + (int)((uchar)FileRawData[id * 2 + 1]) * 256;
 }
 __global__ static void CombineTwoChannels_Single(int* OCTData_2Channls, int* OCTData, int SizeX, int SizeY, int SizeZ)
 {
@@ -826,10 +826,11 @@ void TRCudaV2::SingleRawDataToPointCloud(char* FileRawData, int DataSize, int Si
 
 	// 先算平均
 	int* FirstSizeZData = new int[SizeZ];
+	memset(FirstSizeZData, 0, sizeof(int) * SizeZ);
 	cudaMemcpy(FirstSizeZData, GPU_OCTRawData, sizeof(int) * SizeZ, cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	float average = accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0) / SizeZ;
+	float average = accumulate(FirstSizeZData, FirstSizeZData + SizeZ, 0.0f) / SizeZ;
 	delete[] FirstSizeZData;
 
 	// 取得 Matrix
