@@ -21,15 +21,16 @@ DentistDNNDemo::DentistDNNDemo(QWidget *parent)
 // 主要功能
 void DentistDNNDemo::SliderValueChange(int)
 {
-	//cout << ui.slidingBar->value() << endl;
-	ui.
+	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
+	ui.ColorMapCurrentValue->setText(QString::fromStdString(to_string(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()))));
+	ui.DisplayPanel->update();
 }
 
 // 測試相關函式
 void DentistDNNDemo::TestRenderFunctionEvent()
 {
 	#pragma region Test 路徑
-	QString TestFilePath = "E:/DentistData/DentistProjectV2-p3dLon/";
+	QString TestFilePath = "Z:/DentistProjectV2-p3dLon/";
 	QString OtherSidePath_Predict = TestFilePath + "Predict.png";
 	QString OtherSidePath_Org = TestFilePath + "OtherSide.png";
 	QString BoundingBoxPath = TestFilePath + "boundingBox.txt";

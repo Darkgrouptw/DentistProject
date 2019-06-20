@@ -48,6 +48,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D, QLabel*, QLabel*);
 	float GetDistanceValue(int);
+	void GetSliderValue(float);
+	float GetColorMapValue(int);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -60,10 +62,13 @@ private:
 	QOpenGLTexture			*OtherSideTexture = NULL;
 	QOpenGLTexture			*ProbTexture = NULL;
 	QOpenGLTexture			*DepthTexture = NULL;
+	float					SliderValue = ((60.0f / 250.0f) - 0.5f) * 2.0f;		// Slider現在的位置(-1 ~ 1)
+	void					DrawSlider();										// 畫Slider
 
 	//////////////////////////////////////////////////////////////////////////
 	// 校正到世界座標所需要的東西
 	//////////////////////////////////////////////////////////////////////////
+	QVector<int>			nonZeroIndex;										
 	QVector<int>			MeatBounding;										// 牙肉位置(pixel)
 	QVector<int>			BoneBounding;										// 齒槽骨位置(pixel)
 	//QVector<QVector2D>		WorldPosMeat;										// 世界座標
@@ -71,6 +76,7 @@ private:
 	QVector<float>			DistanceBounding;									// 算一下他們的距離
 	float					DistanceMin, DistanceMax;							// 最大、最小值
 	CalibrationUtility		calibrationTool;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function

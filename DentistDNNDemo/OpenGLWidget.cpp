@@ -75,7 +75,22 @@ void OpenGLWidget::paintGL()
 		ProbTexture->release();
 		DepthTexture->release();
 		Program->release();
+
+		DrawSlider();
 	}
+}
+void OpenGLWidget::DrawSlider() {
+	glColor3f(1.0, 0.0, 0.0);
+	glBegin(GL_LINES);
+	glVertex3f(SliderValue, 1.0f, 0.0f);
+	glVertex3f(SliderValue, -1.0f, 0.0f);
+	glEnd();
+	glBegin(GL_TRIANGLES);
+	glVertex3f(SliderValue + 0.03f, -1.0f, 0.0f);
+	glVertex3f(SliderValue - 0.03f, -1.0f, 0.0f);
+	glVertex3f(SliderValue, -0.948f, 0.0f);
+	glEnd();
+	glColor3f(1.0, 1.0, 1.0);
 }
 
 // 外部呼叫函式
@@ -128,7 +143,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	BoneBounding.clear();
 
 	imwrite("D:/a.png", prob);
-	QVector<int> nonZeroIndex;
+	//QVector<int> nonZeroIndex;
 	for (int col = 60; col <= 200; col++)
 	{
 		QVector<int> CanBeIndex;
@@ -219,6 +234,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 
 		float rate = (DistanceBounding[i] - DistanceMin) / (DistanceMax - DistanceMin);
 		//cout << rate << endl;
+
 		int GetRowIndex = ColorMap.rows * (1 - rate);
 		int GetColIndex = ColorMap.cols * 0.5;
 		Scalar color = ColorMap.at<Vec3b>(GetRowIndex, GetColIndex);
@@ -246,6 +262,20 @@ float OpenGLWidget::GetDistanceValue(int index)
 	#pragma region 接著是去跑結果
 	return 10;
 	#pragma endregion
+}
+void OpenGLWidget::GetSliderValue(float value)
+{
+	SliderValue = ((value / 250.0f) - 0.5f) * 2.0f;
+}
+float OpenGLWidget::GetColorMapValue(int value) {
+	float rate = 0;
+	for (int i = 0; i < nonZeroIndex.size(); i++) {
+		if (nonZeroIndex[i] + 60 == value) {
+			rate = DistanceBounding[i];
+			break;
+		}
+	}
+	return rate;
 }
 
 // Helper Function
