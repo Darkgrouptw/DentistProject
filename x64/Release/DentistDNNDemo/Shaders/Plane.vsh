@@ -9,5 +9,7 @@ out vec2 OutUV;
 void main(void)
 {
 	gl_Position = vec4(VertexPos, 1.0);
+	
+	// ¿é¥X
 	OutUV = UV;
 }

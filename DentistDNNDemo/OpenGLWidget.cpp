@@ -63,33 +63,29 @@ void OpenGLWidget::paintGL()
 
 		Program->setUniformValue("texture", 0);
 		Program->setUniformValue("probTexture", 1);
+		Program->setUniformValue("colorMapTexture", 2);
+
 		OtherSideTexture->bind(0);
 		ProbTexture->bind(1);
+		DepthTexture->bind(2);
+
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 		OtherSideTexture->release();
 		ProbTexture->release();
+		DepthTexture->release();
 		Program->release();
 	}
 }
 
 // 外部呼叫函式
-void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR)
+void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR, QLabel* MaxValueLabel, QLabel* MinValueLabel)
 {
 	#pragma region 反轉顏色
 	threshold(prob.clone(), prob, 150, 255, THRESH_BINARY);
 
 	bitwise_not(prob.clone(), prob);
 	thin(prob, false, false, false);
-	#pragma endregion
-	#pragma region 算出牙肉位置(Pixel)
-	for (int col = 60; col <= 200; col++)
-		for (int row = prob.rows - 1; row >= 0; row--)
-			if (prob.at<uchar>(row, col) == 0) {
-				MeatBounding.push_back(row);
-				break;
-			}
-			else if (row == 0)MeatBounding.push_back(-1);
 	#pragma endregion
 	#pragma region OtherSide Clone
 	cvtColor(otherSide.clone(), otherSide, CV_GRAY2BGR);
@@ -127,19 +123,128 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 			line(prob, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
 	}
 	#pragma endregion
-	#pragma region 算出齒槽骨位置(Pixel)
+	#pragma region 算出牙肉 & 齒槽骨的位置(Pixel)
+	MeatBounding.clear();
+	BoneBounding.clear();
+
+	imwrite("D:/a.png", prob);
+	QVector<int> nonZeroIndex;
 	for (int col = 60; col <= 200; col++)
-		for (int row = prob.rows - 1; row >= 0; row--)
-			if (prob.at<Vec3b>(row, col)[0] == 0) {
-				DiseaseBounding.push_back(row);
-				break;
+	{
+		QVector<int> CanBeIndex;
+		for (int row = 0; row < prob.rows; row++)
+		{
+			if (prob.at<Vec3b>(row, col)[0] == 0)
+			{
+				CanBeIndex.push_back(row);
+				row += 10;
 			}
-			else if (row == MeatBounding[col - 60])DiseaseBounding.push_back(-1);
+			//cout << row << " " << (int)(prob.at<uchar>(row, col)) << endl;
+		}
+		if (CanBeIndex.size() >= 2)
+		{
+			int MeanIndex = CanBeIndex[CanBeIndex.size() - 2];
+			int BoneIndex = CanBeIndex[CanBeIndex.size() - 1];
+			MeatBounding.push_back(MeanIndex);
+			BoneBounding.push_back(BoneIndex);
+
+			nonZeroIndex.push_back(col - 60);
+		}
+		//else /*if (CanBeIndex.size() == 0)*/
+		//{
+		//	MeatBounding.push_back(-1);
+		//	BoneBounding.push_back(-1);
+		//}
+	}
 	#pragma endregion
+	#pragma region 對應到 World Coordinate
+	// 產生 Array
+	int size = nonZeroIndex.size();
+	float* _PointData = new float[size * 2 * 2]; // xy, 上下
+	float** PointData = new float*[size * 2];
+	for (int i = 0; i < size * 2; i++)
+		PointData[i] = &_PointData[2 * i];
+	memset(_PointData, 0, sizeof(float) * size * 2 * 2);
+
+	// 把資料塞進去
+	for (int i = 0; i < nonZeroIndex.size(); i++)
+	{
+		int index = nonZeroIndex[i];
+		PointData[i][0] = index + 60;
+		PointData[i][1] = MeatBounding[i];
+
+		PointData[size + i][0] = index + 60;
+		PointData[size + i][1] = BoneBounding[i];
+	}
+	float** WorldPos = calibrationTool.Calibrate(PointData, size * 2, 2);
+
+	delete[] _PointData;
+	delete[] PointData;
+	#pragma endregion
+	#pragma region 算世界座標的距離
+	DistanceBounding.clear();
+	/*DistanceMax = 0;
+	DistanceMin = 100;*/
+	DistanceMax = 6;
+	DistanceMin = 3;
+	for (int i = 0; i < nonZeroIndex.size(); i++)
+	{
+		QVector2D MeatPoint, BonePoint;
+		MeatPoint.setX(WorldPos[i][0]);
+		MeatPoint.setY(WorldPos[i][1]);
+
+		BonePoint.setX(WorldPos[size + i][0]);
+		BonePoint.setY(WorldPos[size + i][1]);
+		
+		DistanceBounding.push_back(MeatPoint.distanceToPoint(BonePoint));
+		//cout << DistanceBounding[i] << endl;
+
+		/*if (DistanceBounding[i] > DistanceMax)
+			DistanceMax = DistanceBounding[i];
+		if (DistanceBounding[i] < DistanceMin)
+			DistanceMin = DistanceBounding[i];*/
+	}
+	#pragma endregion
+	#pragma region 畫上結果
+	Mat ColorMap = imread("./Images/ColorMap.png", IMREAD_COLOR);
+	Mat ColorMapDepth = Mat::zeros(Size(250, 250), CV_8UC3);
+	for (int i = 0; i < nonZeroIndex.size(); i++)
+	{
+		cv::Point p1, p2;
+		p1.x = nonZeroIndex[i] + 60;
+		p1.y = MeatBounding[i];
+
+		p2.x = nonZeroIndex[i] + 60;
+		p2.y = BoneBounding[i];
+
+		float rate = (DistanceBounding[i] - DistanceMin) / (DistanceMax - DistanceMin);
+		//cout << rate << endl;
+		int GetRowIndex = ColorMap.rows * (1 - rate);
+		int GetColIndex = ColorMap.cols * 0.5;
+		Scalar color = ColorMap.at<Vec3b>(GetRowIndex, GetColIndex);
+		line(ColorMapDepth, p1, p2, color);
+	}
+	bitwise_not(prob.clone(), prob);
+	#pragma endregion 
 	#pragma region 轉成 QOpenGLTexture
 	// 轉 QOpenGLtexture
 	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
 	ProbTexture = new QOpenGLTexture(Mat2QImage(prob, CV_8UC3));
+	DepthTexture = new QOpenGLTexture(Mat2QImage(ColorMapDepth, CV_8UC3));
+	#pragma endregion
+	#pragma region UI Max Min Value
+	MaxValueLabel->setText(QString::number(DistanceMax));
+	MinValueLabel->setText(QString::number(DistanceMin));
+	#pragma endregion
+}
+float OpenGLWidget::GetDistanceValue(int index)
+{
+	#pragma region 先判斷是否有東西要跳出
+	if (DistanceBounding.size() == 0)
+		return -1;
+	#pragma endregion
+	#pragma region 接著是去跑結果
+	return 10;
 	#pragma endregion
 }
 

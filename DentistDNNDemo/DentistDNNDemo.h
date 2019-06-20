@@ -7,6 +7,8 @@
 #include <QVector>
 #include <QVector2D>
 #include <QFile>
+#include <QImage>
+#include <QPixmap>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -27,11 +29,17 @@ private:
 
 	// Read BoundingBoxFunc
 	void ReadBounding(QString);
+
 	// Bounding
 	QVector2D OrginTL = QVector2D(9999, 9999);
 	QVector2D OrginBR = QVector2D(-1, -1);
 
 private slots:
+	//////////////////////////////////////////////////////////////////////////
+	// 主要功能
+	//////////////////////////////////////////////////////////////////////////
+	void SliderValueChange(int);
+
 	//////////////////////////////////////////////////////////////////////////
 	// 測試相關 Function
 	//////////////////////////////////////////////////////////////////////////

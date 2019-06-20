@@ -46,6 +46,12 @@
     <Filter Include="Source Files\Thin Algorithm">
       <UniqueIdentifier>{f39fc727-e14e-487a-accb-0d5e8c156a16}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Calibration">
+      <UniqueIdentifier>{441bc684-904e-4b3a-90f7-dcd8ee7a7d59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Calibration">
+      <UniqueIdentifier>{30e533b0-59b2-4914-8b86-17487f3b9555}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -60,11 +66,12 @@
     <ClCompile Include="zhangsuen.cpp">
       <Filter>Source Files\Thin Algorithm</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="DentistDNNDemo.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
+    <ClCompile Include="PythonModule.cpp">
+      <Filter>Source Files\Calibration</Filter>
+    </ClCompile>
+    <ClCompile Include="CalibrationUtility.cpp">
+      <Filter>Source Files\Calibration</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="DentistDNNDemo.ui">
@@ -83,6 +90,12 @@
     <ClInclude Include="zhangsuen.h">
       <Filter>Header Files\Thin Algorithm</Filter>
     </ClInclude>
+    <ClInclude Include="PythonModule.h">
+      <Filter>Header Files\Calibration</Filter>
+    </ClInclude>
+    <ClInclude Include="CalibrationUtility.h">
+      <Filter>Header Files\Calibration</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\DentistDNNDemo\Shaders\Plane.fsh">
@@ -91,5 +104,10 @@
     <None Include="..\x64\Release\DentistDNNDemo\Shaders\Plane.vsh">
       <Filter>Shaders\Plane</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="DentistDNNDemo.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
 </Project>

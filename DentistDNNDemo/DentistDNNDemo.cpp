@@ -6,8 +6,23 @@ DentistDNNDemo::DentistDNNDemo(QWidget *parent)
 	ui.setupUi(this);
 
 	#pragma region 事件連結
-	connect(ui.TestRenderingBtn, SIGNAL(clicked()), this, SLOT(TestRenderFunctionEvent()));
+	// 主要功能
+	connect(ui.slidingBar,			SIGNAL(valueChanged(int)),	this, SLOT(SliderValueChange(int)));
+
+	// 測試相關
+	connect(ui.TestRenderingBtn,	SIGNAL(clicked()),			this, SLOT(TestRenderFunctionEvent()));
 	#pragma endregion
+	#pragma region UI 初始化
+	QImage img("./Images/ColorMap.png");
+	ui.ColorMapLabel->setPixmap(QPixmap::fromImage(img));
+	#pragma endregion
+}
+
+// 主要功能
+void DentistDNNDemo::SliderValueChange(int)
+{
+	//cout << ui.slidingBar->value() << endl;
+	ui.
 }
 
 // 測試相關函式
@@ -19,9 +34,9 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 	QString OtherSidePath_Org = TestFilePath + "OtherSide.png";
 	QString BoundingBoxPath = TestFilePath + "boundingBox.txt";
 	#pragma endregion
-
+	#pragma region 讀 Bounding Box
 	ReadBounding(BoundingBoxPath);
-
+	#pragma endregion	
 	#pragma region 讀圖
 	Mat otherSideMat_Org		= imread(OtherSidePath_Org.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
 	Mat otherSideMat_Predict	= imread(OtherSidePath_Predict.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
@@ -32,7 +47,7 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 		Mat mat = imread((TestFilePath + "Smooth/" + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
 		FullMat.push_back(mat);
 	}
-	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR);
+	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR, ui.ColorMapMaxValue, ui.ColorMapMinValue);
 	#pragma endregion
 	#pragma region 刷新
 	ui.DisplayPanel->update();

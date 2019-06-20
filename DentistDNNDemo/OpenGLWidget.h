@@ -1,10 +1,12 @@
 ﻿#pragma once
 #include "zhangsuen.h"
+#include "CalibrationUtility.h"
 
 #include <iostream>
 #include <vector>
 #include <algorithm>
 
+#include <QFile>
 #include <QImage>
 #include <QVector>
 #include <QOpenGLWidget>
@@ -12,6 +14,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions_4_5_Core>
 #include <QOpenGLTexture>
+#include <QLabel>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -43,7 +46,8 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 外部呼叫函式
 	//////////////////////////////////////////////////////////////////////////
-	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D);
+	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D, QLabel*, QLabel*);
+	float GetDistanceValue(int);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -52,14 +56,21 @@ private:
 	QOpenGLShaderProgram	*Program = NULL;
 	GLuint					VertexBuffer = -1;
 	GLuint					UVBuffer = -1;
+	GLuint					DepthBuffer = -1;									// 這裡的深度，不是 Render 的深度，是牙齦到齒槽骨的深度
 	QOpenGLTexture			*OtherSideTexture = NULL;
 	QOpenGLTexture			*ProbTexture = NULL;
+	QOpenGLTexture			*DepthTexture = NULL;
 
 	//////////////////////////////////////////////////////////////////////////
-	//
+	// 校正到世界座標所需要的東西
 	//////////////////////////////////////////////////////////////////////////
-	QVector<int> MeatBounding;					// 牙肉位置(pixel)
-	QVector<int> DiseaseBounding;				// 齒槽骨位置(pixel)
+	QVector<int>			MeatBounding;										// 牙肉位置(pixel)
+	QVector<int>			BoneBounding;										// 齒槽骨位置(pixel)
+	//QVector<QVector2D>		WorldPosMeat;										// 世界座標
+	//QVector<QVector2D>		WorldPosBone;										// 同上
+	QVector<float>			DistanceBounding;									// 算一下他們的距離
+	float					DistanceMin, DistanceMax;							// 最大、最小值
+	CalibrationUtility		calibrationTool;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function

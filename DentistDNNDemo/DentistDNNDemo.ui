@@ -24,7 +24,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QScrollBar" name="horizontalScrollBar">
+   <widget class="QScrollBar" name="slidingBar">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -32,6 +32,12 @@
       <width>501</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="minimum">
+     <number>60</number>
+    </property>
+    <property name="maximum">
+     <number>200</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -62,6 +68,58 @@
       <string>測試 Rendering 的 Function</string>
      </property>
     </widget>
+   </widget>
+   <widget class="QLabel" name="ColorMapLabel">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>40</y>
+      <width>16</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ColorMapMaxValue">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>40</y>
+      <width>47</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ColorMapMinValue">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>430</y>
+      <width>47</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ColorMapCurrentValue">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>260</y>
+      <width>47</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
    </widget>
   </widget>
  </widget>
