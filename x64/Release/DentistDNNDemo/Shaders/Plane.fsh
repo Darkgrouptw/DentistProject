@@ -30,5 +30,5 @@ void main()
 	if (GrayScaleValue(Prob) > Threshold)
 		FragColor += Prob;
 	if (GrayScaleValue(Color) > Threshold)
-		FragColor = Color;
+		FragColor.rgb = FragColor.rgb * 0.8f + Color.rgb * 0.2f;
 }
