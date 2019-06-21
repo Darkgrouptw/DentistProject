@@ -267,11 +267,11 @@ void OpenGLWidget::GetSliderValue(float value)
 {
 	SliderValue = ((value / 250.0f) - 0.5f) * 2.0f;
 }
-float OpenGLWidget::GetColorMapValue(int value) {
-	float rate = 0;
+QString OpenGLWidget::GetColorMapValue(int value) {
+	QString rate = 0;
 	for (int i = 0; i < nonZeroIndex.size(); i++) {
 		if (nonZeroIndex[i] + 60 == value) {
-			rate = DistanceBounding[i];
+			rate = QString::fromStdString(to_string(DistanceBounding[i]));
 			break;
 		}
 	}

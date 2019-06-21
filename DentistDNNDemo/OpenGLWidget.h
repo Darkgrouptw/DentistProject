@@ -49,7 +49,7 @@ public:
 	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D, QLabel*, QLabel*);
 	float GetDistanceValue(int);
 	void GetSliderValue(float);
-	float GetColorMapValue(int);
+	QString GetColorMapValue(int);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
