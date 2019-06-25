@@ -233,6 +233,10 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		p2.y = BoneBounding[i];
 
 		float rate = (DistanceBounding[i] - DistanceMin) / (DistanceMax - DistanceMin);
+		if (0 >= rate)
+			rate = 0;
+		if (1 <= rate)
+			rate = 1;
 		//cout << rate << endl;
 
 		int GetRowIndex = ColorMap.rows * (1 - rate);
