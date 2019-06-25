@@ -7,6 +7,7 @@
 //#define DISABLE_MULTI_RESULT			// 關閉顯示真正掃描時多片的結果 (但 Debug 的時候，還是會顯示 Message)
 #define DISABLE_TENSORFLOW_ERROR_DEBUG	// 是否要關閉 Tensorflow 的 Error Debug
 //#define DEBUG_DRAW_AVERAGE_ERROR_PC		// 要 Debug 平均點雲誤差用的 PC
+//#define USE_NETWORK_TO_PREDICT			// 是否要使用網路來預測結果
 
 /*
 ToDo

@@ -514,31 +514,32 @@ void DentistProjectV2::PredictResultTesting()
 		return;
 	}
 
+	#ifdef USE_NETWORK_TO_PREDICT
 	// 3. 存出所有Network需要圖片
 	rawManager.SaveNetworkImage();
 
 	// 4. 傳上伺服器Predict
 	waitTCP = true;
 	TcpNetwork();
-
-
+	#else
 	// 3. Python 預測資料
 	//rawManager.PredictOtherSide();
-	
+
 	// 4. 預測整份的資料
 	//rawManager.PredictFull();
 
 	// 5. 把預測資料貼回原圖
-	//rawManager.LoadPredictImage();
+	rawManager.LoadPredictImage();
 
 	// 6. Smooth 結果並把點區塊刪除
-	//rawManager.SmoothNetworkData();
+	rawManager.SmoothNetworkData();
 
 	// 7. 轉到 QImage 中
-	//rawManager.NetworkDataToQImage();
+	rawManager.NetworkDataToQImage();
 
 	// 8. 顯示結果
-	//rawManager.ShowImageIndex(60);
+	rawManager.ShowImageIndex(60);
+	#endif
 }
 void DentistProjectV2::TcpConnected()
 {
