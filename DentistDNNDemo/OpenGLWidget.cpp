@@ -308,6 +308,13 @@ Mat OpenGLWidget::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& ButtomR
 	vector<BoundingBoxDataStruct> dataInfo(contours.size());
 	#pragma endregion
 	#pragma region 抓出最大的框框
+	if (contours.size() == 0)
+	{
+		TopLeft = QVector2D(0, 0);
+		ButtomRight = QVector2D(img.rows, img.cols);
+		return img;
+	}
+
 	// 抓出擬合的結果
 	for (size_t img = 0; img < contours.size(); img++)
 	{

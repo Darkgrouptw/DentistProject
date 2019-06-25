@@ -30,7 +30,14 @@ void DentistDNNDemo::SliderValueChange(int)
 void DentistDNNDemo::TestRenderFunctionEvent()
 {
 	#pragma region Test 路徑
-	QString TestFilePath = "E:/DentistData/DentistProjectV2-p3dLon/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 1/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 2/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.1/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.2/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 7.1/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 7.2/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 8.1/";
+	QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 9.1/";
 	QString OtherSidePath_Predict = TestFilePath + "Predict.png";
 	QString OtherSidePath_Org = TestFilePath + "OtherSide.png";
 	QString BoundingBoxPath = TestFilePath + "boundingBox.txt";

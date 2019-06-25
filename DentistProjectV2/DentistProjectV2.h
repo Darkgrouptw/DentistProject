@@ -14,7 +14,6 @@
 #include <QMessageBox>
 #include <QAbstractSocket>
 #include <QTcpSocket>
-#include <QThread>
 
 #include "GlobalDefine.h"
 #include "RawDataManager.h"
