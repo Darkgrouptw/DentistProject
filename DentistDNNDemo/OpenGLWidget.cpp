@@ -116,25 +116,49 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	// 每一張圖片的結果
 	vector<Mat> ChannelMat;
 	QVector2D TL, BR;
-	QVector<int> LastY;
+	QVector<int> LastTLY;
+	QVector<int> LastBLY;
 	//int LastY = -1;
 	for (int i = 0; i < FullMat.size(); i++)
 	{
 		// 抓取藍色的部分，去抓取 Bounding Box
 		split(FullMat[i], ChannelMat);
+
+		// 刪除一些 Noise
+		vector<vector<cv::Point>> contours;
+		vector<Vec4i> hierarchy;
+		findContours(ChannelMat[0], contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		sort(contours.begin(), contours.end(), CompareContourArea);
+
+		for (int k = 1; k < contours.size(); k++)
+			drawContours(ChannelMat[0], contours, k, Scalar(0, 0, 0), CV_FILLED);
+		//imwrite("E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.2/Smooth/Smooth_" + to_string(i) + ".png", ChannelMat[0]);
+
 		Mat img = GetBoundingBox(ChannelMat[0], TL, BR);
 		
-		LastY.append(TL.y() + OriginTL.y());
+		LastTLY.append(TL.y() + OriginTL.y());
+		LastBLY.append(BR.y() + OriginTL.y());
 	}
 	#pragma endregion
 	#pragma region 畫上結果
-	// 畫結果
-	for (int i = 1; i < LastY.size(); i++)
-	{
-		cv::Point LeftPoint = cv::Point(i - 1 + 60, LastY[i - 1]);
-		cv::Point RightPoint = cv::Point(i + 60, LastY[i]);
+	bool IsInverse = false;				// 是否上下顛倒
+	int LastSize = LastTLY.size();
+	if (LastTLY[0] < 125 && LastTLY[LastSize / 2] < 125 && LastTLY[LastSize - 1] < 125)
+		IsInverse = true;
 
-		if (LastY[i - 1] != -1 && LastY[i] != -1)
+	// 畫結果
+	for (int i = 1; i < LastTLY.size(); i++)
+	{
+		cv::Point LeftPoint = cv::Point(i - 1 + 60, LastTLY[i - 1]);
+		cv::Point RightPoint = cv::Point(i + 60, LastTLY[i]);
+
+		if (IsInverse)
+		{
+			LeftPoint.y = LastBLY[i - 1];
+			RightPoint.y = LastBLY[i];
+		}
+
+		if (LastTLY[i - 1] != -1 && LastTLY[i] != -1)
 			line(prob, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
 	}
 	#pragma endregion
@@ -160,8 +184,16 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		{
 			int MeanIndex = CanBeIndex[CanBeIndex.size() - 2];
 			int BoneIndex = CanBeIndex[CanBeIndex.size() - 1];
-			MeatBounding.push_back(MeanIndex);
-			BoneBounding.push_back(BoneIndex);
+			if (IsInverse)
+			{
+				MeatBounding.push_back(BoneIndex);
+				BoneBounding.push_back(MeanIndex);
+			}
+			else
+			{
+				MeatBounding.push_back(MeanIndex);
+				BoneBounding.push_back(BoneIndex);
+			}
 
 			nonZeroIndex.push_back(col - 60);
 		}
@@ -358,4 +390,11 @@ Mat OpenGLWidget::GetBoundingBox(Mat img, QVector2D& TopLeft, QVector2D& ButtomR
 bool OpenGLWidget::SortByContourPointSize(BoundingBoxDataStruct& c1, BoundingBoxDataStruct& c2)
 {
 	return c1.boundingRect.area() > c2.boundingRect.area();
+}
+bool OpenGLWidget::CompareContourArea(vector<cv::Point> contour1, vector<cv::Point> contour2)
+{
+	// comparison function object
+	double i = fabs(contourArea(Mat(contour1)));
+	double j = fabs(contourArea(Mat(contour2)));
+	return i > j;
 }

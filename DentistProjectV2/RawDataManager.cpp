@@ -928,22 +928,6 @@ void RawDataManager::SmoothNetworkData()
 	
 	for (int i = 0; i < TestResult.size(); i++)
 	{
-		// 刪除一些 Noise
-		vector<Mat> ColorMat;
-		split(TestResult[i], ColorMat);
-
-		for (int j = 0; j < ColorMat.size(); j++)
-		{
-			vector<vector<Point>> contours;
-			vector<Vec4i> hierarchy;
-			findContours(ColorMat[j], contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-			sort(contours.begin(), contours.end(), CompareContourArea);
-
-			for (int k = 1; k < contours.size(); k ++)
-				if (contours[k].size() > 1)
-					fillPoly(TestResult[i], contours[k], Scalar(127, 127, 127));
-		}
-		
 		// 寫出圖片
 		cv::imwrite("./Predicts/Smooth/" + to_string(i) + ".png", TestResult[i]);
 		cv::Mat BlankImg = cv::Mat::zeros(ImageResultArray[0].size(), CV_8UC3);

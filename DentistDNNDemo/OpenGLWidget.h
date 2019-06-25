@@ -84,5 +84,6 @@ private:
 	QImage Mat2QImage(Mat const&, int);
 	Mat GetBoundingBox(Mat, QVector2D&, QVector2D&);
 	static bool SortByContourPointSize(BoundingBoxDataStruct&, BoundingBoxDataStruct&);
+	static bool	CompareContourArea(vector<cv::Point>, vector<cv::Point>);		// OpenCV
 };
 
