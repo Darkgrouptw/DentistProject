@@ -871,8 +871,6 @@ void RawDataManager::LoadPredictImage()
 			int width = BR[0] - TL[0];
 			int height = BR[1] - TL[1];
 
-			
-
 			LoadImage.copyTo(BlankImg(cv::Rect(TL[0], TL[1], width, height)));
 			NetworkResultArray.push_back(BlankImg);
 		}
@@ -927,10 +925,25 @@ void RawDataManager::SmoothNetworkData()
 
 	int width = cMax - cMin + 1;	// cols
 	int height = rMax - rMin + 1;	// rows
-
-
+	
 	for (int i = 0; i < TestResult.size(); i++)
 	{
+		// 刪除一些 Noise
+		vector<Mat> ColorMat;
+		split(TestResult[i], ColorMat);
+
+		for (int j = 0; j < ColorMat.size(); j++)
+		{
+			vector<vector<Point>> contours;
+			vector<Vec4i> hierarchy;
+			findContours(ColorMat[j], contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+			sort(contours.begin(), contours.end(), CompareContourArea);
+
+			for (int k = 1; k < contours.size(); k ++)
+				if (contours[k].size() > 1)
+					fillPoly(TestResult[i], contours[k], Scalar(127, 127, 127));
+		}
+		
 		// 寫出圖片
 		cv::imwrite("./Predicts/Smooth/" + to_string(i) + ".png", TestResult[i]);
 		cv::Mat BlankImg = cv::Mat::zeros(ImageResultArray[0].size(), CV_8UC3);
@@ -1490,4 +1503,11 @@ float RawDataManager::FunctionPlane(float x, float y, float* params)
 	total += y * params[1];
 	total += params[2];
 	return total;
+}
+bool RawDataManager::CompareContourArea(vector<Point> contour1, vector<Point> contour2)
+{
+	// comparison function object
+	double i = fabs(contourArea(Mat(contour1)));
+	double j = fabs(contourArea(Mat(contour2)));
+	return i > j;
 }

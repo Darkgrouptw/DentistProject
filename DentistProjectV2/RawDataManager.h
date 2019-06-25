@@ -254,6 +254,7 @@ private:
 	QMatrix4x4			super4PCS_Align(vector<Point3D>*, vector<Point3D> *, float&);	// Alignment
 	int					clamp(int, int, int);
 	float				FunctionPlane(float, float, float*);
+	static bool			CompareContourArea(vector<Point>, vector<Point>);		// OpenCV
 
 	//////////////////////////////////////////////////////////////////////////
 	// 其他變數
