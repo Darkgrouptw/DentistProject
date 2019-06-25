@@ -859,7 +859,7 @@ void RawDataManager::PredictFull()
 }
 void RawDataManager::LoadPredictImage() 
 {
-	QString testPath = "C:/Users/castle/AppData/Local/Temp/DentistProjectV2-p3dLon";
+	QString testPath = "D:/Dentist/code/NewNet/x64/Release/DentistProjectV2/Predicts";
 	if (tempDir.isValid())
 		for (int i = 60; i <= 200; i++)
 		{
@@ -871,6 +871,8 @@ void RawDataManager::LoadPredictImage()
 			int width = BR[0] - TL[0];
 			int height = BR[1] - TL[1];
 
+			
+
 			LoadImage.copyTo(BlankImg(cv::Rect(TL[0], TL[1], width, height)));
 			NetworkResultArray.push_back(BlankImg);
 		}
@@ -879,7 +881,7 @@ void RawDataManager::SmoothNetworkData()
 {
 	clock_t smoothtime = clock();
 
-	 #pragma region 找出最大最小值
+	#pragma region 找出最大最小值
 	// r => Image rows
 	// y => 張數
 	// c => Image cols
@@ -904,11 +906,11 @@ void RawDataManager::SmoothNetworkData()
 	}
 	 
 	// Clamp 到結果之間
-	cMax = clamp(cMax, 0, DManager.prop.SizeZ - 1);
+	cMax = clamp(cMax, 0, DManager.prop.SizeZ / 2 - 1);
 	rMax = clamp(rMax, 0, DManager.prop.SizeX - 1);
 	 	
 	cout << "Row: " << rMin << " " << rMax << " Col Max: " << cMin << " " << cMax << endl;
-	 #pragma endregion
+	#pragma endregion
 	#pragma region Cuda 的部分
 	std::vector<cv::Mat> NetworkResultSmooth = NetworkResultArray.toStdVector();
 
@@ -926,8 +928,11 @@ void RawDataManager::SmoothNetworkData()
 	int width = cMax - cMin + 1;	// cols
 	int height = rMax - rMin + 1;	// rows
 
+
 	for (int i = 0; i < TestResult.size(); i++)
 	{
+		// 寫出圖片
+		cv::imwrite("./Predicts/Smooth/" + to_string(i) + ".png", TestResult[i]);
 		cv::Mat BlankImg = cv::Mat::zeros(ImageResultArray[0].size(), CV_8UC3);
 
 		TestResult[i].copyTo(BlankImg(cv::Rect(cMin, rMin, width, height)));

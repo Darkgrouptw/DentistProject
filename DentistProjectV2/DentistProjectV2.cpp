@@ -518,14 +518,16 @@ void DentistProjectV2::PredictResultTesting()
 	rawManager.SaveNetworkImage();
 
 	// 4. 傳上伺服器Predict
+	waitTCP = true;
 	TcpNetwork();
+
 
 	// 3. Python 預測資料
 	//rawManager.PredictOtherSide();
 	
 	// 4. 預測整份的資料
 	//rawManager.PredictFull();
-	
+
 	// 5. 把預測資料貼回原圖
 	//rawManager.LoadPredictImage();
 
@@ -564,6 +566,18 @@ void DentistProjectV2::TcpDisConnected()
 		isStart = false;
 		Sefile.close();
 		useUNRAR();
+		// 5. 把預測資料貼回原圖
+		rawManager.LoadPredictImage();
+
+		// 6. Smooth 結果並把點區塊刪除
+		rawManager.SmoothNetworkData();
+
+		// 7. 轉到 QImage 中
+		rawManager.NetworkDataToQImage();
+
+		// 8. 顯示結果
+		rawManager.ShowImageIndex(60);
+		waitTCP = false;
 	}
 }
 void DentistProjectV2::TcpreadyRead()
@@ -662,7 +676,7 @@ void DentistProjectV2::useRAR()
 }
 void DentistProjectV2::useUNRAR()
 {
-	std::string AAA = "WinRAR.exe x received_file.zip";
+	std::string AAA = "WinRAR.exe -o+ x received_file.zip";
 
 	system(AAA.c_str());
 }
