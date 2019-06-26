@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DentistDNNDemo.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.0
+** Created by: Qt User Interface Compiler version 5.9.6
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -32,6 +32,7 @@ public:
     QScrollBar *slidingBar;
     QGroupBox *groupBox;
     QPushButton *TestRenderingBtn;
+    QPushButton *TestReadRawDataBtn;
     QLabel *ColorMapLabel;
     QLabel *ColorMapMaxValue;
     QLabel *ColorMapMinValue;
@@ -59,6 +60,9 @@ public:
         TestRenderingBtn = new QPushButton(groupBox);
         TestRenderingBtn->setObjectName(QStringLiteral("TestRenderingBtn"));
         TestRenderingBtn->setGeometry(QRect(10, 20, 151, 31));
+        TestReadRawDataBtn = new QPushButton(groupBox);
+        TestReadRawDataBtn->setObjectName(QStringLiteral("TestReadRawDataBtn"));
+        TestReadRawDataBtn->setGeometry(QRect(10, 60, 151, 31));
         ColorMapLabel = new QLabel(centralWidget);
         ColorMapLabel->setObjectName(QStringLiteral("ColorMapLabel"));
         ColorMapLabel->setGeometry(QRect(510, 40, 16, 401));
@@ -80,9 +84,10 @@ public:
 
     void retranslateUi(QMainWindow *DentistDNNDemoClass)
     {
-        DentistDNNDemoClass->setWindowTitle(QApplication::translate("DentistDNNDemoClass", "DentistDNNDemo", nullptr));
-        groupBox->setTitle(QApplication::translate("DentistDNNDemoClass", "Test Function", nullptr));
-        TestRenderingBtn->setText(QApplication::translate("DentistDNNDemoClass", "\346\270\254\350\251\246 Rendering \347\232\204 Function", nullptr));
+        DentistDNNDemoClass->setWindowTitle(QApplication::translate("DentistDNNDemoClass", "DentistDNNDemo", Q_NULLPTR));
+        groupBox->setTitle(QApplication::translate("DentistDNNDemoClass", "Test Function", Q_NULLPTR));
+        TestRenderingBtn->setText(QApplication::translate("DentistDNNDemoClass", "\346\270\254\350\251\246 Rendering \347\232\204 Function", Q_NULLPTR));
+        TestReadRawDataBtn->setText(QApplication::translate("DentistDNNDemoClass", "\350\256\200\345\217\226RawData \350\267\221\347\266\262\350\267\257", Q_NULLPTR));
         ColorMapLabel->setText(QString());
         ColorMapMaxValue->setText(QString());
         ColorMapMinValue->setText(QString());

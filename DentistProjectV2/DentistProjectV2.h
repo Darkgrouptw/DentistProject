@@ -62,7 +62,6 @@ private:
 	void useUNRAR();
 	void SentTest();
 	void RecvTest(QByteArray);
-	bool waitTCP = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 藍芽相關參數
