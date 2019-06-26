@@ -76,7 +76,7 @@ void OpenGLWidget::paintGL()
 		DepthTexture->release();
 		Program->release();
 
-		DrawSlider();
+		//DrawSlider();
 	}
 }
 void OpenGLWidget::DrawSlider() {
@@ -96,11 +96,19 @@ void OpenGLWidget::DrawSlider() {
 // 外部呼叫函式
 void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR, QLabel* MaxValueLabel, QLabel* MinValueLabel)
 {
+	#pragma region 算方向的結果
+	Mat MomentMeat;
+	#pragma endregion
 	#pragma region 反轉顏色
 	threshold(prob.clone(), prob, 150, 255, THRESH_BINARY);
 
 	bitwise_not(prob.clone(), prob);
 	thin(prob, false, false, false);
+
+	// 存在這邊
+	MomentMeat = prob.clone();
+	bitwise_not(MomentMeat.clone(), MomentMeat);
+	//imwrite("D:/a.png", MomentMeat);
 	#pragma endregion
 	#pragma region OtherSide Clone
 	cvtColor(otherSide.clone(), otherSide, CV_GRAY2BGR);
@@ -140,7 +148,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		LastBLY.append(BR.y() + OriginTL.y());
 	}
 	#pragma endregion
-	#pragma region 畫上結果
+	#pragma region 畫上齒槽骨結果
 	bool IsInverse = false;				// 是否上下顛倒
 	int LastSize = LastTLY.size();
 	if (LastTLY[0] < 125 && LastTLY[LastSize / 2] < 125 && LastTLY[LastSize - 1] < 125)
@@ -162,12 +170,20 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 			line(prob, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
 	}
 	#pragma endregion
+	#pragma region 算 Moment (也就是距離的方向)
+	cv::Moments m = cv::moments(MomentMeat, true);
+
+	double U20 = m.nu20 / m.m00;
+	double U02 = m.nu02 / m.m00;
+	double U11 = m.nu11 / m.m00;
+	double Angle = 0.5 * atan(2 * U11 / (U20 - U11));
+	Angle = (!IsInverse ? Angle + 3.1415926 / 2 : Angle - 3.1415926 / 2);			// 由於坐標系不一樣，需要做一個轉換
+	cout << Angle << endl;															// 是徑度喔
+	#pragma endregion
 	#pragma region 算出牙肉 & 齒槽骨的位置(Pixel)
 	MeatBounding.clear();
 	BoneBounding.clear();
 
-	imwrite("D:/a.png", prob);
-	//QVector<int> nonZeroIndex;
 	for (int col = 60; col <= 200; col++)
 	{
 		QVector<int> CanBeIndex;
@@ -178,7 +194,6 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 				CanBeIndex.push_back(row);
 				row += 10;
 			}
-			//cout << row << " " << (int)(prob.at<uchar>(row, col)) << endl;
 		}
 		if (CanBeIndex.size() >= 2)
 		{
@@ -197,11 +212,6 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 
 			nonZeroIndex.push_back(col - 60);
 		}
-		//else /*if (CanBeIndex.size() == 0)*/
-		//{
-		//	MeatBounding.push_back(-1);
-		//	BoneBounding.push_back(-1);
-		//}
 	}
 	#pragma endregion
 	#pragma region 對應到 World Coordinate
@@ -277,7 +287,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		line(ColorMapDepth, p1, p2, color);
 	}
 	bitwise_not(prob.clone(), prob);
-	#pragma endregion 
+	#pragma endregion
 	#pragma region 轉成 QOpenGLTexture
 	// 轉 QOpenGLtexture
 	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));

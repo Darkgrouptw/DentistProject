@@ -63,7 +63,6 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 	ui.DisplayPanel->update();
 	#pragma endregion
 }
-
 void DentistDNNDemo::ReadBounding(QString FileName) {
 	#pragma region 讀取BoundingBox
 	QFile file(FileName);
