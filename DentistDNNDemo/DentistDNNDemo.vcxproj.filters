@@ -52,6 +52,15 @@
     <Filter Include="Header Files\Calibration">
       <UniqueIdentifier>{30e533b0-59b2-4914-8b86-17487f3b9555}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\RawDataManager">
+      <UniqueIdentifier>{a2f9c328-891c-437f-8b0d-55aa6af8022e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RawDataManager">
+      <UniqueIdentifier>{29afa772-331c-49f9-8636-74da7bb6cfc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CudaV2">
+      <UniqueIdentifier>{bd09fd1f-7329-4e6a-b73b-e96e006f4ea1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -71,6 +80,15 @@
     </ClCompile>
     <ClCompile Include="CalibrationUtility.cpp">
       <Filter>Source Files\Calibration</Filter>
+    </ClCompile>
+    <ClCompile Include="RawDataManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>Source Files\RawDataManager</Filter>
+    </ClCompile>
+    <ClCompile Include="CudaV2\EigenUtility.cpp">
+      <Filter>CudaV2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +114,24 @@
     <ClInclude Include="CalibrationUtility.h">
       <Filter>Header Files\Calibration</Filter>
     </ClInclude>
+    <ClInclude Include="RawDataManager.h">
+      <Filter>Header Files\RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="DataManager.h">
+      <Filter>Header Files\RawDataManager</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaV2\EigenUtility.h">
+      <Filter>CudaV2</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaV2\TRCudaV2.cuh">
+      <Filter>CudaV2</Filter>
+    </ClInclude>
+    <ClInclude Include="CudaV2\UtilityTools.cuh">
+      <Filter>CudaV2</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDefine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\DentistDNNDemo\Shaders\Plane.fsh">
@@ -109,5 +145,13 @@
     <QtMoc Include="DentistDNNDemo.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="CudaV2\TRCudaV2.cu">
+      <Filter>CudaV2</Filter>
+    </CudaCompile>
+    <CudaCompile Include="CudaV2\UtilityTools.cu">
+      <Filter>CudaV2</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>

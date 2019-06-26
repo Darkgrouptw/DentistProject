@@ -519,7 +519,6 @@ void DentistProjectV2::PredictResultTesting()
 	rawManager.SaveNetworkImage();
 
 	// 4. 傳上伺服器Predict
-	waitTCP = true;
 	TcpNetwork();
 	#else
 	// 3. Python 預測資料
@@ -578,7 +577,6 @@ void DentistProjectV2::TcpDisConnected()
 
 		// 8. 顯示結果
 		rawManager.ShowImageIndex(60);
-		waitTCP = false;
 	}
 }
 void DentistProjectV2::TcpreadyRead()
