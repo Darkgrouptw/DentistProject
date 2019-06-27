@@ -322,9 +322,6 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	}
 	bitwise_not(prob.clone(), prob);
 	#pragma endregion
-
-	imwrite("D:/XX.png", prob);
-
 	#pragma region 轉成 QOpenGLTexture
 	// 轉 QOpenGLtexture
 	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
