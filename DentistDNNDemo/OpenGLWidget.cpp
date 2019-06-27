@@ -184,35 +184,68 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	MeatBounding.clear();
 	BoneBounding.clear();
 
+	WorldPosMeat.clear();
+	WorldPosBone.clear();
+
 	for (int col = 60; col <= 200; col++)
 	{
-		QVector<int> CanBeIndex;
-		for (int row = 0; row < prob.rows; row++)
+		QVector<QVector2D> CanBeIndex;
+		int newcol = 0;
+		for (float row = 0; row < prob.rows; row++)
 		{
-			if (prob.at<Vec3b>(row, col)[0] == 0)
+			if (CanBeIndex.size() < 1 && prob.at<Vec3b>(row, col)[0] == 0)
 			{
-				CanBeIndex.push_back(row);
-				row += 10;
+				CanBeIndex.push_back(QVector2D(col, row));
+				newcol++;
+				row += 50;
+			}
+			else if (CanBeIndex.size() >= 1 && (prob.at<Vec3b>((floor)(row + newcol * Angle), col + newcol)[0] == 0 ||
+				prob.at<Vec3b>((floor)(row + newcol * Angle) - 1, col + newcol)[0] == 0 ||
+				prob.at<Vec3b>((ceil)(row + newcol * Angle), col + newcol)[0] == 0 ||
+				prob.at<Vec3b>((ceil)(row + newcol * Angle) + 1, col + newcol)[0] == 0)) {
+				if ((row + newcol * Angle) >= 248 || (col + newcol) > 200)break;
+				CanBeIndex.push_back(QVector2D(col + newcol, (int)(row + newcol*Angle)));
+				row += 50;
+			}
+			else if (CanBeIndex.size() == 1)
+			{
+				newcol++;
 			}
 		}
+		
 		if (CanBeIndex.size() >= 2)
 		{
-			int MeanIndex = CanBeIndex[CanBeIndex.size() - 2];
-			int BoneIndex = CanBeIndex[CanBeIndex.size() - 1];
+			QVector2D MeanIndex = CanBeIndex[CanBeIndex.size() - 2];
+			QVector2D BoneIndex = CanBeIndex[CanBeIndex.size() - 1];
 			if (IsInverse)
 			{
-				MeatBounding.push_back(BoneIndex);
-				BoneBounding.push_back(MeanIndex);
+				//MeatBounding.push_back(BoneIndex);
+				//BoneBounding.push_back(MeanIndex);
+				WorldPosMeat.push_back(BoneIndex);
+				WorldPosBone.push_back(MeanIndex);
+
 			}
 			else
 			{
-				MeatBounding.push_back(MeanIndex);
-				BoneBounding.push_back(BoneIndex);
+				//MeatBounding.push_back(MeanIndex);
+				//BoneBounding.push_back(BoneIndex);
+				WorldPosMeat.push_back(MeanIndex);
+				WorldPosBone.push_back(BoneIndex);
 			}
 
 			nonZeroIndex.push_back(col - 60);
 		}
+		
 	}
+
+	for (int i = 0; i < nonZeroIndex.size(); i++)
+	{
+		cout << nonZeroIndex[i] << endl;
+		cout << WorldPosMeat[i].x() << " " << WorldPosMeat[i].y() << endl;
+		cout << WorldPosBone[i].x() << " " << WorldPosBone[i].y() << endl;
+	}
+
+
 	#pragma endregion
 	#pragma region 對應到 World Coordinate
 	// 產生 Array
@@ -227,11 +260,17 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	for (int i = 0; i < nonZeroIndex.size(); i++)
 	{
 		int index = nonZeroIndex[i];
-		PointData[i][0] = index + 60;
-		PointData[i][1] = MeatBounding[i];
+		//PointData[i][0] = index + 60;
+		//PointData[i][1] = MeatBounding[i];
 
-		PointData[size + i][0] = index + 60;
-		PointData[size + i][1] = BoneBounding[i];
+		//PointData[size + i][0] = index + 60;
+		//PointData[size + i][1] = BoneBounding[i];
+
+		PointData[i][0] = WorldPosMeat[i].x();
+		PointData[i][1] = WorldPosMeat[i].y();
+
+		PointData[size + i][0] = WorldPosBone[i].x();
+		PointData[size + i][1] = WorldPosBone[i].y();
 	}
 	float** WorldPos = calibrationTool.Calibrate(PointData, size * 2, 2);
 
@@ -256,10 +295,10 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		DistanceBounding.push_back(MeatPoint.distanceToPoint(BonePoint));
 		//cout << DistanceBounding[i] << endl;
 
-		/*if (DistanceBounding[i] > DistanceMax)
+		if (DistanceBounding[i] > DistanceMax)
 			DistanceMax = DistanceBounding[i];
 		if (DistanceBounding[i] < DistanceMin)
-			DistanceMin = DistanceBounding[i];*/
+			DistanceMin = DistanceBounding[i];
 	}
 	#pragma endregion
 	#pragma region 畫上結果
@@ -268,11 +307,17 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	for (int i = 0; i < nonZeroIndex.size(); i++)
 	{
 		cv::Point p1, p2;
-		p1.x = nonZeroIndex[i] + 60;
-		p1.y = MeatBounding[i];
+		//p1.x = nonZeroIndex[i] + 60;
+		//p1.y = MeatBounding[i];
 
-		p2.x = nonZeroIndex[i] + 60;
-		p2.y = BoneBounding[i];
+		//p2.x = nonZeroIndex[i] + 60;
+		//p2.y = BoneBounding[i];
+
+		p1.x = WorldPosMeat[i].x();
+		p1.y = WorldPosMeat[i].y();
+
+		p2.x = WorldPosBone[i].x();
+		p2.y = WorldPosBone[i].y();
 
 		float rate = (DistanceBounding[i] - DistanceMin) / (DistanceMax - DistanceMin);
 		if (0 >= rate)
@@ -288,6 +333,9 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	}
 	bitwise_not(prob.clone(), prob);
 	#pragma endregion
+
+	imwrite("D:/XX.png", prob);
+
 	#pragma region 轉成 QOpenGLTexture
 	// 轉 QOpenGLtexture
 	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
@@ -298,6 +346,9 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	MaxValueLabel->setText(QString::number(DistanceMax));
 	MinValueLabel->setText(QString::number(DistanceMin));
 	#pragma endregion
+	
+
+
 }
 float OpenGLWidget::GetDistanceValue(int index)
 {

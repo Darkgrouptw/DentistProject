@@ -39,6 +39,14 @@ void DentistDNNDemo::SliderValueChange(int)
 void DentistDNNDemo::TestRenderFunctionEvent()
 {
 	#pragma region Test 路徑
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 1/";
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 2/";
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 3.1/";
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 3.2/";
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 7.1/";
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 7.2/";
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 8.1/";
+
 	QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 1/";
 	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 2/";
 	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.1/";

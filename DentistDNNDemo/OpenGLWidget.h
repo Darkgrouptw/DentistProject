@@ -71,8 +71,8 @@ private:
 	QVector<int>			nonZeroIndex;										
 	QVector<int>			MeatBounding;										// 牙肉位置(pixel)
 	QVector<int>			BoneBounding;										// 齒槽骨位置(pixel)
-	//QVector<QVector2D>		WorldPosMeat;										// 世界座標
-	//QVector<QVector2D>		WorldPosBone;										// 同上
+	QVector<QVector2D>		WorldPosMeat;										// 世界座標
+	QVector<QVector2D>		WorldPosBone;										// 同上
 	QVector<float>			DistanceBounding;									// 算一下他們的距離
 	float					DistanceMin, DistanceMax;							// 最大、最小值
 	CalibrationUtility		calibrationTool;
