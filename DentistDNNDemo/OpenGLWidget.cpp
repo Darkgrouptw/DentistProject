@@ -76,25 +76,30 @@ void OpenGLWidget::paintGL()
 		DepthTexture->release();
 		Program->release();
 
-		//DrawSlider();
+		DrawSlider();
 	}
 }
 void OpenGLWidget::DrawSlider() {
-	glColor3f(1.0, 0.0, 0.0);
-	glBegin(GL_LINES);
-	glVertex3f(SliderValue, 1.0f, 0.0f);
-	glVertex3f(SliderValue, -1.0f, 0.0f);
-	glEnd();
-	glBegin(GL_TRIANGLES);
-	glVertex3f(SliderValue + 0.03f, -1.0f, 0.0f);
-	glVertex3f(SliderValue - 0.03f, -1.0f, 0.0f);
-	glVertex3f(SliderValue, -0.948f, 0.0f);
-	glEnd();
+	if (CheckIsNonZeroValue) {
+		glColor3f(1.0, 0.0, 0.0);
+		glLineWidth(5.0f);
+		glBegin(GL_LINES);
+		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+
+		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+		glEnd();
+	}
 	glColor3f(1.0, 1.0, 1.0);
 }
 
 // 外部呼叫函式
-void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR, QLabel* MaxValueLabel, QLabel* MinValueLabel)
+void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR)
 {
 	#pragma region 算方向的結果
 	Mat MomentMeat;
@@ -193,21 +198,21 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		int newcol = 0;
 		for (float row = (!IsInverse ? 0 : prob.rows - 1); (!IsInverse ? row < prob.rows : row >= 0); (!IsInverse ? row++ : row--))
 		{
+			if ((row + newcol * Angle) >= 248 || (col + newcol) > 200)break;
 			if (CanBeIndex.size() < 1 && prob.at<Vec3b>(row, col)[0] == 0)
 			{
 				CanBeIndex.push_back(QVector2D(col, row));
 				newcol++;
 				row = (!IsInverse ? row + 20 : row - 20);
 			}
-			else if (CanBeIndex.size() == 1 && (prob.at<Vec3b>((floor)(row + newcol * Angle), col + newcol)[0] == 0 ||
+			else if (CanBeIndex.size() >= 1 && (prob.at<Vec3b>((floor)(row + newcol * Angle), col + newcol)[0] == 0 ||
 				prob.at<Vec3b>((floor)(row + newcol * Angle) - 1, col + newcol)[0] == 0 ||
 				prob.at<Vec3b>((ceil)(row + newcol * Angle), col + newcol)[0] == 0 ||
 				prob.at<Vec3b>((ceil)(row + newcol * Angle) + 1, col + newcol)[0] == 0)) {
-				if ((row + newcol * Angle) >= 248 || (col + newcol) > 200)break;
 				CanBeIndex.push_back(QVector2D(col + newcol, (int)(row + newcol*Angle)));
 				row = (!IsInverse ? row + 20 : row - 20);
 			}
-			else if (CanBeIndex.size() == 1)
+			else if (CanBeIndex.size() >= 1)
 			{
 				newcol++;
 			}
@@ -329,8 +334,8 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	DepthTexture = new QOpenGLTexture(Mat2QImage(ColorMapDepth, CV_8UC3));
 	#pragma endregion
 	#pragma region UI Max Min Value
-	MaxValueLabel->setText(QString::number(DistanceMax));
-	MinValueLabel->setText(QString::number(DistanceMin));
+	//MaxValueLabel->setText(QString::number(DistanceMax));
+	//MinValueLabel->setText(QString::number(DistanceMin));
 	#pragma endregion
 	
 
@@ -348,7 +353,13 @@ float OpenGLWidget::GetDistanceValue(int index)
 }
 void OpenGLWidget::GetSliderValue(float value)
 {
-	SliderValue = ((value / 250.0f) - 0.5f) * 2.0f;
+	CheckIsNonZeroValue = false;
+	for (int i = 0; i < nonZeroIndex.size(); i++)
+		if (value == WorldPosMeat[i].x()) {
+			CheckIsNonZeroValue = true;
+			SliderValue = i;
+			break;
+		}
 }
 QString OpenGLWidget::GetColorMapValue(int value) {
 	QString rate = 0;
@@ -359,6 +370,16 @@ QString OpenGLWidget::GetColorMapValue(int value) {
 		}
 	}
 	return rate;
+}
+int OpenGLWidget::GetNowSliderValue(int value) {
+	int num = -1;
+	for (int i = 0; i < nonZeroIndex.size(); i++) {
+		if (nonZeroIndex[i] + 60 == value) {
+			num = WorldPosMeat[i].y();
+			break;
+		}
+	}
+	return num;
 }
 
 // Helper Function

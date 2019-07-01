@@ -46,10 +46,11 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 外部呼叫函式
 	//////////////////////////////////////////////////////////////////////////
-	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D, QLabel*, QLabel*);
+	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D);
 	float GetDistanceValue(int);
 	void GetSliderValue(float);
 	QString GetColorMapValue(int);
+	int GetNowSliderValue(int);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -64,6 +65,7 @@ private:
 	QOpenGLTexture			*DepthTexture = NULL;
 	float					SliderValue = ((60.0f / 250.0f) - 0.5f) * 2.0f;		// Slider現在的位置(-1 ~ 1)
 	void					DrawSlider();										// 畫Slider
+	bool					CheckIsNonZeroValue = false;
 
 	//////////////////////////////////////////////////////////////////////////
 	// 校正到世界座標所需要的東西

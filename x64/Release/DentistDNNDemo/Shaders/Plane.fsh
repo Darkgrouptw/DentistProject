@@ -29,6 +29,6 @@ void main()
 	FragColor = Ori;
 	if (GrayScaleValue(Prob) > Threshold)
 		FragColor += Prob;
-	if (GrayScaleValue(Color) > Threshold)
-		FragColor.rgb = FragColor.rgb * 0.8f + Color.rgb * 0.2f;
+	//if (GrayScaleValue(Color) > Threshold)
+	//	FragColor.rgb = FragColor.rgb * 0.8f + Color.rgb * 0.2f;
 }

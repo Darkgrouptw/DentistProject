@@ -22,8 +22,8 @@ DentistDNNDemo::DentistDNNDemo(QWidget *parent)
 	connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(TcpreadyRead()));
 	#pragma endregion
 	#pragma region UI 初始化
-	QImage img("./Images/ColorMap.png");
-	ui.ColorMapLabel->setPixmap(QPixmap::fromImage(img));
+	//QImage img("./Images/ColorMap.png");
+	//ui.ColorMapLabel->setPixmap(QPixmap::fromImage(img));
 	#pragma endregion
 }
 
@@ -31,7 +31,13 @@ DentistDNNDemo::DentistDNNDemo(QWidget *parent)
 void DentistDNNDemo::SliderValueChange(int)
 {
 	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
-	ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+	//ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+	ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+	if (ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) == -1)ui.ColorValue->setVisible(false);
+	else {
+		ui.ColorValue->setVisible(true);
+		ui.ColorValue->setGeometry(ui.slidingBar->value() * 2, ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) * 2, 91, 51);
+	}
 	ui.DisplayPanel->update();
 }
 
@@ -71,11 +77,17 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 		Mat mat = imread((TestFilePath + "Smooth/" + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
 		FullMat.push_back(mat);
 	}
-	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR, ui.ColorMapMaxValue, ui.ColorMapMinValue);
+	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR);
 	#pragma endregion
 	#pragma region 刷新
 	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
-	ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+	//ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+	ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+	if (ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) == -1)ui.ColorValue->setVisible(false);
+	else {
+		ui.ColorValue->setVisible(true);
+		ui.ColorValue->setGeometry(ui.slidingBar->value() * 2, ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) * 2, 91, 51);
+	}
 	ui.DisplayPanel->update();
 	#pragma endregion
 }
