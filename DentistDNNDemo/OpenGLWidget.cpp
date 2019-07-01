@@ -178,7 +178,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	double U11 = m.nu11 / m.m00;
 	double Angle = 0.5 * atan(2 * U11 / (U20 - U11));
 	Angle = (!IsInverse ? Angle + 3.1415926 / 2 : Angle - 3.1415926 / 2);			// 由於坐標系不一樣，需要做一個轉換
-	cout << Angle << endl;															// 是徑度喔
+	//cout << Angle << endl;															// 是徑度喔
 	#pragma endregion
 	#pragma region 算出牙肉 & 齒槽骨的位置(Pixel)
 	MeatBounding.clear();
@@ -191,21 +191,21 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	{
 		QVector<QVector2D> CanBeIndex;
 		int newcol = 0;
-		for (float row = 0; row < prob.rows; row++)
+		for (float row = (!IsInverse ? 0 : prob.rows - 1); (!IsInverse ? row < prob.rows : row >= 0); (!IsInverse ? row++ : row--))
 		{
 			if (CanBeIndex.size() < 1 && prob.at<Vec3b>(row, col)[0] == 0)
 			{
 				CanBeIndex.push_back(QVector2D(col, row));
 				newcol++;
-				row += 50;
+				row = (!IsInverse ? row + 20 : row - 20);
 			}
-			else if (CanBeIndex.size() >= 1 && (prob.at<Vec3b>((floor)(row + newcol * Angle), col + newcol)[0] == 0 ||
+			else if (CanBeIndex.size() == 1 && (prob.at<Vec3b>((floor)(row + newcol * Angle), col + newcol)[0] == 0 ||
 				prob.at<Vec3b>((floor)(row + newcol * Angle) - 1, col + newcol)[0] == 0 ||
 				prob.at<Vec3b>((ceil)(row + newcol * Angle), col + newcol)[0] == 0 ||
 				prob.at<Vec3b>((ceil)(row + newcol * Angle) + 1, col + newcol)[0] == 0)) {
 				if ((row + newcol * Angle) >= 248 || (col + newcol) > 200)break;
 				CanBeIndex.push_back(QVector2D(col + newcol, (int)(row + newcol*Angle)));
-				row += 50;
+				row = (!IsInverse ? row + 20 : row - 20);
 			}
 			else if (CanBeIndex.size() == 1)
 			{
@@ -223,7 +223,6 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 				//BoneBounding.push_back(MeanIndex);
 				WorldPosMeat.push_back(BoneIndex);
 				WorldPosBone.push_back(MeanIndex);
-
 			}
 			else
 			{
@@ -232,19 +231,9 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 				WorldPosMeat.push_back(MeanIndex);
 				WorldPosBone.push_back(BoneIndex);
 			}
-
 			nonZeroIndex.push_back(col - 60);
 		}
-		
 	}
-
-	for (int i = 0; i < nonZeroIndex.size(); i++)
-	{
-		cout << nonZeroIndex[i] << endl;
-		cout << WorldPosMeat[i].x() << " " << WorldPosMeat[i].y() << endl;
-		cout << WorldPosBone[i].x() << " " << WorldPosBone[i].y() << endl;
-	}
-
 
 	#pragma endregion
 	#pragma region 對應到 World Coordinate
