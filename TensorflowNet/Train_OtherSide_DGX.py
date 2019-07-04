@@ -68,7 +68,6 @@ DataPath = [
 ]
 
 print("ValidTest")
-assert False
 for i in range(len(DataPath)):
     # 原始
     # tempInputPath = DataPath[i] + "/OtherSide.png"

@@ -48,8 +48,6 @@ DataPath = [
 ]
 
 print("ValidTest")
-assert False
-
 ErrorFileList = []
 for i in range(len(DataPath)):
     tempInputArray = []
