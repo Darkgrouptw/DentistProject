@@ -8,8 +8,6 @@ import os
 lrArray = [1e-4]
 kernelSizeArray = [5, 7]
 
-print("ValidTest")
-
 StartIndex = 60
 EndIndex = 200
 
@@ -48,6 +46,9 @@ DataPath = [
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone7_slim",
     # "E:/DentistData/NetworkData/2019.03.05 ToothBone8_slim"
 ]
+
+print("ValidTest")
+assert False
 
 ErrorFileList = []
 for i in range(len(DataPath)):

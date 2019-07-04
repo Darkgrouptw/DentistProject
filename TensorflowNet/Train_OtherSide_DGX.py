@@ -2,7 +2,6 @@ from Network.Network_Prob import Network_Prob
 from DataManager import DataManager_OtherSide
 import os
 
-print("ValidTest")
 
 # 參數
 # lrArray = [1e-2, 5e-3]
@@ -68,6 +67,8 @@ DataPath = [
     # "E:/DentistData/NetworkData/2019.04.15 DONG41",
 ]
 
+print("ValidTest")
+assert False
 for i in range(len(DataPath)):
     # 原始
     # tempInputPath = DataPath[i] + "/OtherSide.png"
