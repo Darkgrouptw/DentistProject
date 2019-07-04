@@ -2,6 +2,8 @@ from Network.Network_Prob import Network_Prob
 from DataManager import DataManager_OtherSide
 import os
 
+print("ValidTest")
+
 # 參數
 # lrArray = [1e-2, 5e-3]
 # kernelSizeArray = [3, 5, 7, 9]

@@ -8,6 +8,7 @@ import os
 lrArray = [1e-4]
 kernelSizeArray = [5, 7]
 
+print("ValidTest")
 
 StartIndex = 60
 EndIndex = 200
