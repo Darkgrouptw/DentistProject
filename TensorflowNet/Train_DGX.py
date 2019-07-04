@@ -16,12 +16,21 @@ EndIndex = 200
 InputFileList = []
 LabeledFileList = []
 DataPath = [
-    "/home/Dark/NetworkData/2019.01.08 ToothBone1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone2",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone3.1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone3.2",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone7.1",
-    "/home/Dark/NetworkData/2019.01.08 ToothBone8.1",
+    # DGX Trainning
+    # "/home/Dark/NetworkData/2019.01.08 ToothBone1",
+    # "/home/Dark/NetworkData/2019.01.08 ToothBone2",
+    # "/home/Dark/NetworkData/2019.01.08 ToothBone3.1",
+    # "/home/Dark/NetworkData/2019.01.08 ToothBone3.2",
+    # "/home/Dark/NetworkData/2019.01.08 ToothBone7.1",
+    # "/home/Dark/NetworkData/2019.01.08 ToothBone8.1",
+
+    # Valid
+    "/home/Dark/NetworkData/2019.07.03_ValidData/31_slim",
+    "/home/Dark/NetworkData/2019.07.03_ValidData/32_slim",
+    "/home/Dark/NetworkData/2019.07.03_ValidData/41_slim",
+    "/home/Dark/NetworkData/2019.07.03_ValidData/42_slim",
+    "/home/Dark/NetworkData/2019.07.03_ValidData/43_slim",
+
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
