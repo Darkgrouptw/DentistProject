@@ -16,11 +16,11 @@ LabeledFileList = []
 # Ubuntu => /home/Dark/NetworkData
 DataPath = [
     # Valid
-    "/home/Dark/NetworkData/31_slim",
-    "/home/Dark/NetworkData/32_slim",
-    "/home/Dark/NetworkData/41_slim",
+    "/home/Dark/NetworkData2/31_slim",
+    "/home/Dark/NetworkData2/32_slim",
+    "/home/Dark/NetworkData2/41_slim",
     # "/home/Dark/NetworkData/42_slim",
-    "/home/Dark/NetworkData/43_slim",
+    "/home/Dark/NetworkData2/43_slim",
 
     # "/home/Dark/NetworkData/2019.01.08 ToothBone1",
     # "/home/Dark/NetworkData/2019.01.08 ToothBone2",
