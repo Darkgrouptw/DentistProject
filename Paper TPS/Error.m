@@ -51,7 +51,7 @@ UnDistort_Predict(:, 2) = UnDistort_Predict_Y;
 figure();
 hold on;
 axis([1, 10, 2, 10]);
-scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'k.');
+scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'ko');
 scatter(Predict(:, 1), Predict(:, 2), 'rx');
 scatter(CalibrationPredict(:, 1), CalibrationPredict(:, 2), 'g*')
 scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'b+');
