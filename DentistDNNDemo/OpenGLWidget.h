@@ -46,11 +46,13 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// 外部呼叫函式
 	//////////////////////////////////////////////////////////////////////////
-	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D);
+	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D, QLabel*, QLabel*);
 	float GetDistanceValue(int);
-	void GetSliderValue(float);
+	void GetSliderValue(int);
 	QString GetColorMapValue(int);
 	int GetNowSliderValue(int);
+
+	void TestWriteDistance(Mat, Mat);
 
 private:
 	//////////////////////////////////////////////////////////////////////////
@@ -78,7 +80,8 @@ private:
 	QVector<float>			DistanceBounding;									// 算一下他們的距離
 	float					DistanceMin, DistanceMax;							// 最大、最小值
 	CalibrationUtility		calibrationTool;
-
+	const int				SmoothRange = 5;									// Smooth 齒槽骨的Range
+	bool IsInverse = false;														// 是否上下顛倒
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function

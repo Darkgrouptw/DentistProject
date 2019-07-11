@@ -67,6 +67,7 @@ private:
 
 	// Read BoundingBoxFunc
 	void ReadBounding(QString);
+	bool showvalueLabel = false;
 
 	// Bounding
 	QVector2D OrginTL = QVector2D(9999, 9999);
@@ -84,6 +85,7 @@ private slots:
 	void TestRenderFunctionEvent();
 	void PredictResultTesting();
 	void ReadRawDataForBorderTest();
+	void TestValidDataEvent();
 
 	//////////////////////////////////////////////////////////////////////////
 	// TCP Function
@@ -91,4 +93,9 @@ private slots:
 	void TcpConnected();
 	void TcpDisConnected();
 	void TcpreadyRead();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Other
+	//////////////////////////////////////////////////////////////////////////
+	void ShowValue();
 };

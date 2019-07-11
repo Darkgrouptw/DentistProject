@@ -84,23 +84,35 @@ void OpenGLWidget::DrawSlider() {
 		glColor3f(1.0, 0.0, 0.0);
 		glLineWidth(5.0f);
 		glBegin(GL_LINES);
-		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
-		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
-		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
-		glVertex3f((WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
 
-		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
-		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
-		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
-		glVertex3f((WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosMeat[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosMeat[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+
+		glVertex3f((WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+		glVertex3f((WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f + 0.05f, -(WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f - 0.05f, 0.0f);
+		glVertex3f((WorldPosBone[SliderValue].y() / 250.0f - 0.5f) * 2.0f - 0.05f, -(WorldPosBone[SliderValue].x() / 250.0f - 0.5f) * 2.0f + 0.05f, 0.0f);
+
 		glEnd();
 	}
 	glColor3f(1.0, 1.0, 1.0);
 }
 
 // 外部呼叫函式
-void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR)
+void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR, QLabel* MaxValueLabel, QLabel* MinValueLabel)
 {
+	#pragma region 生成BoneMap與MeatMap
+	cv::Mat MeatMap = prob.clone();
+	threshold(MeatMap.clone(), MeatMap, 150, 255, THRESH_BINARY);
+	bitwise_not(MeatMap.clone(), MeatMap);
+	thin(MeatMap, false, false, false);
+	cvtColor(MeatMap.clone(), MeatMap, CV_GRAY2BGR);
+
+	cv::Mat BoneMap = cv::Mat::zeros(prob.size(), CV_8UC3);
+	bitwise_not(BoneMap.clone(), BoneMap);
+	#pragma endregion	
 	#pragma region 算方向的結果
 	Mat MomentMeat;
 	#pragma endregion
@@ -148,13 +160,59 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 		//imwrite("E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.2/Smooth/Smooth_" + to_string(i) + ".png", ChannelMat[0]);
 
 		Mat img = GetBoundingBox(ChannelMat[0], TL, BR);
-		
-		LastTLY.append(TL.y() + OriginTL.y());
-		LastBLY.append(BR.y() + OriginTL.y());
+
+		if (TL.y() == 0 && BR.y() == ChannelMat[0].cols) {
+			LastTLY.append(-1);
+			LastBLY.append(-1);
+		}
+		else {
+			LastTLY.append(TL.y() + OriginTL.y());
+			LastBLY.append(BR.y() + OriginTL.y());
+		}
+	}
+	
+	// 內插出沒有齒槽骨區塊
+	for (int i = 1; i < LastBLY.size() - 1; i++) {
+		int tempTL = 0;
+		int tempBL = 0;
+		int num = 0;		// 間隔
+
+		if (LastBLY[i] == -1 && LastTLY[i] == -1) {
+			for (int temp = 1; temp < 20; temp++) {
+				if (LastBLY[i + temp] != -1 && LastTLY[i + temp] != -1) {
+					tempTL = LastTLY[i + temp];
+					tempBL = LastBLY[i + temp];
+					num = temp;
+					break;
+				}
+			}
+			if (num == 0)break;
+			LastTLY[i] = LastTLY[i - 1] + (tempTL - LastTLY[i - 1]) / num;
+			LastBLY[i] = LastBLY[i - 1] + (tempBL - LastBLY[i - 1]) / num;
+		}
+	}
+	
+	// Smooth Point
+	for (int i = 0; i < LastBLY.size(); i++) {
+		if (LastBLY[i] != -1 && LastTLY[i] != -1) {
+			int tempTL = 0;
+			int tempBR = 0;
+			for (int j = -SmoothRange; j <= SmoothRange; j++) {
+				if (((i + j) < 0) || (i + j >= LastBLY.size())) {
+					tempTL += LastTLY[i];
+					tempBR += LastBLY[i];
+					continue;
+				}
+				tempTL += LastTLY[i + j];
+				tempBR += LastBLY[i + j];
+			}
+			LastTLY[i] = tempTL / (SmoothRange * 2 + 1);
+			LastBLY[i] = tempBR / (SmoothRange * 2 + 1);
+		}
 	}
 	#pragma endregion
 	#pragma region 畫上齒槽骨結果
-	bool IsInverse = false;				// 是否上下顛倒
+	IsInverse = false;				// 是否上下顛倒
 	int LastSize = LastTLY.size();
 	if (LastTLY[0] < 125 && LastTLY[LastSize / 2] < 125 && LastTLY[LastSize - 1] < 125)
 		IsInverse = true;
@@ -171,8 +229,10 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 			RightPoint.y = LastBLY[i];
 		}
 
-		if (LastTLY[i - 1] != -1 && LastTLY[i] != -1)
+		if (LastTLY[i - 1] != -1 && LastTLY[i] != -1) {
 			line(prob, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
+			line(BoneMap, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
+		}
 	}
 	#pragma endregion
 	#pragma region 算 Moment (也就是距離的方向)
@@ -181,65 +241,85 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	double U20 = m.nu20 / m.m00;
 	double U02 = m.nu02 / m.m00;
 	double U11 = m.nu11 / m.m00;
-	double Angle = 0.5 * atan(2 * U11 / (U20 - U11));
+	double Angle = 1.5 * 0.5 * atan(2 * U11 / (U20 - U11));
 	Angle = (!IsInverse ? Angle + 3.1415926 / 2 : Angle - 3.1415926 / 2);			// 由於坐標系不一樣，需要做一個轉換
 	//cout << Angle << endl;															// 是徑度喔
+	float slope = tan(Angle);
+	//cout << slope << endl;
 	#pragma endregion
 	#pragma region 算出牙肉 & 齒槽骨的位置(Pixel)
-	MeatBounding.clear();
-	BoneBounding.clear();
-
 	WorldPosMeat.clear();
 	WorldPosBone.clear();
 
-	for (int col = 60; col <= 200; col++)
-	{
-		QVector<QVector2D> CanBeIndex;
-		int newcol = 0;
-		for (float row = (!IsInverse ? 0 : prob.rows - 1); (!IsInverse ? row < prob.rows : row >= 0); (!IsInverse ? row++ : row--))
-		{
-			if ((row + newcol * Angle) >= 248 || (col + newcol) > 200)break;
-			if (CanBeIndex.size() < 1 && prob.at<Vec3b>(row, col)[0] == 0)
-			{
-				CanBeIndex.push_back(QVector2D(col, row));
-				newcol++;
-				row = (!IsInverse ? row + 20 : row - 20);
-			}
-			else if (CanBeIndex.size() >= 1 && (prob.at<Vec3b>((floor)(row + newcol * Angle), col + newcol)[0] == 0 ||
-				prob.at<Vec3b>((floor)(row + newcol * Angle) - 1, col + newcol)[0] == 0 ||
-				prob.at<Vec3b>((ceil)(row + newcol * Angle), col + newcol)[0] == 0 ||
-				prob.at<Vec3b>((ceil)(row + newcol * Angle) + 1, col + newcol)[0] == 0)) {
-				CanBeIndex.push_back(QVector2D(col + newcol, (int)(row + newcol*Angle)));
-				row = (!IsInverse ? row + 20 : row - 20);
-			}
-			else if (CanBeIndex.size() >= 1)
-			{
-				newcol++;
+	// 算出牙肉所有位置
+	for (int row = 0; row < MeatMap.rows; row++) {
+		//for (int col = 0; col < MeatMap.cols; col++) {
+		for (int col = 60; col <= 200; col++) {
+			if (MeatMap.at<Vec3b>(row, col)[0] == 0 && MeatMap.at<Vec3b>(row, col)[1] == 0 && MeatMap.at<Vec3b>(row, col)[2] == 0) {
+				WorldPosMeat.push_back(QVector2D(row, col));
+				//cout << row << " " << col << endl;
 			}
 		}
-		
-		if (CanBeIndex.size() >= 2)
-		{
-			QVector2D MeanIndex = CanBeIndex[CanBeIndex.size() - 2];
-			QVector2D BoneIndex = CanBeIndex[CanBeIndex.size() - 1];
-			if (IsInverse)
-			{
-				//MeatBounding.push_back(BoneIndex);
-				//BoneBounding.push_back(MeanIndex);
-				WorldPosMeat.push_back(BoneIndex);
-				WorldPosBone.push_back(MeanIndex);
+	}
+	//cout << WorldPosMeat.size() << endl;
+
+	// 牙肉 row += sin(Angle)	的方式前進尋找齒槽骨
+	//		col += cos(Angle)
+	for (int i = 0; i < WorldPosMeat.size(); i++) {
+		int row = WorldPosMeat[i].x();
+		int col = WorldPosMeat[i].y();
+		bool isAdd = false;
+		WorldPosBone.push_back(QVector2D(-1, -1));
+
+		for (int count = 0; count < 250; count++) {
+			int newrow = row + count * sin(Angle);
+			int newcol = col + count * cos(Angle);
+			if (newrow > 248 || newrow < 2 || newcol > 248 || newcol < 2) break;
+
+			if (BoneMap.at<Vec3b>(newrow, newcol)[0] == 0) {
+				WorldPosBone[i] = QVector2D(newrow, newcol);
+				nonZeroIndex.push_back(i);
+				isAdd = true;
+				break;
+			}
+		}
+	}
+	/*
+	// 牙肉往斜率(m)方向前進找齒槽骨
+	for (int i = 0; i < WorldPosMeat.size(); i++) {
+		int row = WorldPosMeat[i].x();
+		int col = WorldPosMeat[i].y();
+		bool isAdd = false;
+
+		for (int j = 0; j < BoneMap.cols; j++) {
+			if (abs(slope) >= 5) {
+				if (!IsInverse ? (row + j) >= 248 : (row - j) <= 2)break;
+				if (BoneMap.at<Vec3b>(!IsInverse ? (row + j) : (row - j), col)[0] == 0) {
+					WorldPosBone.push_back(QVector2D(!IsInverse ? (row + j) : (row - j), col));
+					nonZeroIndex.push_back(i);
+					isAdd = true;
+					break;
+				}
 			}
 			else
 			{
-				//MeatBounding.push_back(MeanIndex);
-				//BoneBounding.push_back(BoneIndex);
-				WorldPosMeat.push_back(MeanIndex);
-				WorldPosBone.push_back(BoneIndex);
+				if (!IsInverse ? (row + j * slope) >= 248 : (row + j * slope) <= 2)break;
+				for (int mRange = -ceil(abs(slope / 2.0f)); mRange <= ceil(abs(slope / 2.0f)); mRange++) {
+					if (BoneMap.at<Vec3b>(floor(row + j * slope) + mRange, col + j)[0] == 0) {
+						WorldPosBone.push_back(QVector2D(floor(row + j * slope) + mRange, col + j));
+						nonZeroIndex.push_back(i);
+						isAdd = true;
+						break;
+					}
+				}
 			}
-			nonZeroIndex.push_back(col - 60);
+			if (isAdd)break;
 		}
+		//cout << row << " " << col << endl;
 	}
-
+	//imwrite("D:/BoneMap.png", BoneMap);
+	//imwrite("D:/MeatMap.png", MeatMap);
+	*/
 	#pragma endregion
 	#pragma region 對應到 World Coordinate
 	// 產生 Array
@@ -254,17 +334,13 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	for (int i = 0; i < nonZeroIndex.size(); i++)
 	{
 		int index = nonZeroIndex[i];
-		//PointData[i][0] = index + 60;
-		//PointData[i][1] = MeatBounding[i];
 
-		//PointData[size + i][0] = index + 60;
-		//PointData[size + i][1] = BoneBounding[i];
+		PointData[i][0] = WorldPosMeat[index].y();
+		PointData[i][1] = WorldPosMeat[index].x();
 
-		PointData[i][0] = WorldPosMeat[i].x();
-		PointData[i][1] = WorldPosMeat[i].y();
-
-		PointData[size + i][0] = WorldPosBone[i].x();
-		PointData[size + i][1] = WorldPosBone[i].y();
+		PointData[size + i][0] = WorldPosBone[index].y();
+		PointData[size + i][1] = WorldPosBone[index].x();
+		//cout << PointData[i][0] << " " << PointData[i][1] << " " << PointData[size + i][0] << " " << PointData[size + i][1] << endl;
 	}
 	float** WorldPos = calibrationTool.Calibrate(PointData, size * 2, 2);
 
@@ -273,8 +349,6 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	#pragma endregion
 	#pragma region 算世界座標的距離
 	DistanceBounding.clear();
-	/*DistanceMax = 0;
-	DistanceMin = 100;*/
 	DistanceMax = 6;
 	DistanceMin = 3;
 	for (int i = 0; i < nonZeroIndex.size(); i++)
@@ -285,47 +359,35 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 
 		BonePoint.setX(WorldPos[size + i][0]);
 		BonePoint.setY(WorldPos[size + i][1]);
-		
+
 		DistanceBounding.push_back(MeatPoint.distanceToPoint(BonePoint));
 		//cout << DistanceBounding[i] << endl;
 
 		if (DistanceBounding[i] > DistanceMax)
 			DistanceMax = DistanceBounding[i];
-		if (DistanceBounding[i] < DistanceMin)
+		if (DistanceBounding[i] < DistanceMin) 
 			DistanceMin = DistanceBounding[i];
 	}
 	#pragma endregion
 	#pragma region 畫上結果
 	Mat ColorMap = imread("./Images/ColorMap.png", IMREAD_COLOR);
 	Mat ColorMapDepth = Mat::zeros(Size(250, 250), CV_8UC3);
+	bitwise_not(prob.clone(), prob);
+
+	// 畫上線的顏色
 	for (int i = 0; i < nonZeroIndex.size(); i++)
 	{
-		cv::Point p1, p2;
-		//p1.x = nonZeroIndex[i] + 60;
-		//p1.y = MeatBounding[i];
-
-		//p2.x = nonZeroIndex[i] + 60;
-		//p2.y = BoneBounding[i];
-
-		p1.x = WorldPosMeat[i].x();
-		p1.y = WorldPosMeat[i].y();
-
-		p2.x = WorldPosBone[i].x();
-		p2.y = WorldPosBone[i].y();
+		int index = nonZeroIndex[i];
 
 		float rate = (DistanceBounding[i] - DistanceMin) / (DistanceMax - DistanceMin);
-		if (0 >= rate)
-			rate = 0;
-		if (1 <= rate)
-			rate = 1;
-		//cout << rate << endl;
+		if (0 >= rate) rate = 0;
+		if (1 <= rate) rate = 1;
 
 		int GetRowIndex = ColorMap.rows * (1 - rate);
 		int GetColIndex = ColorMap.cols * 0.5;
-		Scalar color = ColorMap.at<Vec3b>(GetRowIndex, GetColIndex);
-		line(ColorMapDepth, p1, p2, color);
+		prob.at<Vec3b>(WorldPosMeat[index].x(), WorldPosMeat[index].y()) = ColorMap.at<Vec3b>(GetRowIndex, GetColIndex);
 	}
-	bitwise_not(prob.clone(), prob);
+	//imwrite("D:/res.png", prob);
 	#pragma endregion
 	#pragma region 轉成 QOpenGLTexture
 	// 轉 QOpenGLtexture
@@ -334,12 +396,9 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	DepthTexture = new QOpenGLTexture(Mat2QImage(ColorMapDepth, CV_8UC3));
 	#pragma endregion
 	#pragma region UI Max Min Value
-	//MaxValueLabel->setText(QString::number(DistanceMax));
-	//MinValueLabel->setText(QString::number(DistanceMin));
+	MaxValueLabel->setText(QString::number(DistanceMax));
+	MinValueLabel->setText(QString::number(DistanceMin));
 	#pragma endregion
-	
-
-
 }
 float OpenGLWidget::GetDistanceValue(int index)
 {
@@ -351,21 +410,26 @@ float OpenGLWidget::GetDistanceValue(int index)
 	return 10;
 	#pragma endregion
 }
-void OpenGLWidget::GetSliderValue(float value)
+void OpenGLWidget::GetSliderValue(int value)
 {
 	CheckIsNonZeroValue = false;
-	for (int i = 0; i < nonZeroIndex.size(); i++)
-		if (value == WorldPosMeat[i].x()) {
+	for (int i = 0; i < nonZeroIndex.size(); i++) {
+		int index = nonZeroIndex[i];
+
+		if (value == WorldPosMeat[index].y()) {
 			CheckIsNonZeroValue = true;
-			SliderValue = i;
+			SliderValue = index;
 			break;
 		}
+	}
 }
 QString OpenGLWidget::GetColorMapValue(int value) {
 	QString rate = 0;
 	for (int i = 0; i < nonZeroIndex.size(); i++) {
-		if (nonZeroIndex[i] + 60 == value) {
-			rate = QString::fromStdString(to_string(DistanceBounding[i]));
+		int index = nonZeroIndex[i];
+
+		if (value == WorldPosMeat[index].y()) {
+			rate = QString::fromStdString(to_string(DistanceBounding[i] - 0.5f));
 			break;
 		}
 	}
@@ -374,13 +438,112 @@ QString OpenGLWidget::GetColorMapValue(int value) {
 int OpenGLWidget::GetNowSliderValue(int value) {
 	int num = -1;
 	for (int i = 0; i < nonZeroIndex.size(); i++) {
-		if (nonZeroIndex[i] + 60 == value) {
-			num = WorldPosMeat[i].y();
+		int index = nonZeroIndex[i];
+
+		if (value == WorldPosMeat[index].y()) {
+			num = WorldPosMeat[i].x();
 			break;
 		}
 	}
 	return num;
 }
+
+void OpenGLWidget::TestWriteDistance(Mat Org, Mat Prob)
+{
+	const int needlerow = 92;
+	const int needlecol = 121;
+#pragma region 生成VaildMap
+	cv::Mat VaildMap = Prob.clone();
+	threshold(VaildMap.clone(), VaildMap, 150, 255, THRESH_BINARY);
+	bitwise_not(VaildMap.clone(), VaildMap);
+	thin(VaildMap, false, false, false);
+	cvtColor(VaildMap.clone(), VaildMap, CV_GRAY2BGR);
+
+	cvtColor(Org.clone(), Org, CV_GRAY2BGR);
+#pragma endregion	
+#pragma region 將位置放入矩陣
+	QVector<QVector2D> MeatPos;
+	QVector<QVector2D> TestPos;
+
+	 for (int row = 0; row < VaildMap.rows; row++) {
+		 for (int col = 0; col < VaildMap.cols; col++) {
+			 if (VaildMap.at<Vec3b>(row, col)[0] == 0) {
+				 MeatPos.push_back(QVector2D(needlerow, needlecol));
+				 TestPos.push_back(QVector2D(row, col));
+				 //cout << "Meat :" << needlerow << " " << needlecol << endl;
+				 //cout << "Test :" << row << " " << col << endl;
+			 }
+		 }
+	 }
+#pragma endregion	
+#pragma region 對應到 World Coordinate
+	// 產生 Array
+	int size = MeatPos.size();
+	float* _PointData = new float[size * 2 * 2]; // xy, 上下
+	float** PointData = new float*[size * 2];
+	for (int i = 0; i < size * 2; i++)
+		PointData[i] = &_PointData[2 * i];
+	memset(_PointData, 0, sizeof(float) * size * 2 * 2);
+
+	// 把資料塞進去
+	for (int i = 0; i < MeatPos.size(); i++)
+	{
+		PointData[i][0] = MeatPos[i].y();
+		PointData[i][1] = MeatPos[i].x();
+
+		PointData[size + i][0] = TestPos[i].y();
+		PointData[size + i][1] = TestPos[i].x();
+	}
+	float** WorldPos = calibrationTool.Calibrate(PointData, size * 2, 2);
+
+	delete[] _PointData;
+	delete[] PointData;
+#pragma endregion
+#pragma region 算世界座標的距離
+	DistanceBounding.clear();
+	DistanceMax = 6;
+	DistanceMin = 3;
+	QVector<int> CanbeOneMM;
+	QVector<int> CanbeTwoMM;
+
+	for (int i = 0; i < MeatPos.size(); i++)
+	{
+		QVector2D MeatPoint, BonePoint;
+		MeatPoint.setX(WorldPos[i][0]);
+		MeatPoint.setY(WorldPos[i][1]);
+
+		BonePoint.setX(WorldPos[size + i][0]);
+		BonePoint.setY(WorldPos[size + i][1]);
+
+		DistanceBounding.push_back(MeatPoint.distanceToPoint(BonePoint));
+
+		if (DistanceBounding[i] > DistanceMax) DistanceMax = DistanceBounding[i];
+		if (DistanceBounding[i] < DistanceMin) DistanceMin = DistanceBounding[i];
+		//cout << DistanceBounding[i] << endl;
+	}
+
+	vector<float> vecDistance = DistanceBounding.toStdVector();
+	sort(vecDistance.begin(), vecDistance.end());
+	auto const Onemm = std::lower_bound(vecDistance.begin(), vecDistance.end(), 1);
+	auto const Twomm = std::lower_bound(vecDistance.begin(), vecDistance.end(), 2);
+
+	for (int i = 0; i < DistanceBounding.size(); i++) {
+		//cout << DistanceBounding[i] << endl;
+		if (DistanceBounding[i] == *Onemm)CanbeOneMM.push_back(i);
+		if (DistanceBounding[i] == *Twomm)CanbeTwoMM.push_back(i);
+	}
+#pragma endregion
+	for (int i = -3; i <= 3; i++) {
+		Org.at<Vec3b>(TestPos[CanbeOneMM[0]].x() + i, TestPos[CanbeOneMM[0]].y() + i) = Vec3b(255, 255, 255);
+		Org.at<Vec3b>(TestPos[CanbeOneMM[0]].x() - i, TestPos[CanbeOneMM[0]].y() + i) = Vec3b(255, 255, 255);
+
+		Org.at<Vec3b>(TestPos[CanbeTwoMM[0]].x() + i, TestPos[CanbeTwoMM[0]].y() + i) = Vec3b(255, 255, 255);
+		Org.at<Vec3b>(TestPos[CanbeTwoMM[0]].x() - i, TestPos[CanbeTwoMM[0]].y() + i) = Vec3b(255, 255, 255);
+
+	}
+	//imwrite("D:/OtherSideOrg.png", Org);
+}
+
 
 // Helper Function
 QImage OpenGLWidget::Mat2QImage(cv::Mat const& src, int Type)

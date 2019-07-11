@@ -81,12 +81,25 @@
       <string>讀取RawData 跑網路</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="TestValidDataBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>測試ValidData用</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QLabel" name="ColorMapMaxValue">
     <property name="geometry">
      <rect>
       <x>530</x>
-      <y>40</y>
+      <y>30</y>
       <width>47</width>
       <height>12</height>
      </rect>
@@ -101,14 +114,53 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>510</x>
-      <y>160</y>
+      <x>570</x>
+      <y>220</y>
       <width>91</width>
       <height>51</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgba(255, 255, 255,0.5);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="ShowValueBtn">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>40</y>
+      <width>91</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ShowValue</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ColorMapMinValue">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>480</y>
+      <width>47</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ColorMapLabel">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>50</y>
+      <width>21</width>
+      <height>421</height>
+     </rect>
     </property>
     <property name="text">
      <string/>

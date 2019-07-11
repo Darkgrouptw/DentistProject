@@ -12,7 +12,9 @@ DentistDNNDemo::DentistDNNDemo(QWidget *parent)
 	// 測試相關
 	connect(ui.TestRenderingBtn,	SIGNAL(clicked()),			this, SLOT(TestRenderFunctionEvent()));
 	connect(ui.TestReadRawDataBtn,	SIGNAL(clicked()),			this, SLOT(PredictResultTesting()));
-	
+	connect(ui.TestValidDataBtn,	SIGNAL(clicked()),			this, SLOT(TestValidDataEvent()));
+	connect(ui.ShowValueBtn,		SIGNAL(clicked()),			this, SLOT(ShowValue()));
+
 	#pragma endregion
 	#pragma region TcpNetwork
 	tcpSocket = new QTcpSocket(this);
@@ -22,21 +24,29 @@ DentistDNNDemo::DentistDNNDemo(QWidget *parent)
 	connect(tcpSocket, SIGNAL(readyRead()), this, SLOT(TcpreadyRead()));
 	#pragma endregion
 	#pragma region UI 初始化
-	//QImage img("./Images/ColorMap.png");
-	//ui.ColorMapLabel->setPixmap(QPixmap::fromImage(img));
+	QImage img("./Images/ColorMap.png");
+	ui.ColorMapLabel->setPixmap(QPixmap::fromImage(img));
 	#pragma endregion
 }
 
 // 主要功能
 void DentistDNNDemo::SliderValueChange(int)
 {
+
 	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
 	//ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
-	ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
-	if (ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) == -1)ui.ColorValue->setVisible(false);
-	else {
-		ui.ColorValue->setVisible(true);
-		ui.ColorValue->setGeometry(ui.slidingBar->value() * 2, ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) * 2, 91, 51);
+	
+	if (showvalueLabel) {
+		ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+		if (ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) == -1)ui.ColorValue->setVisible(false);
+		else {
+			ui.ColorValue->setVisible(true);
+			ui.ColorValue->setGeometry(ui.slidingBar->value() * 2, ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) * 2, 91, 51);
+		}
+	}
+	else
+	{
+		ui.ColorValue->setVisible(false);
 	}
 	ui.DisplayPanel->update();
 }
@@ -52,8 +62,12 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 7.1/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 7.2/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 8.1/";
+	QString TestFilePath = "Z:/2019.07.07-AfterSmooth/31_slim/";
+	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/32_slim/";
+	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/41_slim/";
+	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/43_slim/";
 
-	QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 1/";
+	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 1/";
 	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 2/";
 	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.1/";
 	//QString TestFilePath = "E:/DentistData/2019.06.21-AfterSmooth/TOOTH bone 3.2/";
@@ -77,16 +91,22 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 		Mat mat = imread((TestFilePath + "Smooth/" + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
 		FullMat.push_back(mat);
 	}
-	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR);
+	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR, ui.ColorMapMaxValue, ui.ColorMapMinValue);
 	#pragma endregion
 	#pragma region 刷新
 	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
 	//ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
-	ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
-	if (ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) == -1)ui.ColorValue->setVisible(false);
-	else {
-		ui.ColorValue->setVisible(true);
-		ui.ColorValue->setGeometry(ui.slidingBar->value() * 2, ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) * 2, 91, 51);
+	if (showvalueLabel) {
+		ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
+		if (ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) == -1)ui.ColorValue->setVisible(false);
+		else {
+			ui.ColorValue->setVisible(true);
+			ui.ColorValue->setGeometry(ui.slidingBar->value() * 2, ui.DisplayPanel->GetNowSliderValue(ui.slidingBar->value()) * 2, 91, 51);
+		}
+	}
+	else
+	{
+		ui.ColorValue->setVisible(false);
 	}
 	ui.DisplayPanel->update();
 	#pragma endregion
@@ -146,8 +166,17 @@ void DentistDNNDemo::ReadBounding(QString FileName) {
 	#pragma endregion
 }
 
-void DentistDNNDemo::PredictResultTesting() {
+void DentistDNNDemo::TestValidDataEvent() {
+	QString OtherSidePath_Predict = "Z:/NetworkData/2019.07.03_ValidData/31-1_slim/OtherSideValid.png";
+	QString OtherSidePath_Org = "Z:/NetworkData/2019.07.03_ValidData/31-1_slim/OtherSideEdit.png";
 
+	Mat PredictImg = imread(OtherSidePath_Predict.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
+	Mat OrgImg = imread(OtherSidePath_Org.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
+
+	((OpenGLWidget*)(ui.DisplayPanel))->TestWriteDistance(OrgImg, PredictImg);
+}
+
+void DentistDNNDemo::PredictResultTesting() {
 	// 1. 先讀 Data
 	ReadRawDataForBorderTest();
 
@@ -322,4 +351,12 @@ void DentistDNNDemo::ReadRawDataForBorderTest()
 			return;
 		}
 	}
+}
+
+
+void DentistDNNDemo::ShowValue() {
+	showvalueLabel = !showvalueLabel;
+	SliderValueChange(ui.slidingBar->value());
+	ui.ColorValue->setVisible(showvalueLabel);
+	ui.DisplayPanel->update();
 }

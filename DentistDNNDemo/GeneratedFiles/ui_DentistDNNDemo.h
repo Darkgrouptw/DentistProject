@@ -33,10 +33,12 @@ public:
     QGroupBox *groupBox;
     QPushButton *TestRenderingBtn;
     QPushButton *TestReadRawDataBtn;
-    QLabel *ColorMapLabel;
+    QPushButton *TestValidDataBtn;
     QLabel *ColorMapMaxValue;
+    QLabel *ColorValue;
+    QPushButton *ShowValueBtn;
     QLabel *ColorMapMinValue;
-    QLabel *ColorMapCurrentValue;
+    QLabel *ColorMapLabel;
 
     void setupUi(QMainWindow *DentistDNNDemoClass)
     {
@@ -63,18 +65,26 @@ public:
         TestReadRawDataBtn = new QPushButton(groupBox);
         TestReadRawDataBtn->setObjectName(QStringLiteral("TestReadRawDataBtn"));
         TestReadRawDataBtn->setGeometry(QRect(10, 60, 151, 31));
-        ColorMapLabel = new QLabel(centralWidget);
-        ColorMapLabel->setObjectName(QStringLiteral("ColorMapLabel"));
-        ColorMapLabel->setGeometry(QRect(510, 40, 16, 401));
+        TestValidDataBtn = new QPushButton(groupBox);
+        TestValidDataBtn->setObjectName(QStringLiteral("TestValidDataBtn"));
+        TestValidDataBtn->setGeometry(QRect(10, 100, 151, 31));
         ColorMapMaxValue = new QLabel(centralWidget);
         ColorMapMaxValue->setObjectName(QStringLiteral("ColorMapMaxValue"));
-        ColorMapMaxValue->setGeometry(QRect(530, 40, 47, 12));
+        ColorMapMaxValue->setGeometry(QRect(530, 30, 47, 12));
+        ColorValue = new QLabel(centralWidget);
+        ColorValue->setObjectName(QStringLiteral("ColorValue"));
+        ColorValue->setEnabled(true);
+        ColorValue->setGeometry(QRect(570, 220, 91, 51));
+        ColorValue->setStyleSheet(QStringLiteral("background-color: rgba(255, 255, 255,0.5);"));
+        ShowValueBtn = new QPushButton(centralWidget);
+        ShowValueBtn->setObjectName(QStringLiteral("ShowValueBtn"));
+        ShowValueBtn->setGeometry(QRect(570, 40, 91, 41));
         ColorMapMinValue = new QLabel(centralWidget);
         ColorMapMinValue->setObjectName(QStringLiteral("ColorMapMinValue"));
-        ColorMapMinValue->setGeometry(QRect(530, 430, 47, 12));
-        ColorMapCurrentValue = new QLabel(centralWidget);
-        ColorMapCurrentValue->setObjectName(QStringLiteral("ColorMapCurrentValue"));
-        ColorMapCurrentValue->setGeometry(QRect(530, 260, 47, 12));
+        ColorMapMinValue->setGeometry(QRect(530, 480, 47, 12));
+        ColorMapLabel = new QLabel(centralWidget);
+        ColorMapLabel->setObjectName(QStringLiteral("ColorMapLabel"));
+        ColorMapLabel->setGeometry(QRect(520, 50, 21, 421));
         DentistDNNDemoClass->setCentralWidget(centralWidget);
 
         retranslateUi(DentistDNNDemoClass);
@@ -88,10 +98,12 @@ public:
         groupBox->setTitle(QApplication::translate("DentistDNNDemoClass", "Test Function", Q_NULLPTR));
         TestRenderingBtn->setText(QApplication::translate("DentistDNNDemoClass", "\346\270\254\350\251\246 Rendering \347\232\204 Function", Q_NULLPTR));
         TestReadRawDataBtn->setText(QApplication::translate("DentistDNNDemoClass", "\350\256\200\345\217\226RawData \350\267\221\347\266\262\350\267\257", Q_NULLPTR));
-        ColorMapLabel->setText(QString());
+        TestValidDataBtn->setText(QApplication::translate("DentistDNNDemoClass", "\346\270\254\350\251\246ValidData\347\224\250", Q_NULLPTR));
         ColorMapMaxValue->setText(QString());
+        ColorValue->setText(QString());
+        ShowValueBtn->setText(QApplication::translate("DentistDNNDemoClass", "ShowValue", Q_NULLPTR));
         ColorMapMinValue->setText(QString());
-        ColorMapCurrentValue->setText(QString());
+        ColorMapLabel->setText(QString());
     } // retranslateUi
 
 };
