@@ -6,6 +6,7 @@ Calibration = csvread("Calibration.csv");
 Valid_Calibration = csvread("Valid_Calibration.csv");
 UnDistort_Calibration = csvread("UnDistort_Calibration.csv");
 UnDistort_Valid_Calibration = csvread("UnDistort_Valid_Calibration.csv");
+UnDistort = csvread("UnDistort.csv");
 
 % TPS
 TPS_X = tpaps(Calibration(:, 1:2)', Calibration(:, 3)');
@@ -50,11 +51,15 @@ UnDistort_Predict(:, 2) = UnDistort_Predict_Y;
 % 畫出點來
 figure();
 hold on;
-axis([1, 10, 2, 10]);
-scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'ko');
-scatter(Predict(:, 1), Predict(:, 2), 'rx');
-scatter(CalibrationPredict(:, 1), CalibrationPredict(:, 2), 'g*')
-scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'b+');
+%axis([1, 10, 2, 10]);
+axis([0, 250, 0, 250]);
+xlabel('pixel');
+ylabel('pixel');
+%scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'ko');
+scatter(UnDistort(:, 1), UnDistort(:, 2), 'k.');
+%scatter(Predict(:, 1), Predict(:, 2), 'rx');
+%scatter(CalibrationPredict(:, 1), CalibrationPredict(:, 2), 'g*')
+%scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'b+');
 hold off;
 
 % 算 Error 
@@ -62,10 +67,10 @@ Error_Predict = ((Valid_Calibration(:, 3) - Predict(:, 1)).^2 + ((Valid_Calibrat
 Error_Calibration = ((Valid_Calibration(:, 3) - CalibrationPredict(:, 1)).^2 + ((Valid_Calibration(:, 4) - CalibrationPredict(:, 2)).^2)).^0.5;
 Error_UnDistort = ((Valid_Calibration(:, 3) - UnDistort_Predict(:, 1)).^2 + ((Valid_Calibration(:, 4) - UnDistort_Predict(:, 2)).^2)).^0.5;
 
-figure();
-hold on;
-histogram(Error_Predict, 20, "FaceColor",'r');
-histogram(Error_Calibration, 20, "FaceColor", 'g');
-histogram(Error_UnDistort, 20, "FaceColor", 'b');
-hold off;
+% figure();
+% hold on;
+% histogram(Error_Predict, 20, "FaceColor",'r');
+% histogram(Error_Calibration, 20, "FaceColor", 'g');
+% histogram(Error_UnDistort, 20, "FaceColor", 'b');
+% hold off;
 
