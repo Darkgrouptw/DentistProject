@@ -90,6 +90,9 @@
     <ClCompile Include="CudaV2\EigenUtility.cpp">
       <Filter>CudaV2</Filter>
     </ClCompile>
+    <ClCompile Include="PredictWidget.cpp">
+      <Filter>Source Files\Display</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="DentistDNNDemo.ui">
@@ -131,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="GlobalDefine.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PredictWidget.h">
+      <Filter>Header Files\Display</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

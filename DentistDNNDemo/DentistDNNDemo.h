@@ -73,6 +73,9 @@ private:
 	QVector2D OrginTL = QVector2D(9999, 9999);
 	QVector2D OrginBR = QVector2D(-1, -1);
 
+	QVector<Mat> FullMat;
+
+
 private slots:
 	//////////////////////////////////////////////////////////////////////////
 	// 主要功能

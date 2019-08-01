@@ -48,9 +48,14 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	void ProcessImg(Mat, Mat, QVector<Mat>, QVector2D, QVector2D, QLabel*, QLabel*);
 	float GetDistanceValue(int);
-	void GetSliderValue(int);
+	float GetSliderValue(int);
 	QString GetColorMapValue(int);
 	int GetNowSliderValue(int);
+
+	float tempuv = 60.0f/250.0f;
+	float temp;
+	float tempnn;
+
 
 	void TestWriteDistance(Mat, Mat);
 
@@ -90,5 +95,8 @@ private:
 	Mat GetBoundingBox(Mat, QVector2D&, QVector2D&);
 	static bool SortByContourPointSize(BoundingBoxDataStruct&, BoundingBoxDataStruct&);
 	static bool	CompareContourArea(vector<cv::Point>, vector<cv::Point>);		// OpenCV
+
+	cv::Mat MeatMap;
+	cv::Mat BoneMap;
 };
 

@@ -49,20 +49,23 @@ void DentistDNNDemo::SliderValueChange(int)
 		ui.ColorValue->setVisible(false);
 	}
 	ui.DisplayPanel->update();
+
+	ui.PredictPanel->ProcessImg(FullMat[ui.slidingBar->value() - 60], ui.slidingBar->value(), ui.DisplayPanel->GetSliderValue(ui.slidingBar->value()));
+	ui.PredictPanel->update();
 }
 
 // 測試相關函式
 void DentistDNNDemo::TestRenderFunctionEvent()
 {
 	#pragma region Test 路徑
-	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 1/";
+	QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 1/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 2/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 3.1/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 3.2/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 7.1/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 7.2/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 8.1/";
-	QString TestFilePath = "Z:/2019.07.07-AfterSmooth/31_slim/";
+	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/31_slim/";
 	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/32_slim/";
 	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/41_slim/";
 	//QString TestFilePath = "Z:/2019.07.07-AfterSmooth/43_slim/";
@@ -84,7 +87,6 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 	#pragma region 讀圖
 	Mat otherSideMat_Org		= imread(OtherSidePath_Org.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
 	Mat otherSideMat_Predict	= imread(OtherSidePath_Predict.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
-	QVector<Mat> FullMat;
 
 	for (int i = 0; i <= 140; i++)
 	{
@@ -92,6 +94,7 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 		FullMat.push_back(mat);
 	}
 	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR, ui.ColorMapMaxValue, ui.ColorMapMinValue);
+
 	#pragma endregion
 	#pragma region 刷新
 	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
@@ -109,6 +112,10 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 		ui.ColorValue->setVisible(false);
 	}
 	ui.DisplayPanel->update();
+
+
+	ui.PredictPanel->ProcessImg(FullMat[ui.slidingBar->value() - 60], ui.slidingBar->value(), ui.DisplayPanel->GetSliderValue(ui.slidingBar->value()));
+	ui.PredictPanel->update();
 	#pragma endregion
 }
 void DentistDNNDemo::ReadBounding(QString FileName) {

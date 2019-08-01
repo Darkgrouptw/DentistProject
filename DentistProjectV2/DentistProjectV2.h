@@ -136,4 +136,9 @@ private slots:
 	void TcpConnected();
 	void TcpDisConnected();
 	void TcpreadyRead();
+
+
+	void PICMinSlider_Change(int);
+	void PICMaxSlider_Change(int);
+	void SliderReNew();
 };

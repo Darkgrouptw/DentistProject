@@ -13,7 +13,7 @@ DataManager::DataManager(void)
 	prop.SizeY				= 250;
 	prop.SizeZ				= 2048;
 	prop.ShiftValue			= 37 * 4 - 4;
-	prop.K_Step				= 2;
+	prop.K_Step				= 1;
 	prop.CutValue			= 10;
 	#pragma endregion
 

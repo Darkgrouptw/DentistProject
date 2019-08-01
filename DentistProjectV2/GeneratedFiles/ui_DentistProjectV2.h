@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DentistProjectV2.ui'
 **
-** Created by: Qt User Interface Compiler version 5.10.0
+** Created by: Qt User Interface Compiler version 5.9.6
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -108,6 +108,10 @@ public:
     QGroupBox *RenderGroupBox;
     QComboBox *OCTViewDir;
     QLabel *OCTViewDirText;
+    QSlider *PICMinSlider;
+    QSlider *PICMaxSlider;
+    QLabel *PicMinValue;
+    QLabel *PicMaxValue;
 
     void setupUi(QMainWindow *DentistProjectV2Class)
     {
@@ -395,17 +399,40 @@ public:
         RenderGroupBox->setObjectName(QStringLiteral("RenderGroupBox"));
         RenderGroupBox->setGeometry(QRect(1490, 10, 101, 181));
         OCTViewDir = new QComboBox(RenderGroupBox);
-        OCTViewDir->addItem(QString());
         OCTViewDir->setObjectName(QStringLiteral("OCTViewDir"));
         OCTViewDir->setGeometry(QRect(10, 40, 81, 22));
         OCTViewDirText = new QLabel(RenderGroupBox);
         OCTViewDirText->setObjectName(QStringLiteral("OCTViewDirText"));
         OCTViewDirText->setGeometry(QRect(10, 20, 51, 16));
+        PICMinSlider = new QSlider(centralWidget);
+        PICMinSlider->setObjectName(QStringLiteral("PICMinSlider"));
+        PICMinSlider->setEnabled(true);
+        PICMinSlider->setGeometry(QRect(1500, 200, 21, 341));
+        PICMinSlider->setMinimum(0);
+        PICMinSlider->setMaximum(1000);
+        PICMinSlider->setPageStep(1);
+        PICMinSlider->setValue(1);
+        PICMinSlider->setOrientation(Qt::Vertical);
+        PICMaxSlider = new QSlider(centralWidget);
+        PICMaxSlider->setObjectName(QStringLiteral("PICMaxSlider"));
+        PICMaxSlider->setEnabled(true);
+        PICMaxSlider->setGeometry(QRect(1550, 200, 21, 341));
+        PICMaxSlider->setMinimum(0);
+        PICMaxSlider->setMaximum(1000);
+        PICMaxSlider->setPageStep(1);
+        PICMaxSlider->setValue(1000);
+        PICMaxSlider->setOrientation(Qt::Vertical);
+        PicMinValue = new QLabel(centralWidget);
+        PicMinValue->setObjectName(QStringLiteral("PicMinValue"));
+        PicMinValue->setGeometry(QRect(1500, 550, 31, 16));
+        PicMaxValue = new QLabel(centralWidget);
+        PicMaxValue->setObjectName(QStringLiteral("PicMaxValue"));
+        PicMaxValue->setGeometry(QRect(1550, 550, 31, 16));
         DentistProjectV2Class->setCentralWidget(centralWidget);
 
         retranslateUi(DentistProjectV2Class);
 
-        tabWidget->setCurrentIndex(2);
+        tabWidget->setCurrentIndex(3);
         ResetRotationMode->setDefault(false);
         GyroscopeResetToZero->setDefault(false);
 
@@ -415,83 +442,87 @@ public:
 
     void retranslateUi(QMainWindow *DentistProjectV2Class)
     {
-        DentistProjectV2Class->setWindowTitle(QApplication::translate("DentistProjectV2Class", "DentistProjectV2", nullptr));
-        ScanResult->setTitle(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\347\265\220\346\236\234", nullptr));
+        DentistProjectV2Class->setWindowTitle(QApplication::translate("DentistProjectV2Class", "DentistProjectV2", Q_NULLPTR));
+        ScanResult->setTitle(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\347\265\220\346\236\234", Q_NULLPTR));
         ImageResult->setText(QString());
         BorderDetectionResult->setText(QString());
-        ImageResultText->setText(QApplication::translate("DentistProjectV2Class", "OCT \350\275\211\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
-        BorderDetectionResultText->setText(QApplication::translate("DentistProjectV2Class", "\350\231\225\347\220\206\345\256\214 & \346\212\223\345\207\272\351\202\212\347\225\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
-        ScanNum_Min->setText(QApplication::translate("DentistProjectV2Class", "60", nullptr));
-        ScanNum_Max->setText(QApplication::translate("DentistProjectV2Class", "200", nullptr));
-        ScanNum_Value->setText(QApplication::translate("DentistProjectV2Class", "60", nullptr));
-        NetworkResultText->setText(QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\345\210\244\346\226\267\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", nullptr));
+        ImageResultText->setText(QApplication::translate("DentistProjectV2Class", "OCT \350\275\211\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", Q_NULLPTR));
+        BorderDetectionResultText->setText(QApplication::translate("DentistProjectV2Class", "\350\231\225\347\220\206\345\256\214 & \346\212\223\345\207\272\351\202\212\347\225\214\347\232\204\347\265\220\346\236\234\357\274\232", Q_NULLPTR));
+        ScanNum_Min->setText(QApplication::translate("DentistProjectV2Class", "60", Q_NULLPTR));
+        ScanNum_Max->setText(QApplication::translate("DentistProjectV2Class", "200", Q_NULLPTR));
+        ScanNum_Value->setText(QApplication::translate("DentistProjectV2Class", "60", Q_NULLPTR));
+        NetworkResultText->setText(QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\345\210\244\346\226\267\345\256\214\347\232\204\347\265\220\346\236\234\357\274\232", Q_NULLPTR));
         NetworkResult->setText(QString());
-        BLEDeviceBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
-        BtnConnectCOM->setText(QApplication::translate("DentistProjectV2Class", "\351\200\243\347\265\220 COM Port", nullptr));
-        BtnScanBLEDevice->setText(QApplication::translate("DentistProjectV2Class", "\346\220\234\345\260\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
-        BtnConnectBLEDevice->setText(QApplication::translate("DentistProjectV2Class", "\345\273\272\347\253\213\350\227\215\350\212\275\351\200\243\347\267\232", nullptr));
-        BtnSearchCom->setText(QApplication::translate("DentistProjectV2Class", "\346\220\234\345\260\213 COM Port", nullptr));
-        BLEDeviceInfoBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\350\263\207\350\250\212", nullptr));
+        BLEDeviceBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\243\235\347\275\256\350\250\255\345\256\232", Q_NULLPTR));
+        BtnConnectCOM->setText(QApplication::translate("DentistProjectV2Class", "\351\200\243\347\265\220 COM Port", Q_NULLPTR));
+        BtnScanBLEDevice->setText(QApplication::translate("DentistProjectV2Class", "\346\220\234\345\260\213\350\227\215\350\212\275\351\200\243\347\267\232", Q_NULLPTR));
+        BtnConnectBLEDevice->setText(QApplication::translate("DentistProjectV2Class", "\345\273\272\347\253\213\350\227\215\350\212\275\351\200\243\347\267\232", Q_NULLPTR));
+        BtnSearchCom->setText(QApplication::translate("DentistProjectV2Class", "\346\220\234\345\260\213 COM Port", Q_NULLPTR));
+        BLEDeviceInfoBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\350\263\207\350\250\212", Q_NULLPTR));
         EularText->setText(QApplication::translate("DentistProjectV2Class", "\357\274\270\357\274\232 0\n"
 "\357\274\271\357\274\232 0\n"
-"\357\274\272\357\274\232 0", nullptr));
-        BLEStatus->setText(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\347\213\200\346\205\213\357\274\232\346\234\252\351\200\243\346\216\245", nullptr));
-        ResetRotationBox->setTitle(QApplication::translate("DentistProjectV2Class", "Rotation \350\250\255\345\256\232\347\233\270\351\227\234", nullptr));
-        ResetRotationMode->setText(QApplication::translate("DentistProjectV2Class", "Rotation Mode (OFF)", nullptr));
-        GyroscopeResetToZero->setText(QApplication::translate("DentistProjectV2Class", "\344\271\235\350\273\270\346\255\270\351\233\266", nullptr));
-        BLETestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\346\270\254\350\251\246\347\233\270\351\227\234(\351\200\262\351\232\216)", nullptr));
-        PointCloudAlignmentTestBtn->setText(QApplication::translate("DentistProjectV2Class", "\344\271\235\350\273\270\351\273\236\351\233\262\346\213\274\346\216\245\346\270\254\350\251\246", nullptr));
-        BLEConnect_OneBtn->setText(QApplication::translate("DentistProjectV2Class", "\344\270\200    \351\215\265    \350\227\215    \350\212\275    \351\200\243    \347\267\232", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
-        OCTNormalSettingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\345\270\270\347\224\250\350\250\255\345\256\232", nullptr));
-        SaveLocationLabel->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", nullptr));
-        SaveLocationBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\201\270\346\223\207\350\267\257\345\276\221", nullptr));
-        AutoSaveSingleRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\345\226\256\345\274\265 Raw Data", nullptr));
+"\357\274\272\357\274\232 0", Q_NULLPTR));
+        BLEStatus->setText(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\347\213\200\346\205\213\357\274\232\346\234\252\351\200\243\346\216\245", Q_NULLPTR));
+        ResetRotationBox->setTitle(QApplication::translate("DentistProjectV2Class", "Rotation \350\250\255\345\256\232\347\233\270\351\227\234", Q_NULLPTR));
+        ResetRotationMode->setText(QApplication::translate("DentistProjectV2Class", "Rotation Mode (OFF)", Q_NULLPTR));
+        GyroscopeResetToZero->setText(QApplication::translate("DentistProjectV2Class", "\344\271\235\350\273\270\346\255\270\351\233\266", Q_NULLPTR));
+        BLETestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\346\270\254\350\251\246\347\233\270\351\227\234(\351\200\262\351\232\216)", Q_NULLPTR));
+        PointCloudAlignmentTestBtn->setText(QApplication::translate("DentistProjectV2Class", "\344\271\235\350\273\270\351\273\236\351\233\262\346\213\274\346\216\245\346\270\254\350\251\246", Q_NULLPTR));
+        BLEConnect_OneBtn->setText(QApplication::translate("DentistProjectV2Class", "\344\270\200    \351\215\265    \350\227\215    \350\212\275    \351\200\243    \347\267\232", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_Deivce), QApplication::translate("DentistProjectV2Class", "\350\227\215\350\212\275\350\243\235\347\275\256\350\250\255\345\256\232", Q_NULLPTR));
+        OCTNormalSettingBox->setTitle(QApplication::translate("DentistProjectV2Class", "\345\270\270\347\224\250\350\250\255\345\256\232", Q_NULLPTR));
+        SaveLocationLabel->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\350\263\207\346\226\231\347\232\204\350\267\257\345\276\221\357\274\232", Q_NULLPTR));
+        SaveLocationBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\201\270\346\223\207\350\267\257\345\276\221", Q_NULLPTR));
+        AutoSaveSingleRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\345\226\256\345\274\265 Raw Data", Q_NULLPTR));
         ScanButton->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203    \346\217\217    \346\250\241    \345\274\217\n"
-"(End)", nullptr));
-        AutoSaveImageWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\350\275\211\346\210\220\345\275\261\345\203\217\344\270\246\345\204\262\345\255\230\347\265\220\346\236\234", nullptr));
-        AutoSaveMultiRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\347\253\213\351\253\224 Raw Data", nullptr));
-        AutoDeleteShakeData_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\350\207\252\345\213\225\345\210\252\351\231\244\346\231\203\345\213\225\350\263\207\346\226\231", nullptr));
+"(End)", Q_NULLPTR));
+        AutoSaveImageWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\350\275\211\346\210\220\345\275\261\345\203\217\344\270\246\345\204\262\345\255\230\347\265\220\346\236\234", Q_NULLPTR));
+        AutoSaveMultiRawDataWhileScan_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\346\216\203\346\217\217\346\231\202\350\207\252\345\213\225\345\204\262\345\255\230\347\253\213\351\253\224 Raw Data", Q_NULLPTR));
+        AutoDeleteShakeData_CheckBox->setText(QApplication::translate("DentistProjectV2Class", "\350\207\252\345\213\225\345\210\252\351\231\244\346\231\203\345\213\225\350\263\207\346\226\231", Q_NULLPTR));
         ScanOnceButton->setText(QApplication::translate("DentistProjectV2Class", "\345\217\252\346\216\203\346\217\217\344\270\200\345\274\265\n"
-"\346\216\203\345\210\260\344\270\215\345\213\225\347\202\272\346\255\242", nullptr));
-        OCTTestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "OCT \346\270\254\350\251\246\347\233\270\351\227\234 (\351\200\262\351\232\216)", nullptr));
-        RawDataToImage->setText(QApplication::translate("DentistProjectV2Class", "\350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", nullptr));
-        EasyBorderDetect->setText(QApplication::translate("DentistProjectV2Class", "\347\260\241\346\230\223\351\202\212\347\225\214\346\270\254\350\251\246", nullptr));
-        SingleImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\226\256\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
-        SegNetTestButton->setText(QApplication::translate("DentistProjectV2Class", "SegNet \351\240\220\346\270\254", nullptr));
-        BeepSoundTestButton->setText(QApplication::translate("DentistProjectV2Class", "Beep Sound \346\270\254\350\251\246", nullptr));
-        MultiImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\244\232\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", nullptr));
-        SlimLabViewRawData->setText(QApplication::translate("DentistProjectV2Class", "\347\270\256\346\270\233 Labview Data", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistProjectV2Class", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", nullptr));
-        AlignBox->setTitle(QApplication::translate("DentistProjectV2Class", "Align \347\233\270\351\227\234", nullptr));
-        AlignLastTwoPCButton->setText(QApplication::translate("DentistProjectV2Class", "\346\213\274\346\216\245\345\276\214\351\235\242\345\205\251\347\211\207\351\273\236\351\233\262", nullptr));
-        CombineLastTwoPCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\220\210\344\275\265\346\234\200\345\276\214\345\205\251\347\211\207\351\273\236\351\233\262", nullptr));
-        CombineAllPCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\220\210\344\275\265\346\211\200\346\234\211\351\273\236\351\233\262", nullptr));
+"\346\216\203\345\210\260\344\270\215\345\213\225\347\202\272\346\255\242", Q_NULLPTR));
+        OCTTestingBox->setTitle(QApplication::translate("DentistProjectV2Class", "OCT \346\270\254\350\251\246\347\233\270\351\227\234 (\351\200\262\351\232\216)", Q_NULLPTR));
+        RawDataToImage->setText(QApplication::translate("DentistProjectV2Class", "\350\275\211\346\210\220\345\234\226\350\274\270\345\207\272", Q_NULLPTR));
+        EasyBorderDetect->setText(QApplication::translate("DentistProjectV2Class", "\347\260\241\346\230\223\351\202\212\347\225\214\346\270\254\350\251\246", Q_NULLPTR));
+        SingleImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\226\256\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", Q_NULLPTR));
+        SegNetTestButton->setText(QApplication::translate("DentistProjectV2Class", "SegNet \351\240\220\346\270\254", Q_NULLPTR));
+        BeepSoundTestButton->setText(QApplication::translate("DentistProjectV2Class", "Beep Sound \346\270\254\350\251\246", Q_NULLPTR));
+        MultiImageShakeTestButton->setText(QApplication::translate("DentistProjectV2Class", "\345\244\232\345\274\265\346\231\203\345\213\225\345\201\265\346\270\254", Q_NULLPTR));
+        SlimLabViewRawData->setText(QApplication::translate("DentistProjectV2Class", "\347\270\256\346\270\233 Labview Data", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_OCT), QApplication::translate("DentistProjectV2Class", "OCT \350\243\235\347\275\256\350\250\255\345\256\232", Q_NULLPTR));
+        AlignBox->setTitle(QApplication::translate("DentistProjectV2Class", "Align \347\233\270\351\227\234", Q_NULLPTR));
+        AlignLastTwoPCButton->setText(QApplication::translate("DentistProjectV2Class", "\346\213\274\346\216\245\345\276\214\351\235\242\345\205\251\347\211\207\351\273\236\351\233\262", Q_NULLPTR));
+        CombineLastTwoPCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\220\210\344\275\265\346\234\200\345\276\214\345\205\251\347\211\207\351\273\236\351\233\262", Q_NULLPTR));
+        CombineAllPCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\220\210\344\275\265\346\211\200\346\234\211\351\273\236\351\233\262", Q_NULLPTR));
         AlignmentAllPCTest->setText(QApplication::translate("DentistProjectV2Class", "\344\270\200\347\263\273\345\210\227 PointCloud\n"
-"\346\213\274\346\216\245\346\270\254\350\251\246", nullptr));
+"\346\213\274\346\216\245\346\270\254\350\251\246", Q_NULLPTR));
         PassScanDataToPC->setText(QApplication::translate("DentistProjectV2Class", "\344\270\200\347\263\273\345\210\227 RawData\n"
-"\346\216\203\346\217\217\345\234\226\350\275\211\351\273\236\351\233\262", nullptr));
+"\346\216\203\346\217\217\345\234\226\350\275\211\351\273\236\351\233\262", Q_NULLPTR));
         AveragePCErrorTest->setText(QApplication::translate("DentistProjectV2Class", "\345\271\263\345\235\207\345\244\232\347\211\207\351\273\236\351\233\262\350\252\244\345\267\256\n"
-"(\346\270\254\350\251\246\347\224\250)", nullptr));
-        PCInfoBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\350\263\207\350\250\212", nullptr));
-        ChoosePCIndexText->setText(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262Index", nullptr));
-        PCOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\345\204\262\345\255\230\345\222\214\350\256\200\345\217\226", nullptr));
-        LoadPCButton->setText(QApplication::translate("DentistProjectV2Class", "\350\256\200\345\217\226\351\273\236\351\233\262", nullptr));
-        SavePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\351\273\236\351\233\262", nullptr));
-        DeletePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\210\252\351\231\244\351\273\236\351\233\262", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(Tab_PC), QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\346\223\215\344\275\234", nullptr));
-        NetworkDataOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237\350\263\207\346\226\231\347\233\270\351\227\234", nullptr));
-        DataGenerationBtn->setText(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237Trainning\347\232\204\350\263\207\346\226\231", nullptr));
-        NetworkDataTestBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\241\236\347\245\236\347\266\223\347\266\262\350\267\257\350\263\207\346\226\231\346\270\254\350\251\246\347\233\270\351\227\234", nullptr));
-        VolumeRenderingTestBtn->setText(QApplication::translate("DentistProjectV2Class", "Rendering\346\270\254\350\251\246", nullptr));
-        PredictResultTestingBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\240\220\346\270\254\347\265\220\346\236\234", nullptr));
-        tabWidget->setTabText(tabWidget->indexOf(Tab_Network), QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\347\233\270\351\227\234", nullptr));
+"(\346\270\254\350\251\246\347\224\250)", Q_NULLPTR));
+        PCInfoBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\350\263\207\350\250\212", Q_NULLPTR));
+        ChoosePCIndexText->setText(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262Index", Q_NULLPTR));
+        PCOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\345\204\262\345\255\230\345\222\214\350\256\200\345\217\226", Q_NULLPTR));
+        LoadPCButton->setText(QApplication::translate("DentistProjectV2Class", "\350\256\200\345\217\226\351\273\236\351\233\262", Q_NULLPTR));
+        SavePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\204\262\345\255\230\351\273\236\351\233\262", Q_NULLPTR));
+        DeletePCButton->setText(QApplication::translate("DentistProjectV2Class", "\345\210\252\351\231\244\351\273\236\351\233\262", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_PC), QApplication::translate("DentistProjectV2Class", "\351\273\236\351\233\262\346\223\215\344\275\234", Q_NULLPTR));
+        NetworkDataOperationBox->setTitle(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237\350\263\207\346\226\231\347\233\270\351\227\234", Q_NULLPTR));
+        DataGenerationBtn->setText(QApplication::translate("DentistProjectV2Class", "\347\224\242\347\224\237Trainning\347\232\204\350\263\207\346\226\231", Q_NULLPTR));
+        NetworkDataTestBox->setTitle(QApplication::translate("DentistProjectV2Class", "\351\241\236\347\245\236\347\266\223\347\266\262\350\267\257\350\263\207\346\226\231\346\270\254\350\251\246\347\233\270\351\227\234", Q_NULLPTR));
+        VolumeRenderingTestBtn->setText(QApplication::translate("DentistProjectV2Class", "Rendering\346\270\254\350\251\246", Q_NULLPTR));
+        PredictResultTestingBtn->setText(QApplication::translate("DentistProjectV2Class", "\351\240\220\346\270\254\347\265\220\346\236\234", Q_NULLPTR));
+        tabWidget->setTabText(tabWidget->indexOf(Tab_Network), QApplication::translate("DentistProjectV2Class", "\347\266\262\350\267\257\347\233\270\351\227\234", Q_NULLPTR));
         OtherSideResult->setText(QString());
         NetworkResult_OtherSide->setText(QString());
-        RenderGroupBox->setTitle(QApplication::translate("DentistProjectV2Class", "Render\351\201\270\351\240\205", nullptr));
-        OCTViewDir->setItemText(0, QApplication::translate("DentistProjectV2Class", "\347\224\261\344\270\212\345\276\200\344\270\213", nullptr));
-
-        OCTViewDirText->setText(QApplication::translate("DentistProjectV2Class", "OCT\350\246\226\350\247\222", nullptr));
+        RenderGroupBox->setTitle(QApplication::translate("DentistProjectV2Class", "Render\351\201\270\351\240\205", Q_NULLPTR));
+        OCTViewDir->clear();
+        OCTViewDir->insertItems(0, QStringList()
+         << QApplication::translate("DentistProjectV2Class", "\347\224\261\344\270\212\345\276\200\344\270\213", Q_NULLPTR)
+        );
+        OCTViewDirText->setText(QApplication::translate("DentistProjectV2Class", "OCT\350\246\226\350\247\222", Q_NULLPTR));
+        PicMinValue->setText(QApplication::translate("DentistProjectV2Class", "0", Q_NULLPTR));
+        PicMaxValue->setText(QApplication::translate("DentistProjectV2Class", "1000", Q_NULLPTR));
     } // retranslateUi
 
 };

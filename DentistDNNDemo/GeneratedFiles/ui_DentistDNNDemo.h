@@ -21,6 +21,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QWidget>
 #include "openglwidget.h"
+#include "predictwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -39,6 +40,7 @@ public:
     QPushButton *ShowValueBtn;
     QLabel *ColorMapMinValue;
     QLabel *ColorMapLabel;
+    PredictWidget *PredictPanel;
 
     void setupUi(QMainWindow *DentistDNNDemoClass)
     {
@@ -74,17 +76,20 @@ public:
         ColorValue = new QLabel(centralWidget);
         ColorValue->setObjectName(QStringLiteral("ColorValue"));
         ColorValue->setEnabled(true);
-        ColorValue->setGeometry(QRect(570, 220, 91, 51));
+        ColorValue->setGeometry(QRect(1070, 70, 91, 51));
         ColorValue->setStyleSheet(QStringLiteral("background-color: rgba(255, 255, 255,0.5);"));
         ShowValueBtn = new QPushButton(centralWidget);
         ShowValueBtn->setObjectName(QStringLiteral("ShowValueBtn"));
-        ShowValueBtn->setGeometry(QRect(570, 40, 91, 41));
+        ShowValueBtn->setGeometry(QRect(1070, 20, 91, 41));
         ColorMapMinValue = new QLabel(centralWidget);
         ColorMapMinValue->setObjectName(QStringLiteral("ColorMapMinValue"));
         ColorMapMinValue->setGeometry(QRect(530, 480, 47, 12));
         ColorMapLabel = new QLabel(centralWidget);
         ColorMapLabel->setObjectName(QStringLiteral("ColorMapLabel"));
-        ColorMapLabel->setGeometry(QRect(520, 50, 21, 421));
+        ColorMapLabel->setGeometry(QRect(920, 40, 21, 421));
+        PredictPanel = new PredictWidget(centralWidget);
+        PredictPanel->setObjectName(QStringLiteral("PredictPanel"));
+        PredictPanel->setGeometry(QRect(500, 0, 500, 500));
         DentistDNNDemoClass->setCentralWidget(centralWidget);
 
         retranslateUi(DentistDNNDemoClass);

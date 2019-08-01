@@ -134,6 +134,12 @@ public:
 	void NetworkDataToQImage();													// 轉成 QImage
 	void SaveNetworkImage();
 
+	void renewPic();
+	float normalizeMax;
+	float normalizeMin;
+	float PicMaxValue = -9999;
+	float PicMinValue = 9999;
+
 	QTemporaryDir tempDir;														// 暫存的資料夾 (用於 Network)
 
 	//////////////////////////////////////////////////////////////////////////
@@ -261,4 +267,8 @@ private:
 	//////////////////////////////////////////////////////////////////////////
 	QTextCodec *codec = QTextCodec::codecForName("Big5-ETen");
 	QVector3D PanelPointOffset = QVector3D(0, 0, 0);
+
+
+	float* NonNormalizeData = new float[sizeof(float) * 2048 * 250 * 250 / 2];
+
 };

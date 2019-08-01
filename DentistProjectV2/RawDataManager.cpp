@@ -154,6 +154,55 @@ RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
 			buffer.data(), bufferSize,
 			prop.SizeX, prop.SizeY, prop.SizeZ,
 			prop.ShiftValue, prop.K_Step, prop.CutValue);
+		NonNormalizeData = cudaV2.TransfromNonNormalizeData();
+
+		PicMaxValue = -9999;
+		PicMinValue = 9999;
+
+		for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
+			if (NonNormalizeData[i] > PicMaxValue)PicMaxValue = NonNormalizeData[i];
+			if (NonNormalizeData[i] < PicMinValue)PicMinValue = NonNormalizeData[i];
+		}
+
+		normalizeMax = PicMaxValue;
+		normalizeMin = PicMinValue;
+
+		uchar* ImageUCHARData = new uchar[sizeof(uchar) * 2048 * 250 * 250 / 2];
+		for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
+			ImageUCHARData[i] = (uchar)((NonNormalizeData[i] - PicMinValue) / (PicMaxValue - PicMinValue) * 255);
+		}
+
+		if (1) {
+			QFile file("D:/YY.csv");
+			assert(file.open(QIODevice::WriteOnly));
+			cout << "寫入檔案: " << "D:/XX.csv" << endl;
+			// 初始化變數
+			QTextStream ss(&file);
+			//for (int i = 0; i < 1024 * 250; i++) {
+				//for (int zz = 0; zz < 250; zz++) {
+			//		ss << NonNormalizeData[i + zz * 250 * 1024] << ",";
+				//}
+				//ss << endl;
+			//}
+			for (int i = 0; i < 250; i++) {
+				for (int j = 0; j < 1024; j++) {
+					ss << NonNormalizeData[i * 1024 + j + 125 * 250 * 1024] << ",";
+				}
+				ss << endl;
+			}
+			// 關閉檔案
+			file.close();
+			cout << "存檔完成!!" << endl;
+		}
+
+		//Mat img(250, 1024, CV_8U, ImageUCHARData + 60 * 250 * 1024);
+		//cvtColor(img, img, CV_GRAY2BGR);
+		//imshow("Hi", img);
+		//waitKey(0);
+
+		cout << PicMaxValue << " " << PicMinValue << endl;
+		//for (int i = 0; i < 1024; i++) cout << i << " : " << NonNormalizeData[i + 65 * 250 * 1024] << endl;
+
 		return RawDataType::MULTI_DATA_TYPE;
 	}
 }
@@ -1494,4 +1543,43 @@ bool RawDataManager::CompareContourArea(vector<Point> contour1, vector<Point> co
 	double i = fabs(contourArea(Mat(contour1)));
 	double j = fabs(contourArea(Mat(contour2)));
 	return i > j;
+}
+
+
+void RawDataManager::renewPic() {
+
+	ImageResultArray.clear();
+	QImageResultArray.clear();
+
+	vector<Mat> TempMatArray;
+
+	// Normalize
+	uchar* ImageUCHARData = new uchar[sizeof(uchar) * 2048 * 250 * 250 / 2];
+	for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
+
+		if ((NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255 > 255)
+			ImageUCHARData[i] = (uchar)255;
+		else if ((NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255 < 0)
+			ImageUCHARData[i] = (uchar)0;
+		else
+			ImageUCHARData[i] = (uchar)((NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255);
+	}
+
+	// 轉換到 Vector 中
+	for (int i = 0; i < 250; i++) {
+
+		// 根據 Offset 拿圖片
+		Mat img(250, 1024, CV_8U, ImageUCHARData + i * 250 * 1024);
+		cvtColor(img, img, CV_GRAY2BGR);
+
+		// 丟進堆疊
+		TempMatArray.push_back(img);
+	}
+
+	ImageResultArray = QVector<Mat>::fromStdVector(TempMatArray);
+	for (int i = 0; i < ImageResultArray.size(); i++)
+	{
+		QImage tempQImage = Mat2QImage(ImageResultArray[i], CV_8UC3);
+		QImageResultArray.push_back(tempQImage);
+	}
 }

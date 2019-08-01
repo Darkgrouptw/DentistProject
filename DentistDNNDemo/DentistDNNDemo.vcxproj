@@ -125,6 +125,7 @@
     <ClCompile Include="DentistDNNDemo.cpp" />
     <ClCompile Include="OpenGLWidget.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PredictWidget.cpp" />
     <ClCompile Include="PythonModule.cpp" />
     <ClCompile Include="RawDataManager.cpp" />
     <ClCompile Include="zhangsuen.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="DataManager.h" />
     <ClInclude Include="GlobalDefine.h" />
     <ClInclude Include="OpenGLWidget.h" />
+    <ClInclude Include="PredictWidget.h" />
     <ClInclude Include="PythonModule.h" />
     <ClInclude Include="RawDataManager.h" />
     <ClInclude Include="zhangsuen.h" />

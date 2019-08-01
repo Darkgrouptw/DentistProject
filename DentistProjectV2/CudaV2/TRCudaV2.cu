@@ -299,6 +299,22 @@ __global__ static void ShiftFinalData(float* AfterFFTData, float* ShiftData, int
 	ShiftData[id] = AfterFFTData[NewIndex];
 	//ShiftData[id] = AfterFFTData[id];
 }
+__global__ static void GpuDataToCpuData(float* GpuData, float* CpuData, int FinalDataSize) {
+	// 這邊是根據資料的最大最小值，去做 Normalize 資料
+	int id = blockIdx.y * gridDim.x * gridDim.z * blockDim.x +			// Y	=> Y * 250 * (2 * 1024)
+		blockIdx.x * gridDim.z * blockDim.x +							// X	=> X * (2 * 1024)
+		blockIdx.z * blockDim.x +										// Z	=> (Z1 * 1024 + Z2)
+		threadIdx.x;
+
+	// 例外判斷
+	if (id >= FinalDataSize)
+	{
+		printf("Move Data 超出範圍\n");
+		return;
+	}
+
+	CpuData[id] = GpuData[id];
+}
 __global__ static void NormalizeData(float* ShiftData, float MaxValue, float MinValue, int FinalDataSize)
 {
 	// 這邊是根據資料的最大最小值，去做 Normalize 資料
@@ -1467,6 +1483,19 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	time = clock();
 	#endif
 
+	float* CPU_ShiftData;
+	cudaMalloc(&CPU_ShiftData, sizeof(float) * OCTDataSize / 2);		// 因為一半相同，所以去掉了
+	NonNormalizeImage = new float[sizeof(float) * OCTDataSize / 2];
+
+	GpuDataToCpuData << <dim3(SizeX, SizeY, SizeZ / NumThreads / 2), NumThreads >> > (GPU_ShiftData, CPU_ShiftData, OCTDataSize / 2);
+
+	cudaMemcpy(NonNormalizeImage, CPU_ShiftData, sizeof(float) * OCTDataSize / 2, cudaMemcpyDeviceToHost);
+	cudaFree(CPU_ShiftData);
+
+	//TransfromNonNormalizeData(NonNormalizeImage);
+
+	//for (int i = 0; i < 1024; i++)cout << i << " : " << NonNormalizeImage[i] << endl;
+
 	// 算最大值
 	MaxValue = 0;
 	GPU_MaxElement = thrust::max_element(thrust::device, GPU_ShiftData, GPU_ShiftData + OCTDataSize / 2);
@@ -1495,7 +1524,6 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	// 所以這邊先判斷兩個是不是位置一樣 (因為如果整個 array 值都一樣，Min & Max 給的位置都會一樣(以驗證過))
 	assert(MaxValue != MinValue && "FFT後最大最小值一樣，資料有錯誤!!");
 	NormalizeData << <dim3(SizeX, SizeY, SizeZ / NumThreads / 2), NumThreads >> > (GPU_ShiftData, MaxValue, MinValue, OCTDataSize / 2);
-
 	// 結算
 	#ifdef SHOW_TRCUDAV2_DETAIL_TIME
 	time = clock() - time;
@@ -1823,6 +1851,9 @@ bool TRCudaV2::ShakeDetect_Multi(bool UsePreiseThreshold, bool ShowDebugMessage)
 	else if (ShowDebugMessage)
 		cout << "資料量太少!!" << endl;
 	return true;
+}
+float* TRCudaV2::TransfromNonNormalizeData() {
+	return NonNormalizeImage;
 }
 
 //////////////////////////////////////////////////////////////////////////

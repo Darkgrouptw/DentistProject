@@ -6,6 +6,7 @@ in vec2 OutUV;
 uniform sampler2D texture;
 uniform sampler2D probTexture;
 uniform sampler2D colorMapTexture;
+uniform float tempuv;
 
 // ¿é¥X
 out vec4 FragColor;
@@ -27,8 +28,13 @@ void main()
 	
 	// Á`©M
 	FragColor = Ori;
-	if (GrayScaleValue(Prob) > Threshold)
+
+	if (GrayScaleValue(Color) > Threshold)
+		FragColor += Color;
+		
+	if (GrayScaleValue(Prob) > Threshold){
+		if(OutUV.x>tempuv)
+			return;
 		FragColor += Prob;
-	//if (GrayScaleValue(Color) > Threshold)
-	//	FragColor.rgb = FragColor.rgb * 0.8f + Color.rgb * 0.2f;
+	}
 }

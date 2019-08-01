@@ -60,6 +60,9 @@ public:
 	bool ShakeDetect_Single(int*, bool);										// 晃動偵測 (傳入前一張的 Single)	=> True 代表有晃動
 	bool ShakeDetect_Multi(bool, bool);											// 晃動偵測，是否要用較精確的	Threshold => True 代表有晃動
 
+	float* NonNormalizeImage;
+	float* TransfromNonNormalizeData();
+
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 圖片資料

@@ -45,6 +45,13 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	connect(ui.ScanNumSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(ScanNumSlider_Change(int)));
 	connect(UpdateGLTimer,									SIGNAL(timeout()),				this,	SLOT(DisplayPanelUpdate()));
 	connect(ui.OCTViewDir,									SIGNAL(currentIndexChanged(int)),this,	SLOT(OCTViewOptionChange(int)));
+
+	// 測試使用
+	connect(ui.PICMinSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(PICMinSlider_Change(int)));
+	connect(ui.PICMaxSlider,								SIGNAL(valueChanged(int)),		this,	SLOT(PICMaxSlider_Change(int)));
+	connect(ui.PICMinSlider,								SIGNAL(sliderReleased()),		this,	SLOT(SliderReNew()));
+	connect(ui.PICMaxSlider,								SIGNAL(sliderReleased()),		this,	SLOT(SliderReNew()));
+
 	#pragma endregion
 	#pragma region 初始化參數
 	// UI 文字 & Scan Thread
@@ -701,4 +708,40 @@ void DentistProjectV2::OCTViewOptionChange(int)
 {
 	OpenGLWidget* widget = ui.DisplayPanel;
 	widget->OCTViewType = ui.OCTViewDir->currentIndex();
+}
+
+
+void DentistProjectV2::PICMinSlider_Change(int value) {
+	//rawManager.normalizeMin = rawManager.PicMinValue + ((float)value / 100);
+	//rawManager.normalizeMin = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)value + rawManager.PicMinValue;
+	ui.PicMinValue->setText(QString::number(rawManager.normalizeMin));
+}
+void DentistProjectV2::PICMaxSlider_Change(int value) {
+	//rawManager.normalizeMax = rawManager.PicMaxValue - ((float)value / 100);
+	//rawManager.normalizeMax = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)value + rawManager.PicMinValue;
+	ui.PicMaxValue->setText(QString::number(rawManager.normalizeMax));
+}
+void DentistProjectV2::SliderReNew() {
+	rawManager.normalizeMin = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)ui.PicMinValue->text().toInt() + rawManager.PicMinValue;
+	rawManager.normalizeMax = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)ui.PicMaxValue->text().toInt() + rawManager.PicMinValue;
+	rawManager.renewPic();
+	rawManager.ShowImageIndex(ui.ScanNum_Value->text().toInt());
+}
+
+
+vector<Mat> TransfromMatArray(bool SaveBorder = false)
+{
+ 	// 轉換到 Mat
+ 	vector<Mat> ImgArray;
+// 	for (int i = 0; i < 250; i++)
+// 	{
+// 		// 根據 Offset 拿圖片
+// 		Mat img(250, 1024, CV_8U, VolumeData + i * 250 * 1024);
+// 		cvtColor(img, img, CV_GRAY2BGR);
+// 
+// 		// 丟進堆疊
+// 		ImgArray.push_back(img);
+// 	}
+
+ 	return ImgArray;
 }

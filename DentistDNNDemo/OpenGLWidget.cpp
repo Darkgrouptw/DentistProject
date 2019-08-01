@@ -65,6 +65,8 @@ void OpenGLWidget::paintGL()
 		Program->setUniformValue("probTexture", 1);
 		Program->setUniformValue("colorMapTexture", 2);
 
+		Program->setUniformValue("tempuv", tempuv);
+
 		OtherSideTexture->bind(0);
 		ProbTexture->bind(1);
 		DepthTexture->bind(2);
@@ -76,8 +78,48 @@ void OpenGLWidget::paintGL()
 		DepthTexture->release();
 		Program->release();
 
-		DrawSlider();
+		//DrawSlider();
+
+
+
+		glLineWidth(2.0f);
+		glPushMatrix();
+		glBegin(GL_LINES);
+
+		//glColor3f(163.0 / 255.0, 126.0 / 255.0, 204.0 / 255.0);
+		glColor3f(1.0, 0.0, 0.0);
+
+		for (float i = -1.0; i < 1.0; i += 0.1) {
+			glVertex2f(i, -temp);
+			glVertex2f(i + 0.035, -temp);
+		}
+
+		glVertex2f(tempnn+ 0.05, -temp + 0.05);
+		glVertex2f(tempnn- 0.05, -temp- 0.05);
+		glVertex2f(tempnn+ 0.05, -temp- 0.05);
+		glVertex2f(tempnn - 0.05, -temp + 0.05);
+
+
+		
+		glEnd();
+		glPopMatrix();
+
+		glLineWidth(4.0f);
+
+		glPushMatrix();
+		glBegin(GL_LINES);
+
+		glColor3f(250.0 / 255.0, 220.0 / 255.0, 0.0 / 255.0);
+		glVertex2f(tempnn, -1.0);
+		glVertex2f(tempnn, 1.0);
+
+		glEnd();
+		glPopMatrix();
+
+		glColor3f(1.0, 1.0, 1.0);
 	}
+
+
 }
 void OpenGLWidget::DrawSlider() {
 	if (CheckIsNonZeroValue) {
@@ -104,13 +146,13 @@ void OpenGLWidget::DrawSlider() {
 void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVector2D OriginTL, QVector2D OriginBR, QLabel* MaxValueLabel, QLabel* MinValueLabel)
 {
 	#pragma region 生成BoneMap與MeatMap
-	cv::Mat MeatMap = prob.clone();
+	MeatMap = prob.clone();
 	threshold(MeatMap.clone(), MeatMap, 150, 255, THRESH_BINARY);
 	bitwise_not(MeatMap.clone(), MeatMap);
 	thin(MeatMap, false, false, false);
 	cvtColor(MeatMap.clone(), MeatMap, CV_GRAY2BGR);
 
-	cv::Mat BoneMap = cv::Mat::zeros(prob.size(), CV_8UC3);
+	BoneMap = cv::Mat::zeros(prob.size(), CV_8UC3);
 	bitwise_not(BoneMap.clone(), BoneMap);
 	#pragma endregion	
 	#pragma region 算方向的結果
@@ -134,6 +176,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	if (OtherSideTexture != NULL)
 	{
 		delete OtherSideTexture;
+		delete DepthTexture;
 		delete ProbTexture;
 	}
 	#pragma endregion
@@ -385,15 +428,26 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 
 		int GetRowIndex = ColorMap.rows * (1 - rate);
 		int GetColIndex = ColorMap.cols * 0.5;
-		prob.at<Vec3b>(WorldPosMeat[index].x(), WorldPosMeat[index].y()) = ColorMap.at<Vec3b>(GetRowIndex, GetColIndex);
+		//prob.at<Vec3b>(WorldPosMeat[index].x(), WorldPosMeat[index].y()) = ColorMap.at<Vec3b>(GetRowIndex, GetColIndex);
 	}
 	//imwrite("D:/res.png", prob);
 	#pragma endregion
 	#pragma region 轉成 QOpenGLTexture
+
+	bitwise_not(MeatMap.clone(), MeatMap);
+	bitwise_not(BoneMap.clone(), BoneMap);
+
+	for (int row = 0; row < BoneMap.rows; row++) {
+		for (int col = 0; col < BoneMap.cols; col++) {
+			if (BoneMap.at<Vec3b>(row, col) == Vec3b(255, 255, 255))
+				BoneMap.at<Vec3b>(row, col) = Vec3b(204, 126, 163);
+		}
+	}
+
 	// 轉 QOpenGLtexture
 	OtherSideTexture = new QOpenGLTexture(Mat2QImage(otherSide, CV_8UC3));
-	ProbTexture = new QOpenGLTexture(Mat2QImage(prob, CV_8UC3));
-	DepthTexture = new QOpenGLTexture(Mat2QImage(ColorMapDepth, CV_8UC3));
+	ProbTexture = new QOpenGLTexture(Mat2QImage(BoneMap, CV_8UC3));
+	DepthTexture = new QOpenGLTexture(Mat2QImage(MeatMap, CV_8UC3));
 	#pragma endregion
 	#pragma region UI Max Min Value
 	MaxValueLabel->setText(QString::number(DistanceMax));
@@ -410,8 +464,9 @@ float OpenGLWidget::GetDistanceValue(int index)
 	return 10;
 	#pragma endregion
 }
-void OpenGLWidget::GetSliderValue(int value)
+float OpenGLWidget::GetSliderValue(int value)
 {
+	/*
 	CheckIsNonZeroValue = false;
 	for (int i = 0; i < nonZeroIndex.size(); i++) {
 		int index = nonZeroIndex[i];
@@ -422,6 +477,22 @@ void OpenGLWidget::GetSliderValue(int value)
 			break;
 		}
 	}
+	*/
+	
+	for (int row = 0; row < BoneMap.rows; row++)
+		if (BoneMap.at<Vec3b>(row, value) != Vec3b(0, 0, 0))
+			SliderValue = ((row / 250.0f) - 0.5f) * 2.0f;		// Slider現在的位置(-1 ~ 1)
+			//SliderValue = row;
+
+	//cout << SliderValue << endl;
+
+	tempuv = (value / 250.0f);
+	temp = SliderValue;
+	tempnn= ((value / 250.0f) - 0.5f) * 2.0f;
+
+	//cout << tempuv << endl;
+
+	return temp;
 }
 QString OpenGLWidget::GetColorMapValue(int value) {
 	QString rate = 0;
