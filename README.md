@@ -1,8 +1,14 @@
 # Outline
 ---
 * [介紹](#Introduction)
-* [軟體需求](#Prerequisites)
+* [軟體需求](#軟體需求)
 * [如何執行](#Commands)
+
+## 介紹
+---
+此系統主要分成幾個專案
+![系統流程圖(SystemOverview.png)
+
 
 ## 軟體需求
 ---
