@@ -6,9 +6,28 @@
 
 ## 介紹
 ---
-此系統主要分成幾個專案
+以下為系統流程圖
 ![系統流程圖](SystemOverview.png)
-
+而底下有幾個程式：
+1.  DentistDemo
+此專案是 Demo用，將輸入的結果壓縮傳進 DGX Server 裡面
+結果預測之後，跑出結果抓下來，顯示出來
+2.  DentistProjectV2
+主要是所有功能都在裡面
+3. DentistProjectV2_TensorflowNetProcess
+其中 DentistProjectV2 有使用到 Tensorflow Net
+是由此小程式跑出來的結果
+4. DentistRawDataReader
+這裡主要是 RawData 的測試，在Project 一開始的時候用的，基本上後面的功能都在
+DentistProjectV2 裡面都有
+5. Paper TPS
+主要是做 TPS 的運算 (Python)，以及相關表格繪畫
+6. TensorflowNet
+網路相關的 Net(Python)
+7.  Test_DentistDLL
+此專案為測試醫院 OCT(LabelView) 溝通的 DLL 的專案
+8. Test_Python
+此專案為為測試C++與 Python 溝通的測試專案與 class
 
 ## 軟體需求
 ---
