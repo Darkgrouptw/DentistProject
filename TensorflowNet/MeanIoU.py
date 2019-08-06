@@ -4,12 +4,12 @@ from tqdm import tqdm
 import os
 
 DataPath = [
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone3.2",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone7.1",
-    "E:/DentistData/NetworkData/2019.01.08 ToothBone8.1",
+    "E:/DentistData/2019.07.24/data/2019.01.08_ToothBone1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
+    # "E:/DentistData/2019.07.24/data/2019.01.08_ToothBone3.1",
+    # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.2",
+    # "E:/DentistData/2019.07.24/data/2019.01.08_ToothBone7.1",
+    # "E:/DentistData/2019.07.24/data/2019.01.08_ToothBone8.1",
 ]
 StartIndex = 60
 EndIndex = 200
@@ -24,6 +24,7 @@ def GetBoundingBox(img):
     minY = 1024
 
     rows, cols = img.shape[:2]
+    IsFind = False
     for rowIndex in range(rows):
         for colIndex in range(cols):
             # 拿出此點的
@@ -37,6 +38,13 @@ def GetBoundingBox(img):
                     maxX = colIndex
                 elif colIndex < minX:
                     minX = colIndex
+                IsFind = True
+
+    if not IsFind:
+        minX = 0
+        minY = 0
+        maxX = 0
+        maxY = 0
     return [minX, minY, maxX, maxY]
 
 # 算距離
@@ -46,15 +54,17 @@ def Count_IoU(boxA, boxB):
     xB = min(boxA[2], boxB[2])
     yB = min(boxA[3], boxB[3])
 
-    # compute the area of intersection rectangle
-    interArea = (xB - xA + 1) * (yB - yA + 1)
 
-    # compute the area of both the prediction and ground-truth
-    # rectangles
-    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
-    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
-    iou = interArea / float(boxAArea + boxBArea - interArea)
+    # 先算是否有交集
+    AreaA = (boxA[2] - boxA[0]) * (boxA[3] - boxA[1])
+    AreaB = (boxB[2] - boxB[0]) * (boxB[3] - boxB[1])
+    InterArea = (xB - xA) * (yB - yA)                       # 交界的面積
 
+    if InterArea < 0 or (InterArea > AreaA and InterArea > AreaB):
+        iou = 0
+    else:
+        iou = InterArea / float(AreaA + AreaB - InterArea)
+    print(boxA, boxB, AreaA, AreaB, InterArea, iou)
     return iou
 
 # 跑每一個結果
@@ -64,8 +74,8 @@ for i in range(len(DataPath)):
     tempLabeledArray = []
 
     for j in range(StartIndex, EndIndex + 1):
-        tempPredict = DataPath[i] + "/boundingBox_v2/" + str(j) + ".png"            # Predict 位置
-        tempLabeled = DataPath[i] + "/labeled_v2/" + str(j) + ".png"                # Label 位置
+        tempPredict = DataPath[i] + "/Segnetxx/" + str(j) + ".png"            # Predict 位置
+        tempLabeled = DataPath[i] + "/Label/" + str(j) + ".png"                # Label 位置
 
         # IMREAD
         predictImg = cv2.imread(tempPredict)
@@ -77,7 +87,7 @@ for i in range(len(DataPath)):
 
         IoU.append(Count_IoU(predict_Bounding, label_Bounding))
 IoU = np.array(IoU)
-MeanIoU = np.mean(IoU) / IoU.shape[0]
-IoU.append(MeanIoU)
-np.savetxt('IoU.csv', IoU, delimiter='\n')
+MeanIoU = np.mean(IoU)
+# np.append(MeanIoU)
+# np.savetxt('IoU.csv', IoU, delimiter='\n')
 
