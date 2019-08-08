@@ -54,7 +54,7 @@ RawDataManager::~RawDataManager()
 void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 {
 	// 確認是不是有多傳，忘了改的
-	assert(UIPointer.size() == 10 && "UI 對應有問題!!");
+	assert(UIPointer.size() == 12 && "UI 對應有問題!!");
 	ImageResult				= (QLabel*)UIPointer[0];
 	BorderDetectionResult	= (QLabel*)UIPointer[1];
 	NetworkResult			= (QLabel*)UIPointer[2];
@@ -65,12 +65,16 @@ void RawDataManager::SendUIPointer(QVector<QObject*> UIPointer)
 	QSlider* slider			= (QSlider*)UIPointer[3];
 	QPushButton* scanButton = (QPushButton*)UIPointer[4];
 	QLineEdit* savePathText	= (QLineEdit*)UIPointer[5];
-	
+
 	// OpenGL
 	DisplayPanel			= UIPointer[6];
 
 	// 點雲顯示
 	PCIndex					= (QComboBox*)UIPointer[7];
+
+	minValueLabel = (QLabel*)UIPointer[10];
+	maxValueLabel = (QLabel*)UIPointer[11];
+
 
 	Worker->InitUIPointer(slider, scanButton, savePathText);
 }
@@ -167,10 +171,10 @@ RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
 		normalizeMax = PicMaxValue;
 		normalizeMin = PicMinValue;
 
-		uchar* ImageUCHARData = new uchar[sizeof(uchar) * 2048 * 250 * 250 / 2];
-		for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
-			ImageUCHARData[i] = (uchar)((NonNormalizeData[i] - PicMinValue) / (PicMaxValue - PicMinValue) * 255);
-		}
+		//uchar* ImageUCHARData = new uchar[sizeof(uchar) * 2048 * 250 * 250 / 2];
+		//for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
+		//	ImageUCHARData[i] = (uchar)((NonNormalizeData[i] - PicMinValue) / (PicMaxValue - PicMinValue) * 255);
+		//}
 
 		if (1) {
 			QFile file("D:/YY.csv");
@@ -200,6 +204,8 @@ RawDataType RawDataManager::ReadRawDataFromFileV2(QString FileName)
 		//imshow("Hi", img);
 		//waitKey(0);
 
+		minValueLabel->setText(QString::number(PicMinValue));
+		maxValueLabel->setText(QString::number(PicMaxValue));
 		cout << PicMaxValue << " " << PicMinValue << endl;
 		//for (int i = 0; i < 1024; i++) cout << i << " : " << NonNormalizeData[i + 65 * 250 * 1024] << endl;
 
@@ -425,6 +431,8 @@ void RawDataManager::ScanMultiDataFromDeviceV2(QString SaveFileName, bool NeedSa
 }
 void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 {
+
+	
 	#pragma region 開始時間
 	#ifdef SHOW_TRCUDAV2_TRANSFORM_TIME
 	clock_t startT, endT;
@@ -465,7 +473,7 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 		{
 			// 原圖
 			cv::imwrite("Images/OCTImages/origin_v2/" + to_string(i) + ".png", ImageResultArray[i]);
-			
+
 			// Combine 結果圖
 			cv::imwrite("Images/OCTImages/border_v2/" + to_string(i) + ".png", BorderDetectionResultArray[i]);
 		}
@@ -482,6 +490,7 @@ void RawDataManager::TransformToIMG(bool NeedSave_Image = false)
 	cout << "，轉圖檔完成: " << (endT - startT) / (double)(CLOCKS_PER_SEC) << "s" << endl;
 	#endif
 	#pragma endregion
+	
 }
 void RawDataManager::TransformToOtherSideView()
 {
@@ -1553,16 +1562,26 @@ void RawDataManager::renewPic() {
 
 	vector<Mat> TempMatArray;
 
+	float avg125 = 0;
+	for (int i = 250 * 1024 * 125; i < 250 * 1024 * 126; i++) {
+		//cout << NonNormalizeData[i] << endl;
+		avg125 += NonNormalizeData[i];
+	}
+	avg125 = avg125 / (250 * 1024);
+	//cout << avg125 / (250 * 1024) << endl;
+
 	// Normalize
 	uchar* ImageUCHARData = new uchar[sizeof(uchar) * 2048 * 250 * 250 / 2];
 	for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
+		float tempData = (NonNormalizeData[i] - avg125) / (normalizeMax/1.3 - avg125) * 255;
+		//float tempData = NonNormalizeData[i];
 
-		if ((NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255 > 255)
+		if (tempData >= 255)
 			ImageUCHARData[i] = (uchar)255;
-		else if ((NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255 < 0)
+		else if (tempData <= 0)
 			ImageUCHARData[i] = (uchar)0;
 		else
-			ImageUCHARData[i] = (uchar)((NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255);
+			ImageUCHARData[i] = (uchar)tempData;
 	}
 
 	// 轉換到 Vector 中
@@ -1582,4 +1601,14 @@ void RawDataManager::renewPic() {
 		QImage tempQImage = Mat2QImage(ImageResultArray[i], CV_8UC3);
 		QImageResultArray.push_back(tempQImage);
 	}
+}
+
+void RawDataManager::CCSAVE() {
+	for (int i = 0; i < ImageResultArray.size(); i++)
+	{
+		Mat tempImg = ImageResultArray[i].clone();
+		cv::resize(tempImg.clone(), tempImg, cv::Size(480, 360));
+		cv::imwrite("Images/OCTImages/origin_v2/" + to_string(i) + ".png", tempImg);
+	}
+	cout << "存檔完成" << endl;
 }

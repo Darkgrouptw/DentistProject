@@ -215,26 +215,33 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	}
 	
 	// 內插出沒有齒槽骨區塊
-	for (int i = 1; i < LastBLY.size() - 1; i++) {
+	for (int i = 1; i < LastBLY.size(); i++) {
 		int tempTL = 0;
 		int tempBL = 0;
 		int num = 0;		// 間隔
 
 		if (LastBLY[i] == -1 && LastTLY[i] == -1) {
 			for (int temp = 1; temp < 20; temp++) {
-				if (LastBLY[i + temp] != -1 && LastTLY[i + temp] != -1) {
+				if (LastBLY[i + temp] != -1 && LastTLY[i + temp] != -1 && (temp + i) < LastBLY.size()) {
 					tempTL = LastTLY[i + temp];
 					tempBL = LastBLY[i + temp];
 					num = temp;
 					break;
 				}
 			}
-			if (num == 0)break;
-			LastTLY[i] = LastTLY[i - 1] + (tempTL - LastTLY[i - 1]) / num;
-			LastBLY[i] = LastBLY[i - 1] + (tempBL - LastBLY[i - 1]) / num;
+			if (num == 0) {
+				if (LastTLY[i - 1] != -1 && LastBLY[i - 1] != -1) {
+					LastTLY[i] = LastTLY[i - 1];
+					LastBLY[i] = LastBLY[i - 1];
+				}
+			}
+			else {
+				LastTLY[i] = LastTLY[i - 1] + (tempTL - LastTLY[i - 1]) / num;
+				LastBLY[i] = LastBLY[i - 1] + (tempBL - LastBLY[i - 1]) / num;
+			}
 		}
 	}
-	
+
 	// Smooth Point
 	for (int i = 0; i < LastBLY.size(); i++) {
 		if (LastBLY[i] != -1 && LastTLY[i] != -1) {
@@ -277,6 +284,12 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 			line(BoneMap, LeftPoint, RightPoint, Scalar(0, 0, 0), 1);
 		}
 	}
+	//imshow("Bonemap", BoneMap);
+	//waitKey(0);
+	bitwise_not(BoneMap.clone(), BoneMap);
+	imwrite("D:/N.png", BoneMap);
+	bitwise_not(BoneMap.clone(), BoneMap);
+
 	#pragma endregion
 	#pragma region 算 Moment (也就是距離的方向)
 	cv::Moments m = cv::moments(MomentMeat, true);

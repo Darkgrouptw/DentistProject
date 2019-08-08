@@ -135,6 +135,7 @@ public:
 	void SaveNetworkImage();
 
 	void renewPic();
+	void CCSAVE();
 	float normalizeMax;
 	float normalizeMin;
 	float PicMaxValue = -9999;
@@ -247,6 +248,8 @@ private:
 	QLabel*				OtherSideResult;										// TopView 
 	QObject*			DisplayPanel;											// 畫圖的部分
 	QComboBox*			PCIndex;												// 選擇 PC 的 Index
+	QLabel*				maxValueLabel;											// 顯示Raw上下限
+	QLabel*				minValueLabel;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Helper Function

@@ -16,16 +16,20 @@ void PointCloudInfo::ReadFromXYZ(QString FileName)
 	cout << "讀取點雲: " << FileName.toLocal8Bit().toStdString() << endl;
 
 	// 初始化變數
-	float a, b, c;
+	float a, b, c, d, e;
 	QTextStream ss(&file);
 	Points.clear();
 
 	// 點資訊
 	while (!ss.atEnd())
 	{
-		ss >> a >> b >> c;
+		//ss >> a >> b >> c;
+		ss >> a >> b >> c >> d >> e;
 
-		QVector3D p(a, b, c);
+
+		QVector3D p(a / 1000, b / 1000, c / 1000);
+		//QVector3D p(a, b, c);
+
 		Points.push_back(p);
 	}
 	
@@ -47,7 +51,7 @@ void PointCloudInfo::SaveXYZ(QString FileName)
 	for (int i = 0; i < Points.size(); i++)
 	{
 		QVector3D pos = Points[i];
-		ss << pos.x() << " " << pos.y() << " " << pos.z() << endl;
+		ss <<"v "<< pos.x() << " " << pos.y() << " " << pos.z() << endl;
 	}
 
 	// 關閉檔案

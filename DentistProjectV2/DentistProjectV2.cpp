@@ -118,6 +118,10 @@ DentistProjectV2::DentistProjectV2(QWidget *parent) : QMainWindow(parent)
 	objList.push_back(ui.OtherSideResult);
 	objList.push_back(ui.NetworkResult_OtherSide);
 
+	objList.push_back(ui.PicMinValue);
+	objList.push_back(ui.PicMaxValue);
+
+
 	rawManager.SendUIPointer(objList);
 
 	// 傳送 rawManager 到 OpenGL Widget
@@ -266,6 +270,7 @@ void DentistProjectV2::ScanOCTOnceMode()
 // OCT 測試
 void DentistProjectV2::ReadRawDataToImage()
 {
+	/*
 	QString RawFileName = QFileDialog::getOpenFileName(this, codec->toUnicode("RawData 轉圖"), "E:/DentistData/ScanData/", "", nullptr, QFileDialog::DontUseNativeDialog);
 	if (RawFileName != "")
 	{
@@ -296,6 +301,9 @@ void DentistProjectV2::ReadRawDataToImage()
 	// Slider
 	ui.ScanNumSlider->setEnabled(false);
 	ui.ScanNumSlider->setValue(60);
+	*/
+	rawManager.CCSAVE();
+
 }
 void DentistProjectV2::ReadRawDataForBorderTest()
 {
@@ -329,6 +337,7 @@ void DentistProjectV2::ReadRawDataForBorderTest()
 	// Slider
 	ui.ScanNumSlider->setEnabled(false);
 	ui.ScanNumSlider->setValue(60);
+
 }
 void DentistProjectV2::ReadSingleRawDataForShakeTest()
 {
@@ -406,7 +415,8 @@ void DentistProjectV2::PCIndexChangeEvnet(int)
 }
 void DentistProjectV2::ReadPCEvent()
 {
-	QStringList PointCloudFileList = QFileDialog::getOpenFileNames(this, codec->toUnicode("讀取點雲"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	QStringList PointCloudFileList = QFileDialog::getOpenFileNames(this, codec->toUnicode("讀取點雲"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.*)"), nullptr, QFileDialog::DontUseNativeDialog);
+	
 	
 	for (int i = 0; i < PointCloudFileList.count(); i++)
 		if (PointCloudFileList[i] != "")
@@ -424,12 +434,12 @@ void DentistProjectV2::ReadPCEvent()
 }
 void DentistProjectV2::SavePCEvent()
 {
-	QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.xyz)"), nullptr, QFileDialog::DontUseNativeDialog);
+	QString PointCloudFileName = QFileDialog::getSaveFileName(this, codec->toUnicode("邊界測試"), "E:/DentistData/PointCloud/", codec->toUnicode("點雲(*.obj)"), nullptr, QFileDialog::DontUseNativeDialog);
 	if (PointCloudFileName != "")
 	{
 		// 修正副檔名
-		if (!PointCloudFileName.endsWith(".xyz"))
-			PointCloudFileName += ".xyz";
+		if (!PointCloudFileName.endsWith(".obj"))
+			PointCloudFileName += ".obj";
 
 		int index = rawManager.SelectIndex;
 		rawManager.PointCloudArray[index].SaveXYZ(PointCloudFileName);
@@ -722,8 +732,8 @@ void DentistProjectV2::PICMaxSlider_Change(int value) {
 	ui.PicMaxValue->setText(QString::number(rawManager.normalizeMax));
 }
 void DentistProjectV2::SliderReNew() {
-	rawManager.normalizeMin = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)ui.PicMinValue->text().toInt() + rawManager.PicMinValue;
-	rawManager.normalizeMax = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)ui.PicMaxValue->text().toInt() + rawManager.PicMinValue;
+	//rawManager.normalizeMin = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)ui.PicMinValue->text().toInt() + rawManager.PicMinValue;
+	//rawManager.normalizeMax = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)ui.PicMaxValue->text().toInt() + rawManager.PicMinValue;
 	rawManager.renewPic();
 	rawManager.ShowImageIndex(ui.ScanNum_Value->text().toInt());
 }

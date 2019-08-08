@@ -174,6 +174,7 @@ void DentistDNNDemo::ReadBounding(QString FileName) {
 }
 
 void DentistDNNDemo::TestValidDataEvent() {
+	/*
 	QString OtherSidePath_Predict = "Z:/NetworkData/2019.07.03_ValidData/31-1_slim/OtherSideValid.png";
 	QString OtherSidePath_Org = "Z:/NetworkData/2019.07.03_ValidData/31-1_slim/OtherSideEdit.png";
 
@@ -181,6 +182,48 @@ void DentistDNNDemo::TestValidDataEvent() {
 	Mat OrgImg = imread(OtherSidePath_Org.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
 
 	((OpenGLWidget*)(ui.DisplayPanel))->TestWriteDistance(OrgImg, PredictImg);
+	*/
+
+	QString DataPath = "D:/WorkData/2019.08.07/2019.01.08_ToothBone8.1/";
+
+	QString LabelPath = DataPath + "label.png";
+	QString OutPath = DataPath + "our.png";
+	QString SegnetPath = DataPath + "segnet.png";
+
+
+	Mat LabelImg = imread(LabelPath.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
+	Mat OrgImg = imread(OutPath.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
+	Mat SegnetImg = imread(SegnetPath.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
+
+
+	cvtColor(LabelImg.clone(), LabelImg, CV_GRAY2BGR);
+	cvtColor(OrgImg.clone(), OrgImg, CV_GRAY2BGR);
+	cvtColor(SegnetImg.clone(), SegnetImg, CV_GRAY2BGR);
+
+
+	float OrgMSE = 0;
+	float SegnetMSE = 0;
+
+	for (int row = 0; row < LabelImg.rows; row++) {
+		for (int col = 0; col < LabelImg.cols; col++) {
+			OrgMSE += pow((LabelImg.at<Vec3b>(row, col)[0] - OrgImg.at<Vec3b>(row, col)[0]), 2);
+			SegnetMSE += pow((LabelImg.at<Vec3b>(row, col)[0] - SegnetImg.at<Vec3b>(row, col)[0]), 2);
+		}
+	}
+	OrgMSE = OrgMSE / (LabelImg.rows * LabelImg.cols);
+	SegnetMSE = SegnetMSE / (LabelImg.rows * LabelImg.cols);
+
+
+	//cout << OrgMSE << " " << SegnetMSE << endl;
+	//cout << OrgMSE / (LabelImg.rows * LabelImg.cols) << " " << SegnetMSE / (LabelImg.rows * LabelImg.cols) << endl;
+
+
+
+// 	imshow("Label", LabelImg);
+// 	imshow("Our", OrgImg);
+// 	imshow("Segnet", SegnetImg);
+// 	waitKey(0);
+
 }
 
 void DentistDNNDemo::PredictResultTesting() {
