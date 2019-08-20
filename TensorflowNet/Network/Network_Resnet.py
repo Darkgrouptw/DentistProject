@@ -51,8 +51,12 @@ class Network_ResNet:
         layer3 = self._Conv_Block(layer2, layer3_Units, layer3_KernelSize, layer3_PaddingCount, layer3_MaxpoolCount, "Layer3")
         layer4 = self._Conv_Block(layer3, layer3_Units, layer3_KernelSize, layer3_PaddingCount, layer3_MaxpoolCount, "Layer4")
 
+        layerFlatten = flatten(layer3, "Layer_Flatten")
+
+        layer1Dense = self._AddDenseLayer(layerFlatten, 1000, "Layer1Dense")
+
         # 預測
-        self.PredictProb = dense(layer3Dense, self.OutClass, name="PredictProb")
+        self.PredictProb = dense(layer1Dense, self.OutClass, name="PredictProb")
         # self.PredictClassProb = tf.nn.softmax(predict, name= "PredictProb")
         # self.PredictClass = tf.argmax(predictClassProb, name="PredictImg")
         print(self.PredictProb)
@@ -146,10 +150,10 @@ class Network_ResNet:
             combine_act = relu(combine)
         return combine_act
 
-    # def _AddDenseLayer(self, inputTensor, units, name):
-    #     with tf.name_scope(name):
-    #         layer_dense = dense(inputTensor, units, name= name + "_Dense")
-    #         layer_bn = batch_normalization(layer_dense, name= name + "_BN")
-    #         layer_act = relu(layer_bn, name= name + "Relu")
-    #         layer_dropout = dropout(layer_act, name= name + "_DropOut")
-    #     return layer_dropout
+    def _AddDenseLayer(self, inputTensor, units, name):
+        with tf.name_scope(name):
+            layer_dense = dense(inputTensor, units, name= name + "_Dense")
+            layer_bn = batch_normalization(layer_dense, name= name + "_BN")
+            layer_act = relu(layer_bn, name= name + "Relu")
+            layer_dropout = dropout(layer_act, name= name + "_DropOut")
+        return layer_dropout
