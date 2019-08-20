@@ -56,9 +56,9 @@ for i in range(len(DataPath)):
     LabeledFileList.append(tempLabeledArray)
 
 if len(ErrorFileList) > 0:
-    print("以下的檔案有少!!")
     for i in range(len(ErrorFileList)):
         print(ErrorFileList[i])
+    print("以下的檔案有少!!")
     assert False
 DM = DataManager.DataManager(InputFileList, LabeledFileList, 4, 101)
 
