@@ -22,7 +22,7 @@ class Network_ResNet:
         # 初始化網路
         self.InitNetwork(lr, kernelSize)
         cfg = tf.ConfigProto()
-        cfg.gpu_options.per_process_gpu_memory_fraction = 0.5  # 使用50%的
+        cfg.gpu_options.per_process_gpu_memory_fraction = 0.2  # 使用固定%數
         self.Session = tf.Session(config=cfg)
         self.Session.run(tf.global_variables_initializer())
 
