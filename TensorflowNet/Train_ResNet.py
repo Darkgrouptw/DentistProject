@@ -15,11 +15,11 @@ InputFileList = []
 LabeledFileList = []
 DataPath = [
     "/home/Dark/NetworkData/2019.01.08 ToothBone1",
-    # "/home/Dark/NetworkData/2019.01.08 ToothBone2",
-    # "/home/Dark/NetworkData/2019.01.08 ToothBone3.1",
-    # "/home/Dark/NetworkData/2019.01.08 ToothBone3.2",
-    # "/home/Dark/NetworkData/2019.01.08 ToothBone7.1",
-    # "/home/Dark/NetworkData/2019.01.08 ToothBone8.1",
+    "/home/Dark/NetworkData/2019.01.08 ToothBone2",
+    "/home/Dark/NetworkData/2019.01.08 ToothBone3.1",
+    "/home/Dark/NetworkData/2019.01.08 ToothBone3.2",
+    "/home/Dark/NetworkData/2019.01.08 ToothBone7.1",
+    "/home/Dark/NetworkData/2019.01.08 ToothBone8.1",
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone1",
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone2",
     # "E:/DentistData/NetworkData/2019.01.08 ToothBone3.1",
