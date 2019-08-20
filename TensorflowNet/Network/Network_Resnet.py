@@ -33,10 +33,10 @@ class Network_ResNet:
     # 初始化網路
     def InitNetwork(self, lr, kernelSize):
         # 常數設定
-        layer1_Units = 64
-        layer2_Units = 128
-        layer3_Units = 128
-        layer4_Units = 256
+        layer1_Units = 32
+        layer2_Units = 64
+        layer3_Units = 64
+        layer4_Units = 128
         layer1_KernelSize = layer2_KernelSize = layer3_KernelSize = kernelSize
         layer1_PaddingCount = layer2_PaddingCount = layer3_PaddingCount = 1
         layer1_MaxpoolCount = layer2_MaxpoolCount = layer3_MaxpoolCount = 2
