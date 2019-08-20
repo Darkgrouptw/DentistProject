@@ -146,7 +146,7 @@ class Network_ResNet:
             shortcut_bn = batch_normalization(shortcut_conv, name= name + "_ShortCut_BN")
 
             # Add
-            combine = tf.concat([layer_bn2, shortcut_bn])
+            combine = tf.concat([layer_bn2, shortcut_bn], axis=-1)
             combine_act = relu(combine)
         return combine_act
 
