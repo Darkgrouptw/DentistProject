@@ -55,7 +55,7 @@ class Network_ResNet:
 
         layerFlatten = flatten(layer4, "Layer_Flatten")
 
-        layer1Dense = self._AddDenseLayer(layerFlatten, 1000, "Layer1Dense")
+        layer1Dense = self._AddDenseLayer(layerFlatten, 500, "Layer1Dense")
 
         # 預測
         self.PredictProb = dense(layer1Dense, self.OutClass, name="PredictProb")
