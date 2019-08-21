@@ -35,10 +35,10 @@ class Network_ResNet:
     # 初始化網路
     def InitNetwork(self, lr, kernelSize):
         # 常數設定
-        layer1_Units = 16
-        layer2_Units = 32
-        layer3_Units = 32
-        layer4_Units = 64
+        layer1_Units = 8
+        layer2_Units = 16
+        layer3_Units = 16
+        layer4_Units = 32
         layer1_KernelSize = layer2_KernelSize = layer3_KernelSize = kernelSize
         layer1_PaddingCount = layer2_PaddingCount = layer3_PaddingCount = 1
         layer1_MaxpoolCount = layer2_MaxpoolCount = layer3_MaxpoolCount = 2
@@ -51,9 +51,9 @@ class Network_ResNet:
         layer1 = self._Conv_Block(self.InputData, layer1_Units, layer1_KernelSize, layer1_PaddingCount, layer1_MaxpoolCount, "Layer1")
         layer2 = self._Conv_Block(layer1, layer2_Units, layer2_KernelSize, layer2_PaddingCount, layer2_MaxpoolCount, "Layer2")
         layer3 = self._Conv_Block(layer2, layer3_Units, layer3_KernelSize, layer3_PaddingCount, layer3_MaxpoolCount, "Layer3")
-        layer4 = self._Conv_Block(layer3, layer4_Units, layer3_KernelSize, layer3_PaddingCount, layer3_MaxpoolCount, "Layer4")
+        # layer4 = self._Conv_Block(layer3, layer4_Units, layer3_KernelSize, layer3_PaddingCount, layer3_MaxpoolCount, "Layer4")
 
-        layerFlatten = flatten(layer4, "Layer_Flatten")
+        layerFlatten = flatten(layer3, "Layer_Flatten")
 
         layer1Dense = self._AddDenseLayer(layerFlatten, 500, "Layer1Dense")
 
