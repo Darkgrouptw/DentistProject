@@ -134,6 +134,7 @@ public:
 	void NetworkDataToQImage();													// 轉成 QImage
 	void SaveNetworkImage();
 
+	void loadimagetoPC(QQuaternion);
 	void renewPic();
 	void CCSAVE();
 	float normalizeMax;

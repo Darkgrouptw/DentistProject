@@ -236,8 +236,14 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 				}
 			}
 			else {
-				LastTLY[i] = LastTLY[i - 1] + (tempTL - LastTLY[i - 1]) / num;
-				LastBLY[i] = LastBLY[i - 1] + (tempBL - LastBLY[i - 1]) / num;
+				if (LastTLY[i - 1] == -1 && LastBLY[i - 1] == -1) {
+					LastTLY[i] = tempTL;
+					LastBLY[i] = tempBL;
+				}
+				else {
+					LastTLY[i] = LastTLY[i - 1] + (tempTL - LastTLY[i - 1]) / num;
+					LastBLY[i] = LastBLY[i - 1] + (tempBL - LastBLY[i - 1]) / num;
+				}
 			}
 		}
 	}
@@ -259,6 +265,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 			LastTLY[i] = tempTL / (SmoothRange * 2 + 1);
 			LastBLY[i] = tempBR / (SmoothRange * 2 + 1);
 		}
+		cout << i << ": " << LastTLY[i] << " " << LastBLY[i] << endl;
 	}
 	#pragma endregion
 	#pragma region 畫上齒槽骨結果
@@ -310,7 +317,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	// 算出牙肉所有位置
 	for (int row = 0; row < MeatMap.rows; row++) {
 		//for (int col = 0; col < MeatMap.cols; col++) {
-		for (int col = 60; col <= 200; col++) {
+		for (int col = 0; col <= 249; col++) {
 			if (MeatMap.at<Vec3b>(row, col)[0] == 0 && MeatMap.at<Vec3b>(row, col)[1] == 0 && MeatMap.at<Vec3b>(row, col)[2] == 0) {
 				WorldPosMeat.push_back(QVector2D(row, col));
 				//cout << row << " " << col << endl;
@@ -377,6 +384,84 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 	//imwrite("D:/MeatMap.png", MeatMap);
 	*/
 	#pragma endregion
+
+	QVector<QVector2D> labelLoc;
+	QVector<QVector2D> ourLoc;
+	QVector<QVector2D> segnetLoc;
+
+	QString DataPath = "D:/WorkData/2019.08.16/2019.01.08_ToothBone8.1.csv";
+
+	QFile file(DataPath);
+	file.open(QIODevice::ReadOnly);
+	cout << "讀取點雲: " << DataPath.toLocal8Bit().toStdString() << endl;
+
+	QTextStream ss(&file);
+
+	float a = 0;
+	float b = 0;
+	float c = 0;
+	float numberLoc = 60;
+	while (!ss.atEnd())
+	{
+		ss >> a >> b >> c;
+
+		labelLoc.push_back(QVector2D(numberLoc, a));
+		ourLoc.push_back(QVector2D(numberLoc, b));
+		segnetLoc.push_back(QVector2D(numberLoc, c));
+
+		numberLoc++;
+	}
+	file.close();
+
+	float* _LocData = new float[labelLoc.size() * 2 * 2];
+	float** LocData = new float*[labelLoc.size() * 2];
+	for (int i = 0; i < labelLoc.size() * 2; i++)
+		LocData[i] = &_LocData[2 * i];
+	memset(_LocData, 0, sizeof(float) * labelLoc.size() * 2 * 2);
+
+	for (int i = 0; i < labelLoc.size(); i++) {
+		LocData[i][0] = labelLoc[i].x();
+		LocData[i][1] = labelLoc[i].y();
+
+		LocData[labelLoc.size() + i][0] = ourLoc[i].x();
+		LocData[labelLoc.size() + i][1] = ourLoc[i].y();
+
+		//cout << LocData[i][0] << " " << LocData[i][1] << " " << LocData[labelLoc.size() + i][0] << " " << LocData[labelLoc.size() + i][1] << endl;
+	}
+	float** WorldLocPos = calibrationTool.Calibrate(LocData, labelLoc.size() * 2, 2);
+
+	delete[] _LocData;
+	delete[] LocData;
+
+	QString SavePath = "D:/T.csv";
+
+	QFile Savefile(SavePath);
+	Savefile.open(QIODevice::WriteOnly);
+
+	QTextStream gg(&Savefile);
+
+	//for (int whichtemp = 0; whichtemp < labelLoc.size(); whichtemp++) {
+	//	float tempminValue = 999;
+		for (int i = 0; i < labelLoc.size(); i++)
+		{
+			QVector2D MeatPoint, BonePoint;
+			MeatPoint.setX(WorldLocPos[i][0]);
+			MeatPoint.setY(WorldLocPos[i][1]);
+
+			BonePoint.setX(WorldLocPos[labelLoc.size() + i][0]);
+			BonePoint.setY(WorldLocPos[labelLoc.size() + i][1]);
+
+			//if (abs(MeatPoint.distanceToPoint(BonePoint)) < tempminValue)tempminValue = MeatPoint.distanceToPoint(BonePoint);
+
+			//gg << MeatPoint.distanceToPoint(BonePoint) << endl;
+			//cout << i << " : " << MeatPoint.distanceToPoint(BonePoint) << endl;
+		}
+	//	gg  << tempminValue << endl;
+	//	cout << whichtemp << " : " << tempminValue << endl;
+	//}
+
+	Savefile.close();
+
 	#pragma region 對應到 World Coordinate
 	// 產生 Array
 	int size = nonZeroIndex.size();
@@ -425,6 +510,7 @@ void OpenGLWidget::ProcessImg(Mat otherSide, Mat prob, QVector<Mat> FullMat, QVe
 			DistanceMin = DistanceBounding[i];
 	}
 	#pragma endregion
+
 	#pragma region 畫上結果
 	Mat ColorMap = imread("./Images/ColorMap.png", IMREAD_COLOR);
 	Mat ColorMapDepth = Mat::zeros(Size(250, 250), CV_8UC3);

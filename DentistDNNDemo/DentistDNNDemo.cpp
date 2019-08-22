@@ -58,7 +58,9 @@ void DentistDNNDemo::SliderValueChange(int)
 void DentistDNNDemo::TestRenderFunctionEvent()
 {
 	#pragma region Test 路徑
-	QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 1/";
+	QString TestFilePath = "D:/WorkData/2019.08.21/2019.01.08_ToothBone1/restnet/Predicts/";
+
+	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 1/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 2/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 3.1/";
 	//QString TestFilePath = "Z:/2019.06.21-AfterSmooth/TOOTH bone 3.2/";
@@ -88,16 +90,17 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 	Mat otherSideMat_Org		= imread(OtherSidePath_Org.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
 	Mat otherSideMat_Predict	= imread(OtherSidePath_Predict.toLocal8Bit().toStdString(), IMREAD_GRAYSCALE);
 
-	for (int i = 0; i <= 140; i++)
+	for (int i = 60; i <= 200; i++)
 	{
 		Mat mat = imread((TestFilePath + "Smooth/" + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
+		//Mat mat = imread((TestFilePath + "Kernel7/" + QString::number(i) + ".png").toLocal8Bit().toStdString(), IMREAD_COLOR);
 		FullMat.push_back(mat);
 	}
 	((OpenGLWidget*)(ui.DisplayPanel))->ProcessImg(otherSideMat_Org, otherSideMat_Predict, FullMat, OrginTL, OrginBR, ui.ColorMapMaxValue, ui.ColorMapMinValue);
 
 	#pragma endregion
 	#pragma region 刷新
-	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
+ 	ui.DisplayPanel->GetSliderValue(ui.slidingBar->value());
 	//ui.ColorMapCurrentValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
 	if (showvalueLabel) {
 		ui.ColorValue->setText(ui.DisplayPanel->GetColorMapValue(ui.slidingBar->value()));
@@ -111,8 +114,7 @@ void DentistDNNDemo::TestRenderFunctionEvent()
 	{
 		ui.ColorValue->setVisible(false);
 	}
-	ui.DisplayPanel->update();
-
+ 	ui.DisplayPanel->update();
 
 	ui.PredictPanel->ProcessImg(FullMat[ui.slidingBar->value() - 60], ui.slidingBar->value(), ui.DisplayPanel->GetSliderValue(ui.slidingBar->value()));
 	ui.PredictPanel->update();
@@ -174,6 +176,33 @@ void DentistDNNDemo::ReadBounding(QString FileName) {
 }
 
 void DentistDNNDemo::TestValidDataEvent() {
+
+	string DataPath = "D:/WorkData/2019.08.22/segtopdown/";
+
+	for (int i = 0; i <= 6; i++) {
+		Mat temp = imread(DataPath + "data/" + to_string(i) + ".png", CV_LOAD_IMAGE_COLOR);
+		Mat Label = imread(DataPath + "label/" + to_string(i) + ".png", CV_LOAD_IMAGE_COLOR);
+		
+		//cout << "路徑: " << DataPath + to_string(i) + ".png" << endl;
+
+// 		for (int row = 0; row < temp.rows; row++) {
+// 			for (int col = 0; col < temp.cols; col++) {
+// 				if (temp.at<Vec3b>(row, col) == Vec3b(255, 0, 0))temp.at<Vec3b>(row, col) = Vec3b(0, 0, 0);
+// 				else if (temp.at<Vec3b>(row, col) == Vec3b(0, 0, 255))temp.at<Vec3b>(row, col) = Vec3b(1, 1, 1);
+// 			}
+// 		}
+
+		cv::resize(temp.clone(), temp, cv::Size(480, 360));
+		cv::resize(Label.clone(), Label, cv::Size(480, 360));
+		
+		//imshow("Hi", temp);
+		//waitKey(0);
+
+		imwrite(DataPath + "D/" + to_string(i) + ".png", temp);
+		imwrite(DataPath + "L/" + to_string(i) + ".png", Label);
+	}
+
+
 	/*
 	QString OtherSidePath_Predict = "Z:/NetworkData/2019.07.03_ValidData/31-1_slim/OtherSideValid.png";
 	QString OtherSidePath_Org = "Z:/NetworkData/2019.07.03_ValidData/31-1_slim/OtherSideEdit.png";
@@ -184,6 +213,7 @@ void DentistDNNDemo::TestValidDataEvent() {
 	((OpenGLWidget*)(ui.DisplayPanel))->TestWriteDistance(OrgImg, PredictImg);
 	*/
 
+	/*
 	QString DataPath = "D:/WorkData/2019.08.07/2019.01.08_ToothBone8.1/";
 
 	QString LabelPath = DataPath + "label.png";
@@ -210,14 +240,12 @@ void DentistDNNDemo::TestValidDataEvent() {
 			SegnetMSE += pow((LabelImg.at<Vec3b>(row, col)[0] - SegnetImg.at<Vec3b>(row, col)[0]), 2);
 		}
 	}
-	OrgMSE = OrgMSE / (LabelImg.rows * LabelImg.cols);
-	SegnetMSE = SegnetMSE / (LabelImg.rows * LabelImg.cols);
+	*/
 
-
+	//OrgMSE = OrgMSE / (LabelImg.rows * LabelImg.cols);
+	//SegnetMSE = SegnetMSE / (LabelImg.rows * LabelImg.cols);
 	//cout << OrgMSE << " " << SegnetMSE << endl;
 	//cout << OrgMSE / (LabelImg.rows * LabelImg.cols) << " " << SegnetMSE / (LabelImg.rows * LabelImg.cols) << endl;
-
-
 
 // 	imshow("Label", LabelImg);
 // 	imshow("Our", OrgImg);

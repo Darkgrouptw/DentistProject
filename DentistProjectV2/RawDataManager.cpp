@@ -1573,7 +1573,9 @@ void RawDataManager::renewPic() {
 	// Normalize
 	uchar* ImageUCHARData = new uchar[sizeof(uchar) * 2048 * 250 * 250 / 2];
 	for (int i = 0; i < 2048 * 250 * 250 / 2; i++) {
-		float tempData = (NonNormalizeData[i] - avg125) / (normalizeMax/1.3 - avg125) * 255;
+		float tempData = (NonNormalizeData[i] - normalizeMin) / (normalizeMax - normalizeMin) * 255;
+		//float tempData = (NonNormalizeData[i] - avg125) / (normalizeMax - avg125) * 255 * 1.3;
+
 		//float tempData = NonNormalizeData[i];
 
 		if (tempData >= 255)
@@ -1607,8 +1609,110 @@ void RawDataManager::CCSAVE() {
 	for (int i = 0; i < ImageResultArray.size(); i++)
 	{
 		Mat tempImg = ImageResultArray[i].clone();
-		cv::resize(tempImg.clone(), tempImg, cv::Size(480, 360));
+		//cv::resize(tempImg.clone(), tempImg, cv::Size(480, 360));
 		cv::imwrite("Images/OCTImages/origin_v2/" + to_string(i) + ".png", tempImg);
 	}
 	cout << "存檔完成" << endl;
+}
+
+void RawDataManager::loadimagetoPC(QQuaternion quat) {
+#pragma region 創建 Array
+	// 邊界 & 其他資訊
+	RawDataProperty prop = DManager.prop;
+	//int* BorderData = new int[prop.SizeX *DManager.prop.SizeY];
+	//cudaV2.CopyBorder(BorderData);
+
+	// 點雲
+	PointCloudInfo info;
+#pragma endregion
+#pragma region 轉成點雲
+	// 產生 Rotation Matrix;
+	QMatrix4x4 rotationMatrix;
+	rotationMatrix.setToIdentity();
+	rotationMatrix.rotate(quat);
+
+
+	std::string tempImagePath = "D:/WorkData/2019.08.14/B2/L/";
+	QVector3D MidPoint;
+
+	for (int i = 5; i <= 220; i++) {
+		cv::Mat tempImg = cv::imread(tempImagePath + to_string(i) + ".png", CV_LOAD_IMAGE_COLOR);
+
+		for (int row = 0; row < tempImg.rows; row++) {
+			int index = i * prop.SizeX + row;
+			int MapID = (i * prop.SizeX + row) * 2;
+
+			for (int col = 0; col < tempImg.cols; col++) {
+				if (tempImg.at<Vec3b>(row, col)[0] == 255) {
+					QVector3D pointInSpace;
+					pointInSpace.setX(DManager.MappingMatrix[MapID + 0]);
+					pointInSpace.setY(DManager.MappingMatrix[MapID + 1]);
+					pointInSpace.setZ(col * DManager.zRatio / prop.SizeZ * 2);
+					MidPoint += pointInSpace;
+					info.Points.push_back(pointInSpace);
+					//cout << pointInSpace.x() << " " << pointInSpace.y() << " " << pointInSpace.z() << endl;
+					//break;
+				}
+			}
+		}
+
+
+// 		for (int y = 0; y < prop.SizeY; y++)
+// 			for (int x = 0; x < prop.SizeX; x++)
+// 			{
+// 				int index = y * prop.SizeX + x;			// 對應到 Border Data
+// 				int MapID = (y * prop.SizeX + x) * 2;	// 對應到 Mapping Matrix，在讀取的時候他是兩筆為一個單位
+// 				if (BorderData[index] != -1)
+// 				{
+// 					// 轉到 3d 座標
+// 					QVector3D pointInSpace;
+// 					pointInSpace.setX(DManager.MappingMatrix[MapID + 0]);
+// 					pointInSpace.setY(DManager.MappingMatrix[MapID + 1]);
+// 					pointInSpace.setZ(BorderData[index] * DManager.zRatio / prop.SizeZ * 2);
+// 
+// 					MidPoint += pointInSpace;
+// 
+// 
+// 					// 加進 Point 陣列裡
+// 					info.Points.push_back(pointInSpace);
+// 				}
+// 			}
+
+
+		//cv::imshow("temp", tempImg);
+		//cv::waitKey(0);
+	}
+
+	
+
+	// 如果讀到是空的，就跳過
+	if (info.Points.size() == 0)
+	{
+		//delete[] BorderData;
+		return;
+	}
+
+	// 中心的點 & 加入九軸資訊
+	MidPoint /= info.Points.size();
+	for (int i = 0; i < info.Points.size(); i++)
+		info.Points[i] = (rotationMatrix * QVector4D(info.Points[i] - MidPoint, 1)).toVector3D() + QVector3D(0, MidPoint.y(), 0);
+
+	// 加進陣列裡
+	PointCloudArray.push_back(info);
+
+#pragma endregion 
+#pragma region 刪除 Array
+	//delete[] BorderData;
+#pragma endregion
+#pragma region PC Index
+	// 先重新設定 PCIndex
+	QuaternionList.push_back(quat);
+
+	// 讓他往前
+	if (SelectIndex == PointCloudArray.size() - 2)
+		SelectIndex++;
+
+	// 需更新
+	PCWidgetUpdate();
+#pragma endregion
 }

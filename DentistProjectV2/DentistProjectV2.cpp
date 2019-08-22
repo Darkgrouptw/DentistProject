@@ -302,8 +302,10 @@ void DentistProjectV2::ReadRawDataToImage()
 	ui.ScanNumSlider->setEnabled(false);
 	ui.ScanNumSlider->setValue(60);
 	*/
-	rawManager.CCSAVE();
-
+	
+	//rawManager.CCSAVE();
+	QQuaternion quat;
+	rawManager.loadimagetoPC(quat);
 }
 void DentistProjectV2::ReadRawDataForBorderTest()
 {
@@ -723,12 +725,12 @@ void DentistProjectV2::OCTViewOptionChange(int)
 
 void DentistProjectV2::PICMinSlider_Change(int value) {
 	//rawManager.normalizeMin = rawManager.PicMinValue + ((float)value / 100);
-	//rawManager.normalizeMin = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)value + rawManager.PicMinValue;
+	rawManager.normalizeMin = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)value + rawManager.PicMinValue;
 	ui.PicMinValue->setText(QString::number(rawManager.normalizeMin));
 }
 void DentistProjectV2::PICMaxSlider_Change(int value) {
 	//rawManager.normalizeMax = rawManager.PicMaxValue - ((float)value / 100);
-	//rawManager.normalizeMax = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)value + rawManager.PicMinValue;
+	rawManager.normalizeMax = (rawManager.PicMaxValue - rawManager.PicMinValue) / 1000.0f * (float)value + rawManager.PicMinValue;
 	ui.PicMaxValue->setText(QString::number(rawManager.normalizeMax));
 }
 void DentistProjectV2::SliderReNew() {

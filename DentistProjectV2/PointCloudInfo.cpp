@@ -23,9 +23,8 @@ void PointCloudInfo::ReadFromXYZ(QString FileName)
 	// 點資訊
 	while (!ss.atEnd())
 	{
-		//ss >> a >> b >> c;
 		ss >> a >> b >> c >> d >> e;
-
+		//ss >> a >> b >> c;
 
 		QVector3D p(a / 1000, b / 1000, c / 1000);
 		//QVector3D p(a, b, c);

@@ -373,7 +373,9 @@ __global__ static void TransformToImageAndBorderData(float* VolumeData_Normalize
 	SmoothData[id] = SmoothDataByIndex(VolumeData_Normalized, id, FinalSizeZ, SmoothSizeRange);
 
 	// 這個 1.3 倍，是東元測出來的
-	float data = VolumeData_Normalized[id] * 255 * 1.3f;
+	//float data = VolumeData_Normalized[id] * 255;
+	float data = VolumeData_Normalized[id] * 255 * 1.3;
+
 	if (data >= 255)
 		ImageArray[id] = 255;
 	else if (data <= 0)
@@ -1498,6 +1500,13 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	cudaMemcpy(NonNormalizeImage, CPU_ShiftData, sizeof(float) * OCTDataSize / 2, cudaMemcpyDeviceToHost);
 	cudaFree(CPU_ShiftData);
 
+	float avg125 = 0;
+	for (int i = 250 * 1024 * 125; i < 250 * 1024 * 126; i++) {
+		//cout << NonNormalizeData[i] << endl;
+		avg125 += NonNormalizeImage[i];
+	}
+	avg125 = avg125 / (250 * 1024);
+
 	//TransfromNonNormalizeData(NonNormalizeImage);
 
 	//for (int i = 0; i < 1024; i++)cout << i << " : " << NonNormalizeImage[i] << endl;
@@ -1526,7 +1535,10 @@ void TRCudaV2::MultiRawDataToPointCloud(char* FileRawData, int DataSize, int Siz
 	MinValue /= (MinValuePixel_BR - MinValuePixel_TL + 1) * (MinValuePixel_BR - MinValuePixel_TL + 1);
 	MinValue *= MinValueScalar;
 
-	cout << "小強的 : " << MaxValue << " " << MinValue << " 找出的沒用區塊總和: " << MinValue / MinValueScalar << endl;
+	cout << "choise : " << MaxValue << " " << avg125 << endl;
+	cout << "小強的 : " << MaxValue << " " << MinValue << endl;
+
+	//MinValue = avg125;
 
 	// 因為 Normaliza Data 要做一件事情是  除 (Max - Min) ，要預防他除以 0
 	// 所以這邊先判斷兩個是不是位置一樣 (因為如果整個 array 值都一樣，Min & Max 給的位置都會一樣(以驗證過))

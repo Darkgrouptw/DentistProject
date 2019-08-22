@@ -179,7 +179,6 @@ void RawDataManager::NetworkDataGenerateInRamV2()
 		ss << topLeft.x() << " " << topLeft.y() << " " << buttomRight.x() << " " << buttomRight.y() << endl;
 	}
 	BoundingBoxFile.close();
-
 	#pragma endregion
 }
 bool RawDataManager::CheckIsValidData()
@@ -199,7 +198,7 @@ void RawDataManager::SaveNetworkImage()
 	QString tempImgPath = NetworkUpLoadPath.filePath("OtherSide.png");
 	cv::imwrite(tempImgPath.toLocal8Bit().toStdString(), OtherSideMat);
 
-	for (int i = 60; i <= 200; i++)
+	for (int i = 0; i <= 249; i++)
 	{
 		QVector2D TL = TLPointArray[i];
 		QVector2D BR = BRPointArray[i];
@@ -213,7 +212,7 @@ void RawDataManager::LoadPredictImage()
 {
 	QString testPath = "./Predicts";
 
-		for (int i = 60; i <= 200; i++)
+		for (int i = 0; i <= 249; i++)
 		{
 			cv::Mat BlankImg = cv::Mat::zeros(ImageResultArray[0].size(), CV_8UC3);
 			cv::Mat LoadImage = cv::imread((testPath + "/Result_" + QString::number(i) + ".png").toLocal8Bit().toStdString(), CV_LOAD_IMAGE_COLOR);
@@ -237,13 +236,15 @@ void RawDataManager::SmoothNetworkData()
 	// c => Image cols
 	// 0, 0 => 是圖片的左上角
 	int rMin = INT_MAX, rMax = 0,
-		yMin = 60, yMax = 200,
+		yMin = 0, yMax = 250,
 		cMin = INT_MAX, cMax = 0;
 
-	assert(NetworkResultArray.size() == (200 - 60 + 1) && "必須要有 141 張圖!!");
+	//assert(NetworkResultArray.size() == (200 - 60 + 1) && "必須要有 141 張圖!!");
+	assert(NetworkResultArray.size() == (250 - 0 + 1) && "必須要有 251 張圖!!");
+
 	for (int i = 0; i < NetworkResultArray.size(); i++)
 	{
-		int index = i + 60;					// Offset 60 張圖
+		int index = i;					// Offset 60 張圖
 
 											// 取出點
 		QVector2D TL = TLPointArray[i];
