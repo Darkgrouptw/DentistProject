@@ -51,15 +51,16 @@ UnDistort_Predict(:, 2) = UnDistort_Predict_Y;
 % 畫出點來
 figure();
 hold on;
-%axis([1, 10, 2, 10]);
-axis([0, 250, 0, 250]);
-xlabel('pixel');
-ylabel('pixel');
-%scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'ko');
+axis([1, 10, 2, 10]);
+%axis([0, 250, 0, 250]);
+xlabel('mm');
+ylabel('mm');
+scatter(Calibration(:, 3), Calibration(:, 4), 'd')
+scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'ko');
 scatter(UnDistort(:, 1), UnDistort(:, 2), 'k.');
-%scatter(Predict(:, 1), Predict(:, 2), 'rx');
-%scatter(CalibrationPredict(:, 1), CalibrationPredict(:, 2), 'g*')
-%scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'b+');
+scatter(Predict(:, 1), Predict(:, 2), 'rx');
+scatter(CalibrationPredict(:, 1), CalibrationPredict(:, 2), 'g*')
+scatter(Valid_Calibration(:, 3), Valid_Calibration(:, 4), 'b+');
 hold off;
 
 % 算 Error 
