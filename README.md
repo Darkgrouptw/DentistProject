@@ -31,21 +31,21 @@ Finally, we combine results from second part and third part, and use Camera Cali
 
 ## Code_Introduction
 There is several code in these github:
-1.  DentistDemo
+1.  DentistDemo:
 This project is for demo. It will zip the scan results and send into DGX server. After the prediction is completed, grab the result to this code and display it.(It may take several minutes.)
-2.  DentistProjectV2
+2.  DentistProjectV2:
 Main results is in this project.
-3. DentistProjectV2_TensorflowNetProcess
+3. DentistProjectV2_TensorflowNetProcess:
 When DentistProjectV2 need neural network, it will use this process to call it.
-4. DentistRawDataReader
+4. DentistRawDataReader:
 A Raw Data Reader. (Test only)
-5. Paper TPS
+5. Paper TPS:
 Do thin plate spline in python.
-6. TensorflowNet
+6. TensorflowNet:
 All the things about OCT Network.
-7.  Test_DentistDLL
+7.  Test_DentistDLL:
 Communicate the OCT device though LabelView. (Test only) 
-8. Test_Python
+8. Test_Python:
 Communicate C++ and python. (Test only)
 
 ## Precondition
@@ -69,24 +69,24 @@ Matlab 2018a (or newer version)[連結](https://www.mathworks.com/help/matlab/ma
 以下為系統流程圖
 ![系統流程圖](SystemOverview.png)
 而底下有幾個程式：
-1.  DentistDemo
+1.  DentistDemo:
 此專案是 Demo用，將輸入的結果壓縮傳進 DGX Server 裡面
 結果預測之後，跑出結果抓下來，顯示出來
-2.  DentistProjectV2
+2.  DentistProjectV2:
 主要是所有功能都在裡面
-3. DentistProjectV2_TensorflowNetProcess
+3. DentistProjectV2_TensorflowNetProcess:
 其中 DentistProjectV2 有使用到 Tensorflow Net
 是由此小程式跑出來的結果
 4. DentistRawDataReader
 這裡主要是 RawData 的測試，在Project 一開始的時候用的，基本上後面的功能都在
 DentistProjectV2 裡面都有
-5. Paper TPS
+5. Paper TPS:
 主要是做 TPS 的運算 (Python)，以及相關表格繪畫
-6. TensorflowNet
+6. TensorflowNet:
 網路相關的 Net(Python)
-7.  Test_DentistDLL
+7.  Test_DentistDLL:
 此專案為測試醫院 OCT(LabelView) 溝通的 DLL 的專案
-8. Test_Python
+8. Test_Python:
 此專案為為測試C++與 Python 溝通的測試專案與 class
 
 ## 軟體需求
